@@ -1,0 +1,18 @@
+auth:
+  strategy: anonymous
+
+external_services:
+  prometheus:
+    url: http://35.198.91.111/prometheus
+    health_check_url: http://35.198.91.111/prometheus/-/healthy
+  tracing:
+    enabled: true
+    in_cluster_url: http://tracing.istio-system/jaeger
+    # TODO : change this to nginx ingress controller IP
+    url: http://35.234.114.50
+    use_grpc: false
+  grafana:
+    enabled: true
+    in_cluster_url: http://prometheus-grafana.istio-system/grafana
+    # TODO : change this to nginx ingress controller IP
+    url: http://35.198.91.111/grafana

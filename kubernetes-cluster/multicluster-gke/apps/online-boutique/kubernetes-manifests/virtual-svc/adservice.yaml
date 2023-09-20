@@ -1,0 +1,32 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: adservice
+spec:
+  host: adservice
+  subsets:
+  - labels:
+      version: v1
+    name: v1
+  - labels:
+      version: v2
+    name: v2
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: adservice
+spec:
+  hosts:
+  - adservice
+  http:
+  - route:
+    - destination:
+        host: adservice
+        subset: v1
+      weight: 50
+    - destination:
+        host: adservice
+        subset: v2
+      weight: 50

@@ -1,0 +1,20 @@
+controller: 
+  service:
+    # loadBalancerIP: 34.159.120.143
+    internal:
+      enabled: true
+      annotations:
+        # Create internal LB. More information: https://cloud.google.com/kubernetes-engine/docs/how-to/internal-load-balancing
+        # For GKE versions 1.17 and later
+        networking.gke.io/load-balancer-type: "Internal"    
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        release: "prometheus"
+  # https://github.com/kubernetes/ingress-nginx/blob/main/docs/user-guide/monitoring.md
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "10254"
+    prometheus.io/path: "/metrics"

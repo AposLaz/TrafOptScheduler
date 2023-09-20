@@ -1,0 +1,16 @@
+{
+  "name": "kiali",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemonkubernetes-cluster/iliadis-gke/0-variables.tf kubernetes-cluster/iliadis-gke/1-variables.tfvars kubernetes-cluster/iliadis-gke/2-output.tf kubernetes-cluster/iliadis-gke/3-provider.tf kubernetes-cluster/iliadis-gke/4-main.tf index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "js-yaml": "^4.1.0",
+    "nodemon": "^3.0.1"
+  }
+}
