@@ -1,0 +1,17 @@
+{
+  "name": "placecing-algorithms",
+  "version": "1.0.0",
+  "description": "First of all get resource usage from Nodes, Pods and the available host machines of the cluster. After place a service, resource usage and availability of resources at the host are taken into account",
+  "main": "bin-packing.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.4.0",
+    "dotenv": "^16.3.1",
+    "nodemon": "^3.0.1"
+  }
+}

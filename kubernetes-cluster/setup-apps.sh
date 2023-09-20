@@ -12,13 +12,7 @@ export CTX_2="gke_${PROJECT_ID}_${CLUSTER_ZONE_2}_${CLUSTER_NAME_2}"
 
 export ASM_VERSION="$(./asmcli --version)"
 
-export REVISION=kubectl get deploy -n istio-system -l app=istiod -o jsonpath={.items[*].metadata.labels.'istio\.io\/rev'}'{"\n"}'
-# export HELLO_WORLD_DIR=./asm_output/istio-${ASM_VERSION%+*}
-
-# echo ""
-# export ASM_VERSION="$(./asmcli --version)"
-# export HELLO_WORLD_DIR=./asm_output/istio-${ASM_VERSION%+*}
-
+export REVISION="$(kubectl get deploy -n istio-system -l app=istiod -o jsonpath={.items[*].metadata.labels.'istio\.io\/rev'}'{"\n"}')"
 ################################################################################################ ONLINE BOUTIQUE
 
 
@@ -44,7 +38,8 @@ do
     echo "*********** Install Services for ${CTX} *****************"
     kubectl apply --context=${CTX} \
         -f ./kubernetes-cluster/multicluster-gke/apps/online-boutique/kubernetes-manifests/services
-done
+done;
+
 sleep 10
 
 for CTX in ${CTX_1} ${CTX_2}
@@ -52,9 +47,10 @@ do
     echo "*********** Install ISTIO EGRESS for ${CTX} *****************"
     kubectl apply --context=${CTX} \
         -f ./kubernetes-cluster/multicluster-gke/apps/online-boutique/istio-manifests/allow-egress-googleapis.yaml
-done
+done;
 
 sleep 10
+
 for CTX in ${CTX_1} ${CTX_2}
 do
   echo "*********** Add istio injection for pods for ${CTX} ***********"

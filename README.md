@@ -154,7 +154,7 @@ variable "services_ip_range" {}
 If you want to set up anthos and prometheus then run the following command
 
 ```sh
-./kubernetes-cluster/multicluster-gke/setup-cluster.sh
+./kubernetes-cluster/setup-cluster.sh
 ```
 
 If you need more clusters then add some lines in this file. For example for 6 GKE clusters with anthos add the following in the beginning under `CLUSTER_NAME_5`
@@ -170,7 +170,7 @@ export CTX_6="gke_${PROJECT_ID}_${CLUSTER_ZONE_6}_${CLUSTER_NAME_6}"
 You can run more apps but if you want to run online boutique in each cluster then run the following.
 
 ```sh
-./kubernetes-cluster/multicluster-gke/setup-apps.sh
+./kubernetes-cluster/setup-apps.sh
 ```
 
 # 2. RUN PLACEMENT AND UI
