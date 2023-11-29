@@ -2,6 +2,7 @@ export interface NodesMetrics {
   metric: {
     node: string;
   };
+  value: [number, string];
 }
 
 export interface NodesCPU {
@@ -25,4 +26,34 @@ export interface NodeMemCpu {
 export interface ClusterTypes {
   cluster_ip: string;
   nodes: Array<NodeMemCpu>;
+}
+
+/*-----------------------------*/
+
+export interface DeployResources {
+  requested: number;
+  limit: number;
+  in_use: number;
+}
+
+export interface DeployMetrics {
+  cpu: DeployResources;
+  ram: DeployResources;
+}
+
+export interface Deploys {
+  name: string;
+  namespace: string;
+  metrics: DeployMetrics;
+}
+
+export interface ClusterInfo {
+  node: string;
+  deploys: Deploys[];
+}
+
+export interface KubernetesData {
+  context: string;
+  info: ClusterInfo[];
+  prometheusIP: string;
 }

@@ -16,13 +16,13 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: email
-  namespace: email
+  namespace: online-boutique
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: emailservice-v3
-  namespace: email
+  namespace: online-boutique
 spec:
   selector:
     matchLabels:

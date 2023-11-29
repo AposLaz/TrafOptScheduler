@@ -16,13 +16,13 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: checkout
-  namespace: checkout
+  namespace: online-boutique
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: checkoutservice-v4
-  namespace: checkout
+  namespace: online-boutique
 spec:
   selector:
     matchLabels:
@@ -49,17 +49,17 @@ spec:
           - name: PORT
             value: "5050"
           - name: PRODUCT_CATALOG_SERVICE_ADDR
-            value: "productcatalogservice.productcatalog.svc.cluster.local:3550"
+            value: "productcatalogservice.online-boutique.svc.cluster.local:3550"
           - name: SHIPPING_SERVICE_ADDR
-            value: "shippingservice.shipping.svc.cluster.local:50051"
+            value: "shippingservice.online-boutique.svc.cluster.local:50051"
           - name: PAYMENT_SERVICE_ADDR
-            value: "paymentservice.payment.svc.cluster.local:50051"
+            value: "paymentservice.online-boutique.svc.cluster.local:50051"
           - name: EMAIL_SERVICE_ADDR
-            value: "emailservice.email.svc.cluster.local:5000"
+            value: "emailservice.online-boutique.svc.cluster.local:5000"
           - name: CURRENCY_SERVICE_ADDR
-            value: "currencyservice.currency.svc.cluster.local:7000"
+            value: "currencyservice.online-boutique.svc.cluster.local:7000"
           - name: CART_SERVICE_ADDR
-            value: "cartservice.cart.svc.cluster.local:7070"
+            value: "cartservice.online-boutique.svc.cluster.local:7070"
           - name: DISABLE_STATS
             value: "1"
           - name: DISABLE_TRACING

@@ -16,13 +16,13 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: recommendation
-  namespace: recommendation
+  namespace: online-boutique
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: recommendationservice-v1
-  namespace: recommendation
+  namespace: online-boutique
 spec:
   selector:
     matchLabels:
@@ -52,7 +52,7 @@ spec:
         - name: PORT
           value: "8080"
         - name: PRODUCT_CATALOG_SERVICE_ADDR
-          value: "productcatalogservice.productcatalog.svc.cluster.local:3550"
+          value: "productcatalogservice.online-boutique.svc.cluster.local:3550"
         - name: DISABLE_TRACING
           value: "1"
         - name: DISABLE_PROFILER

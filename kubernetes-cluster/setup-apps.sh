@@ -21,15 +21,14 @@ do
     echo "*********** Install Namespaces for ${CTX} *****************"
     kubectl apply --context=${CTX} \
         -f ./kubernetes-cluster/multicluster-gke/apps/online-boutique/kubernetes-manifests/namespaces
-done
+done;
 
 
-echo "*********** Install Deployments for ${CTX} *****************"
-kubectl apply --context=${CTX_1} \
-        -f ./kubernetes-cluster/multicluster-gke/apps/online-boutique/kubernetes-manifests/deployments/cluster-0
+echo "*********** Install Deployments for ${CTX_1} *****************"
+kubectl apply --context=${CTX_1} -f ./kubernetes-cluster/multicluster-gke/apps/online-boutique/kubernetes-manifests/deployments/cluster-0
 
-kubectl apply --context=${CTX_2} \
-        -f ./kubernetes-cluster/multicluster-gke/apps/online-boutique/kubernetes-manifests/deployments/cluster-1
+echo "*********** Install Deployments for ${CTX_2} *****************"
+kubectl apply --context=${CTX_2} -f ./kubernetes-cluster/multicluster-gke/apps/online-boutique/kubernetes-manifests/deployments/cluster-1
 
 sleep 10
 
@@ -38,38 +37,19 @@ do
     echo "*********** Install Services for ${CTX} *****************"
     kubectl apply --context=${CTX} \
         -f ./kubernetes-cluster/multicluster-gke/apps/online-boutique/kubernetes-manifests/services
-done;
 
-sleep 10
-
-for CTX in ${CTX_1} ${CTX_2}
-do
     echo "*********** Install ISTIO EGRESS for ${CTX} *****************"
     kubectl apply --context=${CTX} \
         -f ./kubernetes-cluster/multicluster-gke/apps/online-boutique/istio-manifests/allow-egress-googleapis.yaml
+    
+    echo "*********** Add istio injection for pods for ${CTX} ***********"
+      kubectl --context=${CTX} label namespace online-boutique istio-injection=enabled istio.io/rev=${REVISION} --overwrite
+    
+    echo "*********** Rollout pods for ${CTX} ***********"
+      kubectl --context=${CTX} rollout restart deployment -n online-boutique
 done;
 
 sleep 10
-
-for CTX in ${CTX_1} ${CTX_2}
-do
-  echo "*********** Add istio injection for pods for ${CTX} ***********"
-  for ns in ad cart checkout currency email frontend loadgenerator \
-    payment productcatalog recommendation shipping; do
-      kubectl --context=${CTX} label namespace $ns istio-injection=enabled istio.io/rev=${REVISION} --overwrite
-  done
-done;
-
-sleep 10
-
-for CTX in ${CTX_1} ${CTX_2}
-do
-  echo "*********** Rollout pods for ${CTX} ***********"
-  for ns in ad cart checkout currency email frontend loadgenerator \
-    payment productcatalog recommendation shipping; do
-      kubectl rollout restart deployment -n ${ns}
-  done;
-done;
 
 kubectl apply --context=${CTX_1} -f ./kubernetes-cluster/multicluster-gke/apps/online-boutique/istio-manifests/frontend-gateway.yaml
 
@@ -78,17 +58,10 @@ sleep 2
 echo "******************* ADD VERSIONS FOR EVERY CLUSTER *******************"
 
 sleep 10
-WORDTOREMOVE="service"
-NS=${deploy//$WORDTOREMOVE/}
 
-for deploy in adservice cartservice checkoutservice currencyservice emailservice frontend loadgenerator \
-    paymentservice productcatalogservice recommendationservice shippingservice; do
-      NS=${deploy/%"$WORDTOREMOVE"}
-      kubectl delete --context=${CTX_1} \
-        -f ./kubernetes-cluster/multicluster-gke/apps/online-boutique/kubernetes-manifests/virtual-svc/${deploy}.yaml -n $NS
-      kubectl apply --context=${CTX_1} \
-        -f ./kubernetes-cluster/multicluster-gke/apps/online-boutique/kubernetes-manifests/virtual-svc/${deploy}.yaml -n $NS
-done;
-
-
+kubectl delete --context=${CTX_1} \
+        -f ./kubernetes-cluster/multicluster-gke/apps/online-boutique/kubernetes-manifests/virtual-svc/ -n online-boutique
+        
+kubectl apply --context=${CTX_1} \
+        -f ./kubernetes-cluster/multicluster-gke/apps/online-boutique/kubernetes-manifests/virtual-svc/ -n online-boutique
 

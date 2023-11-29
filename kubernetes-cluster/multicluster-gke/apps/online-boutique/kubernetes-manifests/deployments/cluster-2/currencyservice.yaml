@@ -16,13 +16,13 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: currency
-  namespace: currency
+  namespace: online-boutique
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: currencyservice-v3
-  namespace: currency
+  namespace: online-boutique
 spec:
   selector:
     matchLabels:

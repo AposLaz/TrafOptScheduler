@@ -21,7 +21,7 @@ export const PROMETHEUS_NODE_INFO = async (clusters: Array<ClusterTypes>) => {
    * @requested_cpu
    */
   await Promise.all(
-    clusters.map(async (cp) => {
+    clusters.map(async (cp, i) => {
       const cpu_nodes = await axios.get(
         `http://${cp.cluster_ip}/prometheus/api/v1/query`,
         {
@@ -32,18 +32,17 @@ export const PROMETHEUS_NODE_INFO = async (clusters: Array<ClusterTypes>) => {
         }
       );
 
-      cpu_nodes.data.data.result
+      await cpu_nodes.data.data.result
         .sort((node1: NodesMetrics, node2: NodesMetrics) =>
-          node1.metric.node.localeCompare(node2.metric.node)
+          node2.metric.node.localeCompare(node1.metric.node)
         )
-        .map((nodes_data: string) => {
-          console.log(nodes_data);
-          // clusters[index].nodes[i]! = {
-          //   node_name: nodes_data.metric.node,
-          //   cpu: {
-          //     requested_cpu: Number(nodes_data.value[1]),
-          //   },
-          // };
+        .map((nodes_data: NodesMetrics, index: number) => {
+          clusters[i].nodes[index] = {
+            node_name: nodes_data.metric.node,
+            cpu: {
+              requested_cpu: Number(nodes_data.value[1]),
+            },
+          };
         });
     })
   );
