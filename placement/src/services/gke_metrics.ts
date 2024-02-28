@@ -10,7 +10,7 @@
  */
 
 import axios from "axios";
-import { ClusterTypes, NodesMetrics } from "./types";
+import { ClusterTypes, NodesMetrics } from "../types";
 
 /**
  * Function to collect Kubernetes metrics from prometheus

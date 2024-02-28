@@ -57,3 +57,7 @@ export interface KubernetesData {
   info: ClusterInfo[];
   prometheusIP: string;
 }
+
+export type SetupGkeConfigs = {
+  istioIP: string;
+};

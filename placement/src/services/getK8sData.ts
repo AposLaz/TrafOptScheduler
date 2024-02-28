@@ -1,7 +1,7 @@
-import kubernetesApi from "./api/k8s/kubernetesApi";
-import prometheusApi from "./api/prometheus/prometheusApi";
-import { convertCPUtoCores, convertRAMtoGB } from "./commons/helper";
-import { Deploys, KubernetesData } from "./types";
+import kubernetesApi from "../api/k8s/kubernetesApi";
+import prometheusApi from "../api/prometheus/prometheusApi";
+import { convertCPUtoCores, convertRAMtoGB } from "../commons/helper";
+import { Deploys, KubernetesData } from "../types";
 
 export async function getK8sData(): Promise<KubernetesData[]> {
   try {

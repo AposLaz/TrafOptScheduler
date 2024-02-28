@@ -187,6 +187,20 @@ class KubernetesApi {
       return undefined;
     }
   }
+
+  async getIstioExternalIp(): Promise<string | undefined> {
+    try {
+      const command = `kubectl get svc -n istio-system --selector=app=istio-ingressgateway \
+       --output=jsonpath='{.items[*].status.loadBalancer.ingress[0].ip}'`;
+      const { stdout } = await promisifiedExecFile("bash", ["-c", command]);
+
+      return stdout;
+    } catch (e: unknown) {
+      const error = e as Error;
+      console.error("stderr:", error.message);
+      return undefined;
+    }
+  }
 }
 const kubernetesApi = new KubernetesApi();
 

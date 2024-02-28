@@ -1,8 +1,7 @@
-// import kubernetesApi from "./api/k8s/kubernetesApi";
-// import { Config } from "./environement";
-import { getK8sData } from "./getK8sData";
-// import { PROMETHEUS_NODE_INFO } from "./gke_metrics";
-// import { ClusterTypes } from "./types";
+import { gkeSetupConfigs } from "./config/setup";
+import { setUpTraffic } from "./services/trafficSplit";
+import { SetupGkeConfigs } from "./types";
+// import { getK8sData } from "./getK8sData";
 
 /**
  * IN THE END WE WILL HAVE THIS OBJECT FOR EVERY CLUSTER
@@ -25,34 +24,29 @@ import { getK8sData } from "./getK8sData";
  *  }]
  * }]
  */
-// const clusters: Array<ClusterTypes> = [];
 
-// const main = async () => {
-//   //WE GET IP FOR EVERY CLUSTER
-//   await Promise.all(
-//     Config.CLUSTERS_IP.map((ip) => {
-//       clusters.push({
-//         cluster_ip: ip,
-//         nodes: [],
-//       });
-//     })
-//   );
-//   //get node information from prometheus
-//   // clusters = await PROMETHEUS_NODE_INFO(clusters);
-//   clusters.map((cl) => {
-//     cl.nodes.map((node) => console.log(node));
-//   });
-
-//   // const { spawn } = require("child_process");
-
-//   // const child = spawn("ls", ["-a", "-l"]);
-// };
+const setTrafficSplit = async () => {
+  await setUpTraffic();
+};
 
 const initPlacement = async () => {
-  const clusterData = await getK8sData();
-  console.log(JSON.stringify(clusterData));
+  //const clusterData = await getK8sData(); //need run this for get Kubernetes Data
+  //console.log(JSON.stringify(clusterData));
   // await getPrometheusIp();
   // await main();
 };
+export let setupConfigs: SetupGkeConfigs;
 
-initPlacement();
+const initSetup = async () => {
+  try {
+    // Retrieve Istio IP asynchronously
+    setupConfigs = await gkeSetupConfigs();
+
+    await setTrafficSplit();
+    await initPlacement();
+  } catch (error) {
+    console.error("Error during setup:", error);
+  }
+};
+
+initSetup();
