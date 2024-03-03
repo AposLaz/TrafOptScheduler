@@ -1,41 +1,43 @@
-import { GraphData } from "./types";
+import { GraphData, GraphEdges } from "./types";
 
 export const createLinksForSourceAndTarget = async (
   graph: GraphData,
   namespace: string
-) => {
+): Promise<GraphEdges[]> => {
   //get services for nodes
-  const graphNodes = graph.elements.nodes
+  const graphNodesServices = graph.elements.nodes
+    .filter(
+      (node) =>
+        node.data.nodeType === "service" && node.data.namespace === namespace
+    )
+    .map((node) => ({
+      app: node.data.service,
+      namespace: node.data.namespace,
+      appId: node.data.id,
+    }));
+
+  const graphNodesApps = graph.elements.nodes
     .filter(
       (node) =>
         node.data.nodeType === "app" && node.data.namespace === namespace
     )
-    .map((node) => {
-      return {
-        app: node.data.app,
-        namespace: node.data.namespace,
-        appId: node.data.id,
-      };
-    });
+    .map((node) => ({
+      app: node.data.app,
+      namespace: node.data.namespace,
+      appId: node.data.id,
+    }));
 
-  const dataGraph = [];
+  const graphEdges = graph.elements.edges.map((edge) => ({
+    source:
+      graphNodesServices.find((service) => service.appId === edge.data.source)
+        ?.app ||
+      graphNodesApps.find((app) => app.appId === edge.data.source)?.app,
+    target:
+      graphNodesServices.find((service) => service.appId === edge.data.target)
+        ?.app ||
+      graphNodesApps.find((app) => app.appId === edge.data.target)?.app,
+    namespace: namespace,
+  }));
 
-  for await (const edge of graph.elements.edges) {
-    const source = graphNodes.find((app) => app.appId === edge.data.source);
-
-    if (source) {
-      dataGraph.push({
-        source: source.app,
-        namespaceSource: source.namespace,
-        target: edge.data.target,
-      });
-    }
-
-    //const target = graphNodes.find((app) => app.appId === edge.data.target);
-  }
-
-  for await (const edge of graph.elements.edges) {
-    const target = graphNodes.find((app) => app.appId === edge.data.target);
-  }
-  console.log(dataGraph);
+  return graphEdges;
 };

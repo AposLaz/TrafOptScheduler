@@ -25,47 +25,47 @@ type ClusterType = {
   }[];
 };
 
-const cluster: ClusterType[] = [
-  {
-    node: "node1",
-    umPods: [
-      {
-        name: "A1",
-        allocation: 1,
-      },
-    ],
-    dmPods: [
-      { name: "B1", allocation: 0, trafficAccepts: [] },
-      { name: "B2", allocation: 0, trafficAccepts: [] },
-    ],
-  },
-  {
-    node: "node2",
-    umPods: [
-      {
-        name: "A2",
-        allocation: 1,
-      },
-      {
-        name: "A3",
-        allocation: 1,
-      },
-    ],
-    dmPods: [
-      { name: "B3", allocation: 0, trafficAccepts: [] },
-      { name: "B4", allocation: 0, trafficAccepts: [] },
-      { name: "B5", allocation: 0, trafficAccepts: [] },
-    ],
-  },
-];
+// const cluster: ClusterType[] = [
+//   {
+//     node: "node1",
+//     umPods: [
+//       {
+//         name: "A1",
+//         allocation: 1,
+//       },
+//     ],
+//     dmPods: [
+//       { name: "B1", allocation: 0, trafficAccepts: [] },
+//       { name: "B2", allocation: 0, trafficAccepts: [] },
+//     ],
+//   },
+//   {
+//     node: "node2",
+//     umPods: [
+//       {
+//         name: "A2",
+//         allocation: 1,
+//       },
+//       {
+//         name: "A3",
+//         allocation: 1,
+//       },
+//     ],
+//     dmPods: [
+//       { name: "B3", allocation: 0, trafficAccepts: [] },
+//       { name: "B4", allocation: 0, trafficAccepts: [] },
+//       { name: "B5", allocation: 0, trafficAccepts: [] },
+//     ],
+//   },
+// ];
 
-export const trafficAllocation = () => {
-  const totalUm = cluster.reduce(
+export const trafficAllocation = (clusterReplicaPods: ClusterType[]) => {
+  const totalUm = clusterReplicaPods.reduce(
     (totalUm, nodes) => totalUm + nodes.umPods.length,
     0
   );
 
-  const totalDm = cluster.reduce(
+  const totalDm = clusterReplicaPods.reduce(
     (totalDm, nodes) => totalDm + nodes.dmPods.length,
     0
   );
@@ -73,7 +73,7 @@ export const trafficAllocation = () => {
   const need = totalUm / totalDm;
 
   //In cluster allocation
-  for (const node of cluster) {
+  for (const node of clusterReplicaPods) {
     if (node.umPods.length !== 0 && node.dmPods.length !== 0) {
       const umLength = node.umPods.length;
       const dmLength = node.dmPods.length;
@@ -115,12 +115,12 @@ export const trafficAllocation = () => {
   }
 
   //Cross cluster allocation
-  const getDmPods = cluster.flatMap((node) => node.dmPods);
+  const getDmPods = clusterReplicaPods.flatMap((node) => node.dmPods);
 
   //for each downstream replica pod
   for (const dm of getDmPods) {
     if (dm.allocation < need) {
-      for (const node of cluster) {
+      for (const node of clusterReplicaPods) {
         if (node.umPods.length > 0) {
           //from first um pod in node. That means that if first pod === 0 all the other will be zero
           if (node.umPods[0].allocation > 0) {
@@ -186,10 +186,10 @@ export const trafficAllocation = () => {
       }
     }
   }
-  console.log(JSON.stringify(cluster, null, 2));
+  console.log(JSON.stringify(clusterReplicaPods, null, 2));
 };
 
-trafficAllocation();
+//trafficAllocation();
 
 /**
  function __iptables(link: str):

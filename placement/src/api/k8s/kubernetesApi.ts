@@ -188,6 +188,40 @@ class KubernetesApi {
     }
   }
 
+  async getPodsByService(
+    service: string,
+    namespace: string
+  ): Promise<string[] | undefined> {
+    try {
+      const command = `kubectl get ep ${service} -n ${namespace} -o=jsonpath='{.subsets[*].addresses[*].ip}' | tr ' ' '\n' | xargs -I % kubectl get pods -o=name --field-selector=status.podIP=% -n ${namespace} | tr '\n' ' '`;
+      const { stdout } = await promisifiedExecFile("bash", ["-c", command]);
+      const arrayPods = stdout
+        .trim()
+        .split(" ")
+        .map((pod) => pod.replace("pod/", ""));
+      return arrayPods;
+    } catch (e: unknown) {
+      const error = e as Error;
+      console.error("stderr:", error.message);
+      return undefined;
+    }
+  }
+
+  async getNodeByPod(
+    pod: string,
+    namespace: string
+  ): Promise<string | undefined> {
+    try {
+      const command = `kubectl get pod ${pod} -n ${namespace} -o=jsonpath='{.spec.nodeName}'`;
+      const { stdout } = await promisifiedExecFile("bash", ["-c", command]);
+      return stdout;
+    } catch (e: unknown) {
+      const error = e as Error;
+      console.error("stderr:", error.message);
+      return undefined;
+    }
+  }
+
   async getIstioExternalIp(): Promise<string | undefined> {
     try {
       const command = `kubectl get svc -n istio-system --selector=app=istio-ingressgateway \
@@ -202,6 +236,7 @@ class KubernetesApi {
     }
   }
 }
+
 const kubernetesApi = new KubernetesApi();
 
 export default kubernetesApi;

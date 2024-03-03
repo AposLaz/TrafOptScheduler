@@ -43,3 +43,9 @@ export type GraphData = {
     edges: Edge[]; // Add edges here
   };
 };
+
+export type GraphEdges = {
+  source: string | undefined;
+  target: string | undefined;
+  namespace: string;
+};

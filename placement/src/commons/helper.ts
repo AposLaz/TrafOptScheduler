@@ -19,3 +19,5 @@ export const convertRAMtoGB = (ram: string): number => {
   const divRAM = ramNumber / 1024;
   return divRAM;
 };
+
+export const to2Digits = (expr: number): number => Number(expr.toFixed(2));
