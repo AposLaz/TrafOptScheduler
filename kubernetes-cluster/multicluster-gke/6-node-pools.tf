@@ -8,7 +8,7 @@ resource "google_container_node_pool" "general" {
   count      = length(var.cluster-zones)
   name       = "general-cluster-${count.index}"
   cluster    = google_container_cluster.primary[count.index].id
-  node_count = 1
+  node_count = 0
 
   management {
     auto_repair  = true

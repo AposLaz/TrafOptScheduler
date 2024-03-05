@@ -1,0 +1,50 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: recommendationservice
+spec:
+  host: recommendationservice
+  subsets:
+  - labels:
+      node: gke-cluster-1-pool-1-9d074513-6x27
+    name: gke-cluster-1-pool-1-9d074513-6x27
+  - labels:
+      node: gke-cluster-1-default-pool-981dc8d2-g640
+    name: gke-cluster-1-default-pool-981dc8d2-g640
+  - labels:
+      node: gke-cluster-1-default-pool-981dc8d2-75cq
+    name: gke-cluster-1-default-pool-981dc8d2-75cq
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: recommendationservice
+spec:
+  hosts:
+    - recommendationservice
+  http:
+    - match:
+        - sourceLabels:
+            node: gke-cluster-1-pool-1-9d074513-6x27
+      route:
+        - destination:
+              host: recommendationservice
+              subset: gke-cluster-1-pool-1-9d074513-6x27
+          weight: 10
+    - match:
+        - sourceLabels:
+            node: gke-cluster-1-default-pool-981dc8d2-g640
+      route:
+          - destination:
+              host: recommendationservice
+              subset: gke-cluster-1-default-pool-981dc8d2-g640
+            weight: 10
+    - match:
+        - sourceLabels:
+            node: gke-cluster-1-default-pool-981dc8d2-75cq
+      route:
+          - destination:
+              host: recommendationservice
+              subset: gke-cluster-1-default-pool-981dc8d2-75cq
+            weight: 80
+

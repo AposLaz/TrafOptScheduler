@@ -6,7 +6,10 @@ type UMpods = {
 type DMpods = {
   name: string;
   allocation: number;
-  trafficAccepts: { traffic: number; nodeName: string }[];
+  trafficAccepts: {
+    traffic: number;
+    nodeName: string;
+  }[];
 };
 
 export type ClusterType = {

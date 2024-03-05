@@ -27,6 +27,7 @@ spec:
   selector:
     matchLabels:
       app: productcatalogservice
+  replicas: 4
   template:
     metadata:
       labels:

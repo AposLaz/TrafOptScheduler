@@ -235,6 +235,16 @@ class KubernetesApi {
       return undefined;
     }
   }
+
+  async addLabelToPod(pod: string, namespace: string, label: string) {
+    try {
+      const command = `kubectl label pods ${pod} ${label} -n ${namespace}`;
+      await promisifiedExecFile("bash", ["-c", command]);
+    } catch (e: unknown) {
+      const error = e as Error;
+      console.error("stderr:", error.message);
+    }
+  }
 }
 
 const kubernetesApi = new KubernetesApi();

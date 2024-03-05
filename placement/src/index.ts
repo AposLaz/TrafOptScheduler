@@ -1,5 +1,9 @@
 import { gkeSetupConfigs } from "./config/setup";
-import { setUpGraphLinks, trafficAllocation } from "./services/trafficSplit";
+import {
+  setUpGraphLinks,
+  setUpNodeNameLabelsToPods,
+  trafficAllocation,
+} from "./services/trafficSplit";
 import { SetupGkeConfigs } from "./types";
 // import { getK8sData } from "./getK8sData";
 
@@ -27,11 +31,14 @@ import { SetupGkeConfigs } from "./types";
 
 const setTrafficSplit = async () => {
   //TODO => for each namespace
-  const links = await setUpGraphLinks("online-boutique");
+  const ns = "online-boutique";
+  const links = await setUpGraphLinks(ns);
   if (!links) {
     console.error("There is not graph for this namespace");
     return;
   }
+  //add label nodeName to each pod
+  await setUpNodeNameLabelsToPods(links, ns);
 
   await Promise.all(links.map((clusterPods) => trafficAllocation(clusterPods)));
 };

@@ -1,4 +1,4 @@
-import { ClusterType } from "../algorithms/types";
+import { ClusterType } from "./types";
 import kubernetesApi from "../api/k8s/kubernetesApi";
 import kialiApi from "../api/kiali/kialiApi";
 import { createLinksForSourceAndTarget } from "../api/kiali/services";
@@ -11,10 +11,7 @@ export const setUpGraphLinks = async (
   const getKialiGraph = await kialiApi.getGraph(ns);
   if (!getKialiGraph) return;
 
-  const graph: GraphEdges[] = await createLinksForSourceAndTarget(
-    getKialiGraph,
-    ns
-  );
+  const graph: GraphEdges[] = createLinksForSourceAndTarget(getKialiGraph, ns);
 
   //get distinct services from graph
   const distincServices = [
@@ -250,3 +247,30 @@ export const trafficAllocation = (clusterReplicaPods: ClusterType[]) => {
   );
   console.log(JSON.stringify(clusterReplicaPods, null, 2));
 };
+
+//add label node: nodeName to each pod
+export const setUpNodeNameLabelsToPods = async (
+  clusterReplicaPods: ClusterType[][],
+  namespace: string
+) => {
+  await Promise.all(
+    clusterReplicaPods
+      .flatMap((data) => data)
+      .map((nodes) =>
+        nodes.umPods.map(
+          async (pods) =>
+            await kubernetesApi.addLabelToPod(
+              pods.name,
+              namespace,
+              `node=${nodes.node}`
+            )
+        )
+      )
+  );
+};
+
+//set up destination rules and traffic split
+//https://stackoverflow.com/questions/60227441/istio-virtual-service-can-i-route-traffic-based-on-the-calling-service
+//like example
+
+//

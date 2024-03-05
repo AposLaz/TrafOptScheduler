@@ -27,6 +27,7 @@ spec:
   selector:
     matchLabels:
       app: recommendationservice
+  replicas: 7
   template:
     metadata:
       labels:

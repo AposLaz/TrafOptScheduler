@@ -1,9 +1,9 @@
 import { GraphData, GraphEdges } from "./types";
 
-export const createLinksForSourceAndTarget = async (
+export const createLinksForSourceAndTarget = (
   graph: GraphData,
   namespace: string
-): Promise<GraphEdges[]> => {
+): GraphEdges[] => {
   //get services for nodes
   const graphNodesServices = graph.elements.nodes
     .filter(

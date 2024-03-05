@@ -12,3 +12,4 @@ asm_output/
 asmcli
 
 tests/
+istio/
