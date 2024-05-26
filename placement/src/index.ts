@@ -43,7 +43,7 @@ const setTrafficSplit = async (region: string) => {
   const trafficAllocPerLink = links.map((clusterPods) =>
     trafficAllocation(clusterPods)
   );
-  console.log(trafficAllocPerLink);
+  console.log(JSON.stringify(trafficAllocPerLink, null, 2));
   setupDestinationRulesPerZone(trafficAllocPerLink, ns, region);
 };
 

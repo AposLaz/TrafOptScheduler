@@ -11,11 +11,15 @@ spec:
         distribute:
           - from: europe-west8/europe-west8-c/*
             to:
-              europe-west8/europe-west8-c/*: 67
-              europe-west8/europe-west8-a/*: 33
+              europe-west8/europe-west8-c/*: 86
+              europe-west8/europe-west8-a/*: 14
           - from: europe-west8/europe-west8-a/*
             to:
               europe-west8/europe-west8-a/*: 100
+          - from: europe-west8/europe-west8-b/*
+            to:
+              europe-west8/europe-west8-a/*: 43
+              europe-west8/europe-west8-b/*: 57
     outlierDetection:
       consecutive5xxErrors: 100
       interval: 1s

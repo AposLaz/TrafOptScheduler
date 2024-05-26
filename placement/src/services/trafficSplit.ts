@@ -1,6 +1,7 @@
 import {
   ClusterType,
   DMpods,
+  DestinationRuleFromToZones,
   DestinationRuleProps,
   TrafficSummaryPerZone,
 } from "./types";
@@ -72,8 +73,6 @@ export const setUpGraphLinks = async (
     })
   );
 
-  console.log(JSON.stringify(svcPods, null, 2));
-
   const zoneNames = svcPods
     .flatMap((svc) => svc && svc.pods.map((pod) => pod && pod.zone))
     .filter((svc) => svc !== undefined);
@@ -129,8 +128,6 @@ export const setUpGraphLinks = async (
       clusterUmDmPods.push(cl);
     }
   });
-
-  console.log(JSON.stringify(clusterUmDmPods, null, 2));
 
   return clusterUmDmPods;
 };
@@ -356,21 +353,34 @@ export const setupDestinationRulesPerZone = (
           // add new field to "to"
           fromZoneExists.to = {
             ...fromZoneExists.to,
-            [`${region}/${podsAllocation.zone}/*`]: allocation.traffic * 100,
+            [`${region}/${podsAllocation.zone}/*`]: Math.floor(
+              allocation.traffic * 100
+            ), // remove demicals if exists
           };
         } else {
           DestinationRule.spec.trafficPolicy.loadBalancer.localityLbSetting.distribute.push(
             {
               from: `${region}/${allocation.zone}/*`,
               to: {
-                [`${region}/${podsAllocation.zone}/*`]:
-                  allocation.traffic * 100,
+                [`${region}/${podsAllocation.zone}/*`]: Math.floor(
+                  allocation.traffic * 100
+                ), // remove demicals if exists
               },
             }
           );
         }
       });
     }
+
+    // traffic from all to zones must "sum 100"
+    const newWeights = adjustWeights(
+      DestinationRule.spec.trafficPolicy.loadBalancer.localityLbSetting
+        .distribute
+    );
+
+    DestinationRule.spec.trafficPolicy.loadBalancer.localityLbSetting.distribute =
+      newWeights;
+
     applyDestinationRule(DestinationRule, namespace);
   }
 };
@@ -404,17 +414,38 @@ const applyDestinationRule = async (
   destinationRule: DestinationRuleProps,
   namespace: string
 ) => {
+  //create yaml from json file
   const yamlStr = yaml.dump(destinationRule);
+  //set up path
   const destRulesPath = path.join(__dirname, "..", "destinationRules");
   const filePath = path.join(
     destRulesPath,
     `${destinationRule.metadata.name}.yaml`
   );
 
-  console.log(yamlStr);
-  console.log(filePath);
-
   fs.writeFileSync(filePath, yamlStr, "utf8");
 
+  // create destination rule
   await kubernetesApi.createResource(filePath, namespace);
+};
+
+const adjustWeights = (
+  distribute: DestinationRuleFromToZones[]
+): DestinationRuleFromToZones[] => {
+  return distribute.map((allocation) => {
+    const toEntries = Object.entries(allocation.to);
+    const totalWeight = toEntries.reduce((sum, [, weight]) => sum + weight, 0);
+    const difference = 100 - totalWeight;
+
+    if (difference !== 0 && toEntries.length > 0) {
+      const lastKey = toEntries[toEntries.length - 1][0];
+      const newTo = {
+        ...allocation.to,
+        [lastKey]: allocation.to[lastKey] + difference,
+      };
+      return { from: allocation.from, to: newTo };
+    }
+
+    return allocation;
+  });
 };
