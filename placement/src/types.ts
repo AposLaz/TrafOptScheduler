@@ -60,4 +60,5 @@ export interface KubernetesData {
 
 export type SetupGkeConfigs = {
   istioIP: string;
+  kialiIP: string;
 };

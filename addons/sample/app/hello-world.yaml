@@ -1,0 +1,165 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aplaz
+spec:
+  selector:
+    matchLabels:
+      app: hello-world
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: hello-world
+        version: aplaz-v1
+    spec:
+      containers:
+      - name: hello-world
+        image: alazidis/hello-world
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 4000
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-svc
+spec:
+  selector:
+    app: hello-world
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 4000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aplaz-proxy
+spec:
+  selector:
+    matchLabels:
+      app: hello-proxy
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: hello-proxy
+    spec:
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            app: hello-proxy
+      containers:
+      - name: hello-proxy
+        image: alazidis/hello-proxy
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 3000
+        env:
+        - name: URL
+          value: "hello-svc.default.svc.cluster.local"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: proxy-svc
+spec:
+  selector:
+    app: hello-proxy
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: nginx-gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: aplaz-ingress
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - nginx-gateway
+  http:
+  - route:
+    - destination:
+        host: proxy-svc
+        port:
+          number: 80
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: aplaz-traffic-split
+spec:
+  hosts:
+  - hello-svc
+  http:
+  - route:
+    - destination:
+        host: hello-svc
+        port:
+          number: 80
+# ---
+# apiVersion: networking.istio.io/v1alpha3
+# kind: VirtualService
+# metadata:
+#   name: aplaz-vr
+# spec:
+#   hosts: 
+#   - aplaz-664975df99-mpdtl.hello-aplaz.default.svc.cluster.local
+#   - aplaz-664975df99-n6kfx.hello-aplaz.default.svc.cluster.local
+#   - aplaz-664975df99-x229w.hello-aplaz.default.svc.cluster.local
+#   http:
+#   - route:
+#     - destination:
+#         host: aplaz-664975df99-mpdtl.hello-aplaz.default.svc.cluster.local
+#         subset: v1
+#       weight: 0
+#     - destination:
+#         host: aplaz-664975df99-n6kfx.hello-aplaz.default.svc.cluster.local
+#         subset: v2
+#       weight: 0
+#     - destination:
+#         host: aplaz-664975df99-x229w.hello-aplaz.default.svc.cluster.local
+#         subset: v3
+#       weight: 100
+
+# kubectl logs -f aplaz-578577fb77-4k5wb
+# kubectl logs -f aplaz-578577fb77-kbw5g
+# kubectl logs -f aplaz-578577fb77-zsjwk
+# kubectl logs -f aplaz-578577fb77-zssmj
+
+# topology.kubernetes.io/region=europe-west8
+# nodes => gke-cluster-1-default-pool-b5bef915-zj3m | zone => zone=europe-west8-c || PODS => aplaz-proxy-765654f76c-q92f6
+# nodes => gke-cluster-1-default-pool-ae608db0-qzd4 | zone => zone=europe-west8-a || PODS => aplaz-proxy-765654f76c-ffh8c, aplaz-667c69f547-r57qx
+# nodes => gke-cluster-1-default-pool-b5bef915-7cvf | zone => zone=europe-west8-c || PODS => aplaz-667c69f547-pd845
+# nodes => gke-cluster-1-default-pool-ae608db0-98kp | zone => zone=europe-west8-a || PODS => aplaz-667c69f547-9kchc
+# latency
+# histogram_quantile(0.95, sum(rate(istio_request_duration_milliseconds_bucket{destination_workload="aplaz",pod="aplaz-6f897ccb84-lrbkn"}[50m])) by (le))

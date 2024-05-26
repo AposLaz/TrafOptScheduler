@@ -21,7 +21,7 @@ metadata:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: productcatalogservice-v1
+  name: productcatalogservice
   namespace: online-boutique
 spec:
   selector:
@@ -32,7 +32,6 @@ spec:
     metadata:
       labels:
         app: productcatalogservice
-        version: v1
     spec:
       serviceAccountName: productcatalog
       terminationGracePeriodSeconds: 5

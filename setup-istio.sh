@@ -1,15 +1,66 @@
-gcloud container clusters get-credentials cluster-1 --zone europe-west8-c --project lively-shelter-294615
+#gcloud container clusters get-credentials cluster-1 --zone us-central1-c --project lively-shelter-294615
+#aws eks --region eu-central-1 update-kubeconfig --name aplazTest
+# https://discuss.istio.io/t/building-istio-with-custom-envoy/7239
 
-kubectl apply -f istio/1-istio-init.yaml
+# install istio
+# curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.22.0 TARGET_ARCH=x86_64 sh -
+# curl -sL https://istio.io/downloadIstioctl | sh -
+export PATH=$HOME/.istioctl/bin:$PATH
 
-sleep 20
+cd istio-1.22.0
 
-kubectl apply -f istio/2-istio-minikube.yaml
-kubectl apply -f istio/3-kiali-secret.yaml
+export PATH=$PWD/bin:$PATH
+istioctl proxy-status
 
-kubectl apply -f kubernetes-cluster/multicluster-gke/apps/online-boutique/kubernetes-manifests/namespaces/online-boutique.yaml
-kubectl label ns online-boutique istio-injection=enabled
+istioctl install --set profile=demo -y
 
-kubectl apply -f kubernetes-cluster/multicluster-gke/apps/online-boutique/kubernetes-manifests/services
+kubectl label namespace default istio-injection=enabled
 
-kubectl apply -f kubernetes-cluster/multicluster-gke/apps/online-boutique/kubernetes-manifests/deployments/cluster-0
+cd ..
+
+kubectl apply -f addons/istio/addons
+# sleep 20
+# kubectl apply -f istio/prometheus/extras
+# kubectl apply -f samples/addons
+# kubectl apply -f samples/addons/extras/prometheus-operator.yaml
+
+# kubectl rollout status deployment/kiali -n istio-system
+
+# install prometheus - stack
+# kubectl apply -f helm-charts/prometheus/prometheus-namespace.yaml
+
+# sleep 10
+
+# helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+# helm repo update
+# helm install prometheus prometheus-community/kube-prometheus-stack -n monitoring
+
+
+
+# [AWS] => kubectl port-forward svc/kiali 20001:20001 -n istio-system
+# [AWS] => sudo ssh -i /home/apostolos/Downloads/EksWorkerNodeKeyPair.pem ec2-user@3.120.153.172
+
+# kubectl delete -f istio/1-istio-init.yaml
+
+# sleep 20
+
+# kubectl delete -f istio/2-istio-minikube.yaml
+# kubectl delete -f istio/3-kiali-secret.yaml
+
+# kubectl apply -f kubernetes-cluster/multicluster-gke/apps/online-boutique/kubernetes-manifests/namespaces/online-boutique.yaml
+# kubectl label ns online-boutique istio-injection=enabled
+
+# kubectl apply -f kubernetes-cluster/multicluster-gke/apps/online-boutique/kubernetes-manifests/services
+
+# kubectl apply -f kubernetes-cluster/multicluster-gke/apps/online-boutique/kubernetes-manifests/deployments/cluster-0
+
+# hello world app
+# kubectl label namespace default istio-injection=enabled --overwrite
+
+# kubectl apply -f hello-world/deploy.yaml
+# kubectl apply -f hello-world/gateway.yaml
+# kubectl apply -f hello-world/virtual-svc.yaml
+# kubectl apply -f hello-world/rule.yaml
+
+
+# gcloud beta container --project "lively-shelter-294615" clusters create "cluster-1" --no-enable-basic-auth --cluster-version "1.28.8-gke.1095000" --release-channel "regular" --machine-type "n2-standard-2" --image-type "COS_CONTAINERD" --disk-type "pd-balanced" --disk-size "30" --metadata disable-legacy-endpoints=true --scopes "https://www.googleapis.com/auth/devstorage.read_only","https://www.googleapis.com/auth/logging.write","https://www.googleapis.com/auth/monitoring","https://www.googleapis.com/auth/servicecontrol","https://www.googleapis.com/auth/service.management.readonly","https://www.googleapis.com/auth/trace.append" --num-nodes "2" --logging=SYSTEM,WORKLOAD --monitoring=SYSTEM --enable-ip-alias --network "projects/lively-shelter-294615/global/networks/default" --subnetwork "projects/lively-shelter-294615/regions/europe-west8/subnetworks/default" --no-enable-intra-node-visibility --default-max-pods-per-node "110" --security-posture=standard --workload-vulnerability-scanning=disabled --no-enable-master-authorized-networks --addons HorizontalPodAutoscaling,HttpLoadBalancing,GcePersistentDiskCsiDriver --enable-autoupgrade --enable-autorepair --max-surge-upgrade 1 --max-unavailable-upgrade 0 --binauthz-evaluation-mode=DISABLED --enable-managed-prometheus --enable-shielded-nodes --node-locations "europe-west8-a","europe-west8-c"

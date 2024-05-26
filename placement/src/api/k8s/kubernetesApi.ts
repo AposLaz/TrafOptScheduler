@@ -188,6 +188,31 @@ class KubernetesApi {
     }
   }
 
+  async getReplicaPodsByDeployment(
+    deployment: string,
+    namespace: string
+  ): Promise<string[] | undefined> {
+    try {
+      const command = `kubectl get pods -l app=${deployment} -n ${namespace} -o json | jq -r '[.items[].metadata.name] | join(" ")'`;
+      const { stdout } = await promisifiedExecFile("bash", ["-c", command]);
+
+      const arrayPods = stdout.split(" ");
+
+      // remove newline from last child
+      arrayPods[arrayPods.length - 1] = arrayPods[arrayPods.length - 1].replace(
+        /\n$/,
+        ""
+      );
+
+      console.log(arrayPods);
+      return arrayPods;
+    } catch (e: unknown) {
+      const error = e as Error;
+      console.error("stderr:", error.message);
+      return undefined;
+    }
+  }
+
   async getPodsByService(
     service: string,
     namespace: string
@@ -200,6 +225,55 @@ class KubernetesApi {
         .split(" ")
         .map((pod) => pod.replace("pod/", ""));
       return arrayPods;
+    } catch (e: unknown) {
+      const error = e as Error;
+      console.error("stderr:", error.message);
+      return undefined;
+    }
+  }
+
+  async getPodIp(namespace: string, pod: string) {
+    try {
+      const command = `kubectl get pod -o wide -n ${namespace} | grep -E '${pod} .*Running' | awk '{print $6}'`;
+      const { stdout } = await promisifiedExecFile("bash", ["-c", command]);
+
+      return stdout;
+    } catch (e: unknown) {
+      const error = e as Error;
+      console.error("stderr:", error.message);
+      return undefined;
+    }
+  }
+
+  async getClusterRegion(): Promise<string | undefined> {
+    try {
+      const command = `kubectl get nodes -o json | jq -r '.items[0].metadata.labels["topology.kubernetes.io/region"]'`;
+      const { stdout } = await promisifiedExecFile("bash", ["-c", command]);
+
+      return stdout.replace(/\n$/, "");
+    } catch (e: unknown) {
+      const error = e as Error;
+      console.error("stderr:", error.message);
+      return undefined;
+    }
+  }
+
+  async getZoneByNodeByPod(
+    pod: string,
+    namespace: string
+  ): Promise<string | undefined> {
+    try {
+      const command_1 = `kubectl get pod ${pod} -n ${namespace} -o=jsonpath='{.spec.nodeName}'`;
+      const node = await promisifiedExecFile("bash", ["-c", command_1]);
+
+      if (node.stdout) {
+        const command_2 = `kubectl get node ${node.stdout} -o json | jq -r '.metadata.labels["topology.kubernetes.io/zone"]' `;
+        const zone = await promisifiedExecFile("bash", ["-c", command_2]);
+
+        return zone.stdout.replace(/\n$/, "");
+      }
+
+      return undefined;
     } catch (e: unknown) {
       const error = e as Error;
       console.error("stderr:", error.message);
@@ -222,9 +296,12 @@ class KubernetesApi {
     }
   }
 
-  async getIstioExternalIp(): Promise<string | undefined> {
+  async getExternalIpBySvc(
+    svc: string,
+    ns: string
+  ): Promise<string | undefined> {
     try {
-      const command = `kubectl get svc -n istio-system --selector=app=istio-ingressgateway \
+      const command = `kubectl get svc -n ${ns} --selector=app=${svc} \
        --output=jsonpath='{.items[*].status.loadBalancer.ingress[0].ip}'`;
       const { stdout } = await promisifiedExecFile("bash", ["-c", command]);
 
@@ -236,17 +313,69 @@ class KubernetesApi {
     }
   }
 
+  async createResource(yamlFile: string, ns: string): Promise<void> {
+    try {
+      const command = `kubectl apply -f ${yamlFile} -n ${ns}`;
+      await promisifiedExecFile("bash", ["-c", command]);
+    } catch (e: unknown) {
+      const error = e as Error;
+      console.error("stderr:", error.message);
+      return undefined;
+    }
+  }
+
   async addLabelToPod(pod: string, namespace: string, label: string) {
     try {
-      const command = `kubectl label pods ${pod} ${label} -n ${namespace}`;
+      const command = `kubectl label pods ${pod} ${label} -n ${namespace} --overwrite`;
       await promisifiedExecFile("bash", ["-c", command]);
     } catch (e: unknown) {
       const error = e as Error;
       console.error("stderr:", error.message);
     }
   }
+
+  //SVC is the Service sudo iptables -t nat -nvL KUBE-SERVICES | grep "default/hello-aplaz" | awk '{print $3}' aplaz-578577fb77-zssmj
+  async getSVC(namespace: string, service: string) {
+    const command = `sudo iptables -t nat -nvL KUBE-SERVICES | grep "${namespace}/${service}" | awk '{print $3}'`;
+    return command;
+  }
+
+  //sudo iptables -t nat -nvL KUBE-SVC-2V2EITAI4HSC3SPS | awk '{print $3}' | sed  '1,2d'
+  async getSEP(ipTableSvc: string) {
+    const command = `sudo iptables -t nat -nvL ${ipTableSvc} | awk '{print $3}' | sed  '1,2d'`;
+    return command;
+  }
+
+  //sudo iptables -t nat -nvL KUBE-SEP-SVNJUGJNCVPTX3I2 | awk '{print $8}' | sed -n '3p'
+  async getSEPsIP(sep: string) {
+    const command = `sudo iptables -t nat -nvL ${sep} | awk '{print $8}' | sed -n '3p'`;
+    return command;
+  }
+
+  async setRatio(svc: string, sep: string, ratio: number) {
+    const command = `sudo iptables -t nat -I ${svc} 1 -s 0.0.0.0/0 -j ${sep} -m statistic --mode random --probability ${ratio}`;
+    return command;
+  }
 }
 
 const kubernetesApi = new KubernetesApi();
 
 export default kubernetesApi;
+
+//sudo iptables -A KUBE-SVC-2V2EITAI4HSC3SPS -m comment --comment "default/hello-aplaz" -m statistic --mode random --probability 1 -j KUBE-SEP-AB37MNUEEMA4EJ5J
+//sudo iptables -t nat -R KUBE-SVC-2V2EITAI4HSC3SPS 1 -s 0.0.0.0/0 -j KUBE-SEP-AB37MNUEEMA4EJ5J -m statistic --mode random --probability 1
+
+//sudo iptables -t nat -nvL KUBE-SERVICES | grep "default/hello-aplaz" | awk '{print $3}'
+//sudo iptables -t nat -nvL KUBE-SVC-2V2EITAI4HSC3SPS | awk '{print $3}' | sed  '1,2d'
+
+//sudo iptables -t nat -nvL KUBE-SEP-4VQUIH5RWDMWGOKL | awk '{print $8}' | sed -n '3p'    //YES 172.31.26.140
+//sudo iptables -t nat -nvL KUBE-SEP-VD2HBEKDHMG4BP6W | awk '{print $8}' | sed -n '3p'    //NO
+//sudo iptables -t nat -nvL KUBE-SEP-LQWJ2HKRSG3MITPI | awk '{print $8}' | sed -n '3p'    //NO
+//sudo iptables -t nat -nvL KUBE-SEP-HQN72BENX4EDUFZU | awk '{print $8}' | sed -n '3p'    //NO
+
+//sudo iptables -t nat -R KUBE-SVC-2V2EITAI4HSC3SPS 1 -s 0.0.0.0/0 -j KUBE-SEP-4VQUIH5RWDMWGOKL -m statistic --mode random --probability 1
+//sudo iptables -t nat -R KUBE-SVC-2V2EITAI4HSC3SPS 2 -s 0.0.0.0/0 -j KUBE-SEP-VD2HBEKDHMG4BP6W -m statistic --mode random --probability 0
+//sudo iptables -t nat -R KUBE-SVC-2V2EITAI4HSC3SPS 3 -s 0.0.0.0/0 -j KUBE-SEP-LQWJ2HKRSG3MITPI -m statistic --mode random --probability 0
+//sudo iptables -t nat -R KUBE-SVC-2V2EITAI4HSC3SPS 4 -s 0.0.0.0/0 -j KUBE-SEP-HQN72BENX4EDUFZU -m statistic --mode random --probability 0
+
+//172.31.19.208

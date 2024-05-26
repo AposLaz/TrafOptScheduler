@@ -12,4 +12,6 @@ asm_output/
 asmcli
 
 tests/
-istio/
+istio-1.22.0/
+hello-world/
+destinationRules/*.yaml
