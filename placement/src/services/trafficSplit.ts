@@ -9,14 +9,16 @@ import kubernetesApi from "../api/k8s/kubernetesApi";
 import kialiApi from "../api/kiali/kialiApi";
 import { createLinksForSourceAndTarget } from "../api/kiali/services";
 import { GraphEdges } from "../api/kiali/types";
-import { to2Digits } from "../commons/helper";
+import { to2Digits } from "../common/helper";
 import * as path from "path";
 import * as yaml from "js-yaml";
 import * as fs from "fs";
+import { logger } from "../config/logger";
 
 export const setUpGraphLinks = async (
   ns: string
 ): Promise<ClusterType[][] | undefined> => {
+  logger.info(`[${ns}] fetch pod links from Kiali...`);
   const getKialiGraph = await kialiApi.getGraph(ns);
 
   // no graph exists for kiali
@@ -28,6 +30,9 @@ export const setUpGraphLinks = async (
     return;
   }
 
+  logger.info(
+    `[${ns}] get upstream k8s services and downstream k8s services...`
+  );
   const graph: GraphEdges[] = createLinksForSourceAndTarget(getKialiGraph, ns);
 
   //get distinct services from graph
@@ -40,6 +45,8 @@ export const setUpGraphLinks = async (
   ].filter((gr) => gr); //remove undefined
 
   //get pods by each service
+  logger.info(`[${ns}] for each service find replica pods and zone...`);
+
   const svcPods = await Promise.all(
     distincServices.map(async (svc) => {
       const pods = svc && (await kubernetesApi.getPodsByService(svc, ns));
@@ -80,6 +87,8 @@ export const setUpGraphLinks = async (
   const distincZones = [...new Set(zoneNames)];
 
   const clusterUmDmPods: ClusterType[][] = [];
+
+  logger.info(`[${ns}] for each pod define upstream and downstream pods...`);
 
   graph.forEach((link) => {
     const um = svcPods.find((pod) => pod?.svc === link.source);

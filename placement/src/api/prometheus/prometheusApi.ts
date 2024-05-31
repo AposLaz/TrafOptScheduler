@@ -6,6 +6,7 @@ import {
   PrometheusTransformResults,
 } from "./types";
 import { transformPrometheusSchemaToPodMetric } from "./services";
+import { logger } from "../../config/logger";
 
 const promisifiedExecFile = promisify(execFile);
 
@@ -18,7 +19,7 @@ class PrometheusApi {
       return stdout;
     } catch (e: unknown) {
       const error = e as Error;
-      console.error("stderr:", error.message);
+      logger.error("stderr:", error.message);
       return undefined;
     }
   }
@@ -44,7 +45,7 @@ class PrometheusApi {
       return transformSchemaForPrometheus;
     } catch (e: unknown) {
       const error = e as Error;
-      console.error("axiosErr:", error.message);
+      logger.error("axiosErr:", error.message);
       return undefined;
     }
   }
@@ -70,7 +71,7 @@ class PrometheusApi {
       return transformSchemaForPrometheus;
     } catch (e: unknown) {
       const error = e as Error;
-      console.error("axiosErr:", error.message);
+      logger.error("axiosErr:", error.message);
       return undefined;
     }
   }

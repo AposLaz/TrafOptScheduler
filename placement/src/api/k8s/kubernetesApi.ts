@@ -3,8 +3,9 @@ import { execFile } from "node:child_process";
 import {
   createArrayFromStringWithNewLine,
   createArrayFromStringWithSpace,
-} from "../../commons/helper";
+} from "../../common/helper";
 import { DeployList, DeploymentType } from "./types";
+import { logger } from "../../config/logger";
 
 const promisifiedExecFile = promisify(execFile);
 
@@ -37,7 +38,7 @@ class KubernetesApi {
       return results;
     } catch (e: unknown) {
       const error = e as Error;
-      console.error("stderr:", error.message);
+      logger.error("stderr:", error.message);
       return undefined;
     }
   }
@@ -48,7 +49,7 @@ class KubernetesApi {
       await promisifiedExecFile("bash", ["-c", command]);
     } catch (e: unknown) {
       const error = e as Error;
-      console.error("stderr:", error.message);
+      logger.error("stderr:", error.message);
       throw new Error("[ERROR] => Switch Context from K8s API");
     }
   }
@@ -61,7 +62,7 @@ class KubernetesApi {
       return results;
     } catch (e: unknown) {
       const error = e as Error;
-      console.error("stderr:", error.message);
+      logger.error("stderr:", error.message);
       return undefined;
     }
   }
@@ -78,7 +79,7 @@ class KubernetesApi {
       return results;
     } catch (e: unknown) {
       const error = e as Error;
-      console.error("stderr:", error.message);
+      logger.error("stderr:", error.message);
       return undefined;
     }
   }
@@ -94,7 +95,7 @@ class KubernetesApi {
       return json.items;
     } catch (e: unknown) {
       const error = e as Error;
-      console.error("stderr:", error.message);
+      logger.error("stderr:", error.message);
       return undefined;
     }
   }
@@ -115,7 +116,7 @@ class KubernetesApi {
       return results;
     } catch (e: unknown) {
       const error = e as Error;
-      console.error("stderr:", error.message);
+      logger.error("stderr:", error.message);
       return undefined;
     }
   }
@@ -141,7 +142,7 @@ class KubernetesApi {
       return numberResult;
     } catch (e: unknown) {
       const error = e as Error;
-      console.error("stderr:", error.message);
+      logger.error("stderr:", error.message);
       return undefined;
     }
   }
@@ -167,7 +168,7 @@ class KubernetesApi {
       return numberResult;
     } catch (e: unknown) {
       const error = e as Error;
-      console.error("stderr:", error.message);
+      logger.error("stderr:", error.message);
       return undefined;
     }
   }
@@ -183,7 +184,7 @@ class KubernetesApi {
       return stdout;
     } catch (e: unknown) {
       const error = e as Error;
-      console.error("stderr:", error.message);
+      logger.error("stderr:", error.message);
       return undefined;
     }
   }
@@ -204,11 +205,11 @@ class KubernetesApi {
         ""
       );
 
-      console.log(arrayPods);
+      logger.info(arrayPods);
       return arrayPods;
     } catch (e: unknown) {
       const error = e as Error;
-      console.error("stderr:", error.message);
+      logger.error("stderr:", error.message);
       return undefined;
     }
   }
@@ -227,7 +228,7 @@ class KubernetesApi {
       return arrayPods;
     } catch (e: unknown) {
       const error = e as Error;
-      console.error("stderr:", error.message);
+      logger.error("stderr:", error.message);
       return undefined;
     }
   }
@@ -240,7 +241,7 @@ class KubernetesApi {
       return stdout;
     } catch (e: unknown) {
       const error = e as Error;
-      console.error("stderr:", error.message);
+      logger.error("stderr:", error.message);
       return undefined;
     }
   }
@@ -253,7 +254,7 @@ class KubernetesApi {
       return stdout.replace(/\n$/, "");
     } catch (e: unknown) {
       const error = e as Error;
-      console.error("stderr:", error.message);
+      logger.error("stderr:", error.message);
       return undefined;
     }
   }
@@ -276,7 +277,7 @@ class KubernetesApi {
       return undefined;
     } catch (e: unknown) {
       const error = e as Error;
-      console.error("stderr:", error.message);
+      logger.error("stderr:", error.message);
       return undefined;
     }
   }
@@ -291,7 +292,7 @@ class KubernetesApi {
       return stdout;
     } catch (e: unknown) {
       const error = e as Error;
-      console.error("stderr:", error.message);
+      logger.error("stderr:", error.message);
       return undefined;
     }
   }
@@ -308,7 +309,7 @@ class KubernetesApi {
       return stdout;
     } catch (e: unknown) {
       const error = e as Error;
-      console.error("stderr:", error.message);
+      logger.error("stderr:", error.message);
       return undefined;
     }
   }
@@ -319,7 +320,7 @@ class KubernetesApi {
       await promisifiedExecFile("bash", ["-c", command]);
     } catch (e: unknown) {
       const error = e as Error;
-      console.error("stderr:", error.message);
+      logger.error("stderr:", error.message);
       return undefined;
     }
   }
@@ -330,7 +331,7 @@ class KubernetesApi {
       await promisifiedExecFile("bash", ["-c", command]);
     } catch (e: unknown) {
       const error = e as Error;
-      console.error("stderr:", error.message);
+      logger.error("stderr:", error.message);
     }
   }
 

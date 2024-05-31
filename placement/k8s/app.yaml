@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pod-controller
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pod-controller
+  template:
+    metadata:
+      labels:
+        app: pod-controller
+    spec:
+      containers:
+      - name: pod-controller
+        image: your-docker-repo/pod-controller:latest
+        imagePullPolicy: Always
+      serviceAccountName: pod-controller-sa

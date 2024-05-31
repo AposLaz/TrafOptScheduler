@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import kubernetesApi from "./api/k8s/kubernetesApi";
+import { logger } from "./config/logger";
 import { gkeSetupConfigs } from "./config/setup";
 import {
   setUpGraphLinks,
@@ -6,6 +8,7 @@ import {
   trafficAllocation,
 } from "./services/trafficSplit";
 import { SetupGkeConfigs } from "./types";
+import { setupWatchers } from "./watchers";
 // import { getK8sData } from "./getK8sData";
 
 /**
@@ -36,14 +39,14 @@ const setTrafficSplit = async (region: string) => {
 
   const links = await setUpGraphLinks(ns);
   if (!links) {
-    console.error("There is not graph for this namespace");
+    logger.error("There is not graph for this namespace");
     return;
   }
 
   const trafficAllocPerLink = links.map((clusterPods) =>
     trafficAllocation(clusterPods)
   );
-  console.log(JSON.stringify(trafficAllocPerLink, null, 2));
+  logger.info(JSON.stringify(trafficAllocPerLink, null, 2));
   setupDestinationRulesPerZone(trafficAllocPerLink, ns, region);
 };
 
@@ -65,9 +68,9 @@ const initSetup = async () => {
 
     await setTrafficSplit(currentRegion);
     await initPlacement();
-  } catch (error) {
-    console.error("Error during setup:", error);
+  } catch (error: unknown) {
+    logger.error("Error during setup:", error);
   }
 };
 
-initSetup();
+setupWatchers();

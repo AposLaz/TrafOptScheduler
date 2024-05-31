@@ -21,3 +21,6 @@ export const convertRAMtoGB = (ram: string): number => {
 };
 
 export const to2Digits = (expr: number): number => Number(expr.toFixed(2));
+
+export const sleep = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));

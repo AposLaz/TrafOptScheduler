@@ -6,7 +6,7 @@ const requiredEnvVariables: Array<string> = ["ALL_CLUSTERS_IP", "KIALI_PORT"];
 
 requiredEnvVariables.forEach((envVarName: string) => {
   if (!process.env[envVarName]) {
-    throw new Error(`Environment variable ${envVarName} is missing`);
+    //throw new Error(`Environment variable ${envVarName} is missing`);
   }
 });
 
