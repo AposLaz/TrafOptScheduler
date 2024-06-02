@@ -4,14 +4,10 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'placement/**'
 
   pull_request:
     branches:
       - main
-    paths:
-      - 'placement/**'
 
 jobs:
   ci:
