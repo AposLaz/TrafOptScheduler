@@ -50,5 +50,5 @@ EXPOSE 3000
 CMD ["node", "dist/index.js"]
 
 
-# docker build -t alazidis/lpa-controller:0.0.2 --file ./.docker/Dockerfile --target production . --no-cache
+# docker build -t alazidis/lpa-controller:0.0.2 --file ./.docker/Dockerfile --target production placement --no-cache
 # docker push alazidis/lpa-controller:0.0.2
