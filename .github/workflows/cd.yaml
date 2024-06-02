@@ -10,7 +10,7 @@ jobs:
 
         steps:
             - uses: actions/checkout@v3
-            - uses: './.github/actions/build-dockerfile'
+            - uses: './.github/actions'
               with:
                   docker-username: ${{ secrets.DOCKER_USERNAME }}
                   docker-password: ${{ secrets.DOCKER_PASSWORD }}
