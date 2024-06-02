@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import kubernetesApi from './api/k8s/kubernetesApi';
+import { app } from './app';
+import { Config } from './config/config';
 import { logger } from './config/logger';
 import { gkeSetupConfigs } from './config/setup';
 import {
@@ -9,6 +11,23 @@ import {
 } from './services/trafficSplit';
 import { SetupGkeConfigs } from './types';
 import { setupWatchers } from './watchers';
+
+const initRestApi = async () => {
+  app.listen(Config.APP_PORT, () => {
+    logger.info(`LPA api is running in port: ${Config.APP_PORT}`);
+  });
+};
+
+initRestApi().catch((error: unknown) => {
+  const err = error as Error;
+  logger.error(`Could not setup api ${err.message}`);
+});
+
+setupWatchers().catch((error: unknown) => {
+  const err = error as Error;
+  logger.error(`Could not setup watchers ${err.message}`);
+});
+
 // import { getK8sData } from "./getK8sData";
 
 /**
@@ -72,5 +91,3 @@ const initSetup = async () => {
     logger.error('Error during setup:', error);
   }
 };
-
-setupWatchers();
