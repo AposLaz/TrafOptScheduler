@@ -28,10 +28,13 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
+        working-directory: placement
         run: npm install
 
       - name: TS check
+        working-directory: placement
         run: npm run ts-check
 
       - name: Linting
+        working-directory: placement
         run: npm run lint
