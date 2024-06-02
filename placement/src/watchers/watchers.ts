@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { sleep } from "../common/helper";
-import { logger } from "../config/logger";
-import { podHandler, namespaceHandler } from "./handlers";
-import * as k8s from "@kubernetes/client-node";
-import { PodWatcherConfigs } from "./types";
+import { sleep } from '../common/helper';
+import { logger } from '../config/logger';
+import { podHandler, namespaceHandler } from './handlers';
+import * as k8s from '@kubernetes/client-node';
+import { PodWatcherConfigs } from './types';
 
 // this watcher is responsible for find added or deleted pods
 // watcher has any type
@@ -34,7 +34,7 @@ export const podsWatcher = async (
       (err: unknown) => {
         const error = err as Error;
         // if watcher just aborted manually then there is not an error
-        if (error.message !== "aborted") {
+        if (error.message !== 'aborted') {
           logger.error(`Error occurred while watching namespaces: ${error}`);
           //reinitializePodWatcher(k8sClient, k8sApi); // Reinitialize watcher on error
         } else {
@@ -69,7 +69,7 @@ export const namespaceWatcher = async (
 
   try {
     await watch.watch(
-      "/api/v1/namespaces",
+      '/api/v1/namespaces',
       { resourceVersion: startTime },
       (type: string, obj: k8s.V1Namespace) => {
         try {
@@ -84,7 +84,7 @@ export const namespaceWatcher = async (
         reinitializeNamespaceWatcher(k8sClient, k8sApi, podWatchersMap); // Reinitialize watcher on error
       }
     );
-    logger.info("Watching all namespaces...");
+    logger.info('Watching all namespaces...');
   } catch (err: unknown) {
     const error = err as k8s.ERROR;
     logger.error(`Failed to set up namespace watch: ${error}`);
@@ -97,12 +97,12 @@ const reinitializeNamespaceWatcher = async (
   k8sApi: k8s.CoreV1Api,
   podWatchersMap: Map<string, any>
 ) => {
-  logger.info("Retrying in 5 seconds...");
+  logger.info('Retrying in 5 seconds...');
   await sleep(5000);
   try {
     // Fetch the latest resource version from the "default" namespace
-    const response = await k8sApi.readNamespace("default"); // this namespace should always exist
-    const resourceVersion = response.body.metadata?.resourceVersion ?? "0";
+    const response = await k8sApi.readNamespace('default'); // this namespace should always exist
+    const resourceVersion = response.body.metadata?.resourceVersion ?? '0';
 
     await namespaceWatcher(k8sClient, resourceVersion, k8sApi, podWatchersMap);
   } catch (error) {

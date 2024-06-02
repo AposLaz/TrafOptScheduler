@@ -1,8 +1,8 @@
-import axios from "axios";
-import { Config } from "../../config/config";
-import { GraphData } from "./types";
-import { setupConfigs } from "../..";
-import { logger } from "../../config/logger";
+import axios from 'axios';
+import { Config } from '../../config/config';
+import { GraphData } from './types';
+import { setupConfigs } from '../..';
+import { logger } from '../../config/logger';
 
 class KialiApi {
   async getGraph(namespace: string) {
@@ -13,7 +13,7 @@ class KialiApi {
       return response.data;
     } catch (e: unknown) {
       const error = e as Error;
-      logger.error("axiosErr:", error);
+      logger.error('axiosErr:', error);
       return undefined;
     }
   }

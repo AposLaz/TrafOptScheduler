@@ -1,16 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // Load the default Kubernetes config (usually in ~/.kube/config)
-import * as k8s from "@kubernetes/client-node";
-import { getK8sClient } from "../config/k8sClient";
-import { namespacesExclude } from "../enums";
-import { namespaceWatcher, podsWatcher } from "./watchers";
-import { logger } from "../config/logger";
+import * as k8s from '@kubernetes/client-node';
+import { getK8sClient } from '../config/k8sClient';
+import { namespacesExclude } from '../enums';
+import { namespaceWatcher, podsWatcher } from './watchers';
+import { logger } from '../config/logger';
 
 // add watcher for all pods here
 const podWatchersMap = new Map<string, any>();
 
 export const setupWatchers = async (): Promise<void> => {
   const k8sClient = getK8sClient();
+  if (!k8sClient) return;
   const k8sApi = k8sClient.makeApiClient(k8s.CoreV1Api);
 
   // get all namespaces for first time
@@ -20,11 +21,11 @@ export const setupWatchers = async (): Promise<void> => {
     .map((ns) => ns.metadata?.name)
     .filter(
       (nsName): nsName is string =>
-        typeof nsName === "string" && !namespacesExclude.includes(nsName)
+        typeof nsName === 'string' && !namespacesExclude.includes(nsName)
     );
 
   // time in which we start see namespaces
-  const startTime = response.body.metadata?.resourceVersion ?? "0";
+  const startTime = response.body.metadata?.resourceVersion ?? '0';
 
   // setup namespace watcher => for each new namespace create a new pod watcher. delete pod watcher for each deleted namespace
   logger.info(`[WATCHERS NAMESPACES] => setup [namespaces] watcher`);

@@ -1,4 +1,4 @@
-import { GraphData, GraphEdges } from "./types";
+import { GraphData, GraphEdges } from './types';
 
 export const createLinksForSourceAndTarget = (
   graph: GraphData,
@@ -8,7 +8,7 @@ export const createLinksForSourceAndTarget = (
   const graphNodesServices = graph.elements.nodes
     .filter(
       (node) =>
-        node.data.nodeType === "service" && node.data.namespace === namespace
+        node.data.nodeType === 'service' && node.data.namespace === namespace
     )
     .map((node) => ({
       app: node.data.service,
@@ -19,7 +19,7 @@ export const createLinksForSourceAndTarget = (
   const graphNodesApps = graph.elements.nodes
     .filter(
       (node) =>
-        node.data.nodeType === "app" && node.data.namespace === namespace
+        node.data.nodeType === 'app' && node.data.namespace === namespace
     )
     .map((node) => ({
       app: node.data.app,

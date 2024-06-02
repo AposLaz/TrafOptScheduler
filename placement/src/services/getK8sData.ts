@@ -1,7 +1,7 @@
-import kubernetesApi from "../api/k8s/kubernetesApi";
-import prometheusApi from "../api/prometheus/prometheusApi";
-import { convertCPUtoCores, convertRAMtoGB } from "../common/helper";
-import { Deploys, KubernetesData } from "../types";
+import kubernetesApi from '../api/k8s/kubernetesApi';
+import prometheusApi from '../api/prometheus/prometheusApi';
+import { convertCPUtoCores, convertRAMtoGB } from '../common/helper';
+import { Deploys, KubernetesData } from '../types';
 
 export async function getK8sData(): Promise<KubernetesData[]> {
   try {
@@ -10,12 +10,12 @@ export async function getK8sData(): Promise<KubernetesData[]> {
 
     const kubeContexts = await kubernetesApi.getContextNames();
     if (!kubeContexts) {
-      throw new Error("[ERROR] => fetching context name from K8s API");
+      throw new Error('[ERROR] => fetching context name from K8s API');
     }
 
     await Promise.all(
       kubeContexts.map((context) => {
-        const contextJSON = { context: context, info: [], prometheusIP: "" };
+        const contextJSON = { context: context, info: [], prometheusIP: '' };
         k8sData.push(contextJSON);
       })
     );
@@ -30,7 +30,7 @@ export async function getK8sData(): Promise<KubernetesData[]> {
         await kubernetesApi.getAllNodesForEachContext();
 
       if (!getAllNodesForEachContext) {
-        throw new Error("[ERROR] => fetching nodes name from K8s API");
+        throw new Error('[ERROR] => fetching nodes name from K8s API');
       }
 
       //index of each context in k8sData array
@@ -41,7 +41,7 @@ export async function getK8sData(): Promise<KubernetesData[]> {
 
       if (!prometheusIp) {
         throw new Error(
-          "[ERROR] => fetching prometheus IP from Prometheus API"
+          '[ERROR] => fetching prometheus IP from Prometheus API'
         );
       }
 
@@ -61,7 +61,7 @@ export async function getK8sData(): Promise<KubernetesData[]> {
         await kubernetesApi.getAllNamespacesForDeploys();
 
       if (!getAllDeployNamespaces) {
-        throw new Error("[ERROR] => fetching namespaces from K8s API");
+        throw new Error('[ERROR] => fetching namespaces from K8s API');
       }
 
       await Promise.all(
@@ -72,7 +72,7 @@ export async function getK8sData(): Promise<KubernetesData[]> {
           );
 
           if (!getDeploys) {
-            throw new Error("[ERROR] => fetching deployments from K8s API");
+            throw new Error('[ERROR] => fetching deployments from K8s API');
           }
           //for each namespace get pods cpu usage
           const inUseCPU =
@@ -82,7 +82,7 @@ export async function getK8sData(): Promise<KubernetesData[]> {
             );
 
           if (!inUseCPU) {
-            throw new Error("[ERROR] => fetching inUseCPU from Prometheus API");
+            throw new Error('[ERROR] => fetching inUseCPU from Prometheus API');
           }
 
           const inUseRAM =
@@ -92,7 +92,7 @@ export async function getK8sData(): Promise<KubernetesData[]> {
             );
 
           if (!inUseRAM) {
-            throw new Error("[ERROR] => fetching inUseRAM from Prometheus API");
+            throw new Error('[ERROR] => fetching inUseRAM from Prometheus API');
           }
 
           if (
@@ -113,7 +113,7 @@ export async function getK8sData(): Promise<KubernetesData[]> {
 
                 if (!getNodeForDeploy) {
                   throw new Error(
-                    "[ERROR] => fetching Nodes for Each Deploy from K8s API"
+                    '[ERROR] => fetching Nodes for Each Deploy from K8s API'
                   );
                 }
 
@@ -182,6 +182,6 @@ export async function getK8sData(): Promise<KubernetesData[]> {
     return k8sData;
   } catch (e) {
     console.log(e);
-    throw new Error("[ERROR]=> Running getK8sData function");
+    throw new Error('[ERROR]=> Running getK8sData function');
   }
 }

@@ -4,16 +4,16 @@ import {
   DestinationRuleFromToZones,
   DestinationRuleProps,
   TrafficSummaryPerZone,
-} from "./types";
-import kubernetesApi from "../api/k8s/kubernetesApi";
-import kialiApi from "../api/kiali/kialiApi";
-import { createLinksForSourceAndTarget } from "../api/kiali/services";
-import { GraphEdges } from "../api/kiali/types";
-import { to2Digits } from "../common/helper";
-import * as path from "path";
-import * as yaml from "js-yaml";
-import * as fs from "fs";
-import { logger } from "../config/logger";
+} from './types';
+import kubernetesApi from '../api/k8s/kubernetesApi';
+import kialiApi from '../api/kiali/kialiApi';
+import { createLinksForSourceAndTarget } from '../api/kiali/services';
+import { GraphEdges } from '../api/kiali/types';
+import { to2Digits } from '../common/helper';
+import * as path from 'path';
+import * as yaml from 'js-yaml';
+import * as fs from 'fs';
+import { logger } from '../config/logger';
 
 export const setUpGraphLinks = async (
   ns: string
@@ -52,12 +52,12 @@ export const setUpGraphLinks = async (
       const pods = svc && (await kubernetesApi.getPodsByService(svc, ns));
       if (pods && pods.length > 0 && svc) {
         // Filter out empty or null pods
-        const filteredPods = pods.filter((pod) => pod !== null && pod !== "");
+        const filteredPods = pods.filter((pod) => pod !== null && pod !== '');
 
         // For each non-empty pod, get the zone
         const zonePromises = filteredPods.map(async (pod) => {
           const zone = await kubernetesApi.getZoneByNodeByPod(pod, ns);
-          if (zone && zone !== "") {
+          if (zone && zone !== '') {
             return {
               pod,
               zone,
@@ -306,7 +306,7 @@ export const trafficAllocation = (
     }
   }
   console.log(
-    "======================================================================"
+    '======================================================================'
   );
 
   return clusterReplicaPods;
@@ -320,8 +320,8 @@ export const setupDestinationRulesPerZone = (
   for (const link of trafficPodsAllocation) {
     //create destination rule
     const DestinationRule: DestinationRuleProps = {
-      apiVersion: "networking.istio.io/v1beta1",
-      kind: "DestinationRule",
+      apiVersion: 'networking.istio.io/v1beta1',
+      kind: 'DestinationRule',
       metadata: {
         name: link[0].dmSvc, //in which service will apply the role
       },
@@ -338,8 +338,8 @@ export const setupDestinationRulesPerZone = (
           },
           outlierDetection: {
             consecutive5xxErrors: 100,
-            interval: "1s",
-            baseEjectionTime: "1m",
+            interval: '1s',
+            baseEjectionTime: '1m',
           },
         },
       },
@@ -426,13 +426,13 @@ const applyDestinationRule = async (
   //create yaml from json file
   const yamlStr = yaml.dump(destinationRule);
   //set up path
-  const destRulesPath = path.join(__dirname, "..", "destinationRules");
+  const destRulesPath = path.join(__dirname, '..', 'destinationRules');
   const filePath = path.join(
     destRulesPath,
     `${destinationRule.metadata.name}.yaml`
   );
 
-  fs.writeFileSync(filePath, yamlStr, "utf8");
+  fs.writeFileSync(filePath, yamlStr, 'utf8');
 
   // create destination rule
   await kubernetesApi.createResource(filePath, namespace);

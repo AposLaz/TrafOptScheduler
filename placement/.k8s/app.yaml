@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: pod-controller
-  namespace: kube-system
+  # namespace: kube-system
 spec:
   replicas: 1
   selector:
@@ -14,7 +14,7 @@ spec:
         app: pod-controller
     spec:
       containers:
-      - name: pod-controller
-        image: your-docker-repo/pod-controller:latest
-        imagePullPolicy: Always
-      serviceAccountName: pod-controller-sa
+        - name: pod-controller
+          image: alazidis/lpa-controller:0.0.2
+          imagePullPolicy: Always
+      serviceAccountName: full-access-sa

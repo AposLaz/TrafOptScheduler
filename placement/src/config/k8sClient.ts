@@ -1,4 +1,4 @@
-import * as k8s from "@kubernetes/client-node";
+import * as k8s from '@kubernetes/client-node';
 
 // use Singleton Pattern
 class K8sClientConfig {
@@ -9,7 +9,7 @@ class K8sClientConfig {
   public static getInstance(): k8s.KubeConfig {
     if (!K8sClientConfig.instance) {
       K8sClientConfig.instance = new k8s.KubeConfig();
-      K8sClientConfig.instance.loadFromDefault();
+      K8sClientConfig.instance.loadFromCluster(); // in-cluster loadFromCluster()
     }
     return K8sClientConfig.instance;
   }
@@ -18,7 +18,6 @@ class K8sClientConfig {
 export const getK8sClient = () => {
   try {
     const kc = K8sClientConfig.getInstance();
-    kc.loadFromDefault();
 
     return kc;
   } catch (error: unknown) {

@@ -1,10 +1,10 @@
 export const createArrayFromStringWithNewLine = (str: string) => {
-  const arrayVal = str.trim().split("\n");
+  const arrayVal = str.trim().split('\n');
   return arrayVal;
 };
 
 export const createArrayFromStringWithSpace = (str: string) => {
-  const arrayVal = str.trim().split(" ");
+  const arrayVal = str.trim().split(' ');
   return arrayVal;
 };
 

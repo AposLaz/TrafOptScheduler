@@ -10,7 +10,7 @@
  *
  */
 
-import { to2Digits } from "./helpers";
+import { to2Digits } from './helpers';
 
 type ClusterType = {
   node: string;

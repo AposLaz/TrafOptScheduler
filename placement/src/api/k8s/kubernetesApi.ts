@@ -1,25 +1,25 @@
-import { promisify } from "node:util";
-import { execFile } from "node:child_process";
+import { promisify } from 'node:util';
+import { execFile } from 'node:child_process';
 import {
   createArrayFromStringWithNewLine,
   createArrayFromStringWithSpace,
-} from "../../common/helper";
-import { DeployList, DeploymentType } from "./types";
-import { logger } from "../../config/logger";
+} from '../../common/helper';
+import { DeployList, DeploymentType } from './types';
+import { logger } from '../../config/logger';
 
 const promisifiedExecFile = promisify(execFile);
 
 const kubernetesDefaultNamespaces = [
-  "asm-system",
-  "gke-mcs",
-  "gmp-public",
-  "gmp-system",
-  "ingress-nginx",
-  "istio-gateway",
-  "istio-system",
-  "kube-node-lease",
-  "kube-public",
-  "kube-system",
+  'asm-system',
+  'gke-mcs',
+  'gmp-public',
+  'gmp-system',
+  'ingress-nginx',
+  'istio-gateway',
+  'istio-system',
+  'kube-node-lease',
+  'kube-public',
+  'kube-system',
 ];
 
 class KubernetesApi {
@@ -27,18 +27,18 @@ class KubernetesApi {
   async getContextNames(): Promise<string[] | undefined> {
     //get kube configs
     try {
-      const { stdout } = await promisifiedExecFile("kubectl", [
-        "config",
-        "get-contexts",
-        "-o",
-        "name",
+      const { stdout } = await promisifiedExecFile('kubectl', [
+        'config',
+        'get-contexts',
+        '-o',
+        'name',
       ]);
 
       const results = createArrayFromStringWithNewLine(stdout);
       return results;
     } catch (e: unknown) {
       const error = e as Error;
-      logger.error("stderr:", error.message);
+      logger.error('stderr:', error.message);
       return undefined;
     }
   }
@@ -46,23 +46,23 @@ class KubernetesApi {
   async useContext(context: string) {
     try {
       const command = `kubectl config use-context ${context}`;
-      await promisifiedExecFile("bash", ["-c", command]);
+      await promisifiedExecFile('bash', ['-c', command]);
     } catch (e: unknown) {
       const error = e as Error;
-      logger.error("stderr:", error.message);
-      throw new Error("[ERROR] => Switch Context from K8s API");
+      logger.error('stderr:', error.message);
+      throw new Error('[ERROR] => Switch Context from K8s API');
     }
   }
 
   async getAllNodesForEachContext() {
     try {
       const command = `kubectl get nodes -o=jsonpath='{.items[*].metadata.name}'`;
-      const { stdout } = await promisifiedExecFile("bash", ["-c", command]);
+      const { stdout } = await promisifiedExecFile('bash', ['-c', command]);
       const results = createArrayFromStringWithSpace(stdout);
       return results;
     } catch (e: unknown) {
       const error = e as Error;
-      logger.error("stderr:", error.message);
+      logger.error('stderr:', error.message);
       return undefined;
     }
   }
@@ -70,7 +70,7 @@ class KubernetesApi {
   async getAllNamespacesForDeploys(): Promise<string[] | undefined> {
     try {
       const command = `kubectl get ns -o=jsonpath='{.items[*].metadata.name}'`;
-      const { stdout } = await promisifiedExecFile("bash", ["-c", command]);
+      const { stdout } = await promisifiedExecFile('bash', ['-c', command]);
       const strArray = createArrayFromStringWithSpace(stdout);
       //get only namespaces that are for deploy apps
       const results = strArray.filter(
@@ -79,7 +79,7 @@ class KubernetesApi {
       return results;
     } catch (e: unknown) {
       const error = e as Error;
-      logger.error("stderr:", error.message);
+      logger.error('stderr:', error.message);
       return undefined;
     }
   }
@@ -89,13 +89,13 @@ class KubernetesApi {
   ): Promise<DeploymentType[] | undefined> {
     try {
       const command = `kubectl get deploy -n ${namespace} -o json`;
-      const { stdout } = await promisifiedExecFile("bash", ["-c", command]);
+      const { stdout } = await promisifiedExecFile('bash', ['-c', command]);
       const json: DeployList = JSON.parse(stdout);
 
       return json.items;
     } catch (e: unknown) {
       const error = e as Error;
-      logger.error("stderr:", error.message);
+      logger.error('stderr:', error.message);
       return undefined;
     }
   }
@@ -104,19 +104,19 @@ class KubernetesApi {
     namespace: string
   ): Promise<string[] | undefined> {
     try {
-      const { stdout } = await promisifiedExecFile("kubectl", [
-        "get",
-        "deploy",
-        "-n",
+      const { stdout } = await promisifiedExecFile('kubectl', [
+        'get',
+        'deploy',
+        '-n',
         namespace,
-        "-o=jsonpath={.items[*].metadata.name}",
+        '-o=jsonpath={.items[*].metadata.name}',
       ]);
 
       const results = createArrayFromStringWithSpace(stdout);
       return results;
     } catch (e: unknown) {
       const error = e as Error;
-      logger.error("stderr:", error.message);
+      logger.error('stderr:', error.message);
       return undefined;
     }
   }
@@ -127,7 +127,7 @@ class KubernetesApi {
   ): Promise<number[] | undefined> {
     try {
       const command = `kubectl get deploy ${deploy} -n ${namespace} -o=jsonpath='{range .spec.template.spec.containers[*]}{.resources.requests.cpu}{" "}{.resources.limits.cpu}{" "}{end}'`;
-      const { stdout } = await promisifiedExecFile("bash", ["-c", command]);
+      const { stdout } = await promisifiedExecFile('bash', ['-c', command]);
       const results = createArrayFromStringWithSpace(stdout);
       const numberResult: number[] = [];
       //CPU is in millicores. We want cores so have remove m from the end and div with 1000
@@ -142,7 +142,7 @@ class KubernetesApi {
       return numberResult;
     } catch (e: unknown) {
       const error = e as Error;
-      logger.error("stderr:", error.message);
+      logger.error('stderr:', error.message);
       return undefined;
     }
   }
@@ -153,7 +153,7 @@ class KubernetesApi {
   ): Promise<number[] | undefined> {
     try {
       const command = `kubectl get deploy ${deploy} -n ${namespace} -o=jsonpath='{range .spec.template.spec.containers[*]}{.resources.requests.memory}{" "}{.resources.limits.memory}{" "}{end}'`;
-      const { stdout } = await promisifiedExecFile("bash", ["-c", command]);
+      const { stdout } = await promisifiedExecFile('bash', ['-c', command]);
       const results = createArrayFromStringWithSpace(stdout);
       const numberResult: number[] = [];
       //CPU is in millicores. We want cores so have remove m from the end and div with 1000
@@ -168,7 +168,7 @@ class KubernetesApi {
       return numberResult;
     } catch (e: unknown) {
       const error = e as Error;
-      logger.error("stderr:", error.message);
+      logger.error('stderr:', error.message);
       return undefined;
     }
   }
@@ -179,12 +179,12 @@ class KubernetesApi {
   ): Promise<string | undefined> {
     try {
       const command = `kubectl get pods -n ${namespace} -o=jsonpath='{.items[?(@.metadata.labels.app=="${deploy}")].spec.nodeName}'`;
-      const { stdout } = await promisifiedExecFile("bash", ["-c", command]);
+      const { stdout } = await promisifiedExecFile('bash', ['-c', command]);
 
       return stdout;
     } catch (e: unknown) {
       const error = e as Error;
-      logger.error("stderr:", error.message);
+      logger.error('stderr:', error.message);
       return undefined;
     }
   }
@@ -195,21 +195,21 @@ class KubernetesApi {
   ): Promise<string[] | undefined> {
     try {
       const command = `kubectl get pods -l app=${deployment} -n ${namespace} -o json | jq -r '[.items[].metadata.name] | join(" ")'`;
-      const { stdout } = await promisifiedExecFile("bash", ["-c", command]);
+      const { stdout } = await promisifiedExecFile('bash', ['-c', command]);
 
-      const arrayPods = stdout.split(" ");
+      const arrayPods = stdout.split(' ');
 
       // remove newline from last child
       arrayPods[arrayPods.length - 1] = arrayPods[arrayPods.length - 1].replace(
         /\n$/,
-        ""
+        ''
       );
 
       logger.info(arrayPods);
       return arrayPods;
     } catch (e: unknown) {
       const error = e as Error;
-      logger.error("stderr:", error.message);
+      logger.error('stderr:', error.message);
       return undefined;
     }
   }
@@ -220,15 +220,15 @@ class KubernetesApi {
   ): Promise<string[] | undefined> {
     try {
       const command = `kubectl get ep ${service} -n ${namespace} -o=jsonpath='{.subsets[*].addresses[*].ip}' | tr ' ' '\n' | xargs -I % kubectl get pods -o=name --field-selector=status.podIP=% -n ${namespace} | tr '\n' ' '`;
-      const { stdout } = await promisifiedExecFile("bash", ["-c", command]);
+      const { stdout } = await promisifiedExecFile('bash', ['-c', command]);
       const arrayPods = stdout
         .trim()
-        .split(" ")
-        .map((pod) => pod.replace("pod/", ""));
+        .split(' ')
+        .map((pod) => pod.replace('pod/', ''));
       return arrayPods;
     } catch (e: unknown) {
       const error = e as Error;
-      logger.error("stderr:", error.message);
+      logger.error('stderr:', error.message);
       return undefined;
     }
   }
@@ -236,12 +236,12 @@ class KubernetesApi {
   async getPodIp(namespace: string, pod: string) {
     try {
       const command = `kubectl get pod -o wide -n ${namespace} | grep -E '${pod} .*Running' | awk '{print $6}'`;
-      const { stdout } = await promisifiedExecFile("bash", ["-c", command]);
+      const { stdout } = await promisifiedExecFile('bash', ['-c', command]);
 
       return stdout;
     } catch (e: unknown) {
       const error = e as Error;
-      logger.error("stderr:", error.message);
+      logger.error('stderr:', error.message);
       return undefined;
     }
   }
@@ -249,12 +249,12 @@ class KubernetesApi {
   async getClusterRegion(): Promise<string | undefined> {
     try {
       const command = `kubectl get nodes -o json | jq -r '.items[0].metadata.labels["topology.kubernetes.io/region"]'`;
-      const { stdout } = await promisifiedExecFile("bash", ["-c", command]);
+      const { stdout } = await promisifiedExecFile('bash', ['-c', command]);
 
-      return stdout.replace(/\n$/, "");
+      return stdout.replace(/\n$/, '');
     } catch (e: unknown) {
       const error = e as Error;
-      logger.error("stderr:", error.message);
+      logger.error('stderr:', error.message);
       return undefined;
     }
   }
@@ -265,19 +265,19 @@ class KubernetesApi {
   ): Promise<string | undefined> {
     try {
       const command_1 = `kubectl get pod ${pod} -n ${namespace} -o=jsonpath='{.spec.nodeName}'`;
-      const node = await promisifiedExecFile("bash", ["-c", command_1]);
+      const node = await promisifiedExecFile('bash', ['-c', command_1]);
 
       if (node.stdout) {
         const command_2 = `kubectl get node ${node.stdout} -o json | jq -r '.metadata.labels["topology.kubernetes.io/zone"]' `;
-        const zone = await promisifiedExecFile("bash", ["-c", command_2]);
+        const zone = await promisifiedExecFile('bash', ['-c', command_2]);
 
-        return zone.stdout.replace(/\n$/, "");
+        return zone.stdout.replace(/\n$/, '');
       }
 
       return undefined;
     } catch (e: unknown) {
       const error = e as Error;
-      logger.error("stderr:", error.message);
+      logger.error('stderr:', error.message);
       return undefined;
     }
   }
@@ -288,11 +288,11 @@ class KubernetesApi {
   ): Promise<string | undefined> {
     try {
       const command = `kubectl get pod ${pod} -n ${namespace} -o=jsonpath='{.spec.nodeName}'`;
-      const { stdout } = await promisifiedExecFile("bash", ["-c", command]);
+      const { stdout } = await promisifiedExecFile('bash', ['-c', command]);
       return stdout;
     } catch (e: unknown) {
       const error = e as Error;
-      logger.error("stderr:", error.message);
+      logger.error('stderr:', error.message);
       return undefined;
     }
   }
@@ -304,12 +304,12 @@ class KubernetesApi {
     try {
       const command = `kubectl get svc -n ${ns} --selector=app=${svc} \
        --output=jsonpath='{.items[*].status.loadBalancer.ingress[0].ip}'`;
-      const { stdout } = await promisifiedExecFile("bash", ["-c", command]);
+      const { stdout } = await promisifiedExecFile('bash', ['-c', command]);
 
       return stdout;
     } catch (e: unknown) {
       const error = e as Error;
-      logger.error("stderr:", error.message);
+      logger.error('stderr:', error.message);
       return undefined;
     }
   }
@@ -317,10 +317,10 @@ class KubernetesApi {
   async createResource(yamlFile: string, ns: string): Promise<void> {
     try {
       const command = `kubectl apply -f ${yamlFile} -n ${ns}`;
-      await promisifiedExecFile("bash", ["-c", command]);
+      await promisifiedExecFile('bash', ['-c', command]);
     } catch (e: unknown) {
       const error = e as Error;
-      logger.error("stderr:", error.message);
+      logger.error('stderr:', error.message);
       return undefined;
     }
   }
@@ -328,10 +328,10 @@ class KubernetesApi {
   async addLabelToPod(pod: string, namespace: string, label: string) {
     try {
       const command = `kubectl label pods ${pod} ${label} -n ${namespace} --overwrite`;
-      await promisifiedExecFile("bash", ["-c", command]);
+      await promisifiedExecFile('bash', ['-c', command]);
     } catch (e: unknown) {
       const error = e as Error;
-      logger.error("stderr:", error.message);
+      logger.error('stderr:', error.message);
     }
   }
 

@@ -1,12 +1,12 @@
-import { promisify } from "node:util";
-import { execFile } from "node:child_process";
-import axios from "axios";
+import { promisify } from 'node:util';
+import { execFile } from 'node:child_process';
+import axios from 'axios';
 import {
   PrometheusFetchData_CPU_RAM,
   PrometheusTransformResults,
-} from "./types";
-import { transformPrometheusSchemaToPodMetric } from "./services";
-import { logger } from "../../config/logger";
+} from './types';
+import { transformPrometheusSchemaToPodMetric } from './services';
+import { logger } from '../../config/logger';
 
 const promisifiedExecFile = promisify(execFile);
 
@@ -14,12 +14,12 @@ class PrometheusApi {
   async getPrometheusIpAddress(): Promise<string | undefined> {
     try {
       const command = `kubectl get ingress prometheus-ingress -n istio-system -o jsonpath='{.status.loadBalancer.ingress[0].ip}'`;
-      const { stdout } = await promisifiedExecFile("bash", ["-c", command]);
+      const { stdout } = await promisifiedExecFile('bash', ['-c', command]);
 
       return stdout;
     } catch (e: unknown) {
       const error = e as Error;
-      logger.error("stderr:", error.message);
+      logger.error('stderr:', error.message);
       return undefined;
     }
   }
@@ -45,7 +45,7 @@ class PrometheusApi {
       return transformSchemaForPrometheus;
     } catch (e: unknown) {
       const error = e as Error;
-      logger.error("axiosErr:", error.message);
+      logger.error('axiosErr:', error.message);
       return undefined;
     }
   }
@@ -71,7 +71,7 @@ class PrometheusApi {
       return transformSchemaForPrometheus;
     } catch (e: unknown) {
       const error = e as Error;
-      logger.error("axiosErr:", error.message);
+      logger.error('axiosErr:', error.message);
       return undefined;
     }
   }

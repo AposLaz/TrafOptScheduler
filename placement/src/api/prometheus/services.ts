@@ -1,4 +1,4 @@
-import { PrometheusResults, PrometheusTransformResults } from "./types";
+import { PrometheusResults, PrometheusTransformResults } from './types';
 
 export async function transformPrometheusSchemaToPodMetric(
   results: PrometheusResults[]

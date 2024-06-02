@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import * as k8s from "@kubernetes/client-node";
-import { logger } from "../../config/logger";
-import { PodWatcherConfigs } from "../types";
-import { podsWatcher } from "../watchers";
+import * as k8s from '@kubernetes/client-node';
+import { logger } from '../../config/logger';
+import { PodWatcherConfigs } from '../types';
+import { podsWatcher } from '../watchers';
 
 export const namespaceHandler = (
   type: string,
@@ -11,7 +11,7 @@ export const namespaceHandler = (
   podWatchersMap: Map<string, any>
 ) => {
   const namespace = obj.metadata?.name as string;
-  if (type === "ADDED") {
+  if (type === 'ADDED') {
     logger.info(`New Namespace Added: ${namespace}`);
 
     podsWatcher(
@@ -28,7 +28,7 @@ export const namespaceHandler = (
           `Failed to setup pod watcher for namespace ${namespace}: ${err}`
         );
       });
-  } else if (type === "DELETED") {
+  } else if (type === 'DELETED') {
     logger.info(`Namespace Deleted: ${namespace}`);
     // get pod watcher for specific namespace
     const watchRequest = podWatchersMap.get(namespace);

@@ -1,2 +1,2 @@
-export * from "./namespacesHandler";
-export * from "./podHandler";
+export * from './namespacesHandler';
+export * from './podHandler';
