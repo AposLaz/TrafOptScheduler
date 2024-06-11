@@ -8,7 +8,7 @@ export const gkeSetupConfigs = async (): Promise<SetupGkeConfigs> => {
   );
 
   if (!istioIP) {
-    throw new Error("[gkeSetupConfigs]=> Can't fetch istio exteranl ip");
+    throw new Error("[gkeSetupConfigs]=> Can't fetch istio external ip");
   }
 
   const kialiIP = await kubernetesApi.getExternalIpBySvc(
@@ -16,10 +16,22 @@ export const gkeSetupConfigs = async (): Promise<SetupGkeConfigs> => {
     'istio-system'
   );
 
-  if (!kialiIP)
-    throw new Error("[gkeSetupConfigs]=> Can't fetch kiali exteranl ip");
+  if (!kialiIP) {
+    throw new Error("[gkeSetupConfigs]=> Can't fetch kiali external ip");
+  }
+
+  const prometheusIP = await kubernetesApi.getExternalIpBySvc(
+    'prometheus',
+    'istio-system'
+  );
+
+  if (!prometheusIP) {
+    throw new Error("[gkeSetupConfigs]=> Can't fetch prometheus external ip");
+  }
+
   return {
     istioIP,
     kialiIP,
+    prometheusIP,
   };
 };

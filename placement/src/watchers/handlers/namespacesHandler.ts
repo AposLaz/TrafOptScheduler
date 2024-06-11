@@ -3,6 +3,7 @@ import * as k8s from '@kubernetes/client-node';
 import { logger } from '../../config/logger';
 import { PodWatcherConfigs } from '../types';
 import { podsWatcher } from '../watchers';
+import { namespacesExclude } from '../../enums';
 
 export const namespaceHandler = (
   type: string,
@@ -11,6 +12,9 @@ export const namespaceHandler = (
   podWatchersMap: Map<string, any>
 ) => {
   const namespace = obj.metadata?.name as string;
+
+  if (namespacesExclude.includes(namespace)) return; // exclude namespaces from watchers
+
   if (type === 'ADDED') {
     logger.info(`New Namespace Added: ${namespace}`);
 

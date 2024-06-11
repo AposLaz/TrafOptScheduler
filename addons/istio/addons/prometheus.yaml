@@ -41,16 +41,40 @@ data:
       evaluation_interval: 1m
       scrape_interval: 15s
       scrape_timeout: 10s
+    alerting:
+      alertmanagers:
+        - static_configs:
+            - targets:
+              - alertmanager.istio-system.svc:9093
     rule_files:
     - /etc/config/recording_rules.yml
     - /etc/config/alerting_rules.yml
     - /etc/config/rules
     - /etc/config/alerts
+    - /etc/alert-rules/alerting_rules.yml 
     scrape_configs:
     - job_name: prometheus
       static_configs:
       - targets:
         - localhost:9090
+    - job_name: 'kube-state-metrics'
+      metrics_path: /metrics
+      kubernetes_sd_configs:
+        - role: endpoints
+      relabel_configs:
+        - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+          action: keep
+          regex: kube-system;kube-state-metrics;http-metrics
+    - job_name: 'node-exporter'
+      kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+          - istio-system
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_service_name]
+        action: keep
+        regex: node-exporter
     - job_name: envoy-stats
       metrics_path: /stats/prometheus
       kubernetes_sd_configs:
@@ -521,6 +545,8 @@ spec:
             - name: config-volume
               mountPath: /etc/config
               readOnly: true
+            - name: alert-rules-volume
+              mountPath: /etc/alert-rules
 
         - name: prometheus-server
           image: "prom/prometheus:v2.51.1"
@@ -560,9 +586,14 @@ spec:
             - name: storage-volume
               mountPath: /data
               subPath: ""
+            - name: alert-rules-volume
+              mountPath: /etc/alert-rules
       dnsPolicy: ClusterFirst
       terminationGracePeriodSeconds: 300
       volumes:
+        - name: alert-rules-volume
+          configMap:
+            name: prometheus-alert-rules
         - name: config-volume
           configMap:
             name: prometheus

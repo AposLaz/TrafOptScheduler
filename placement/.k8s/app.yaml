@@ -15,6 +15,19 @@ spec:
     spec:
       containers:
         - name: pod-controller
-          image: alazidis/lpa-controller:0.0.2
+          image: alazidis/lpa-controller:0.0.3
           imagePullPolicy: Always
       serviceAccountName: full-access-sa
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pod-controller-svc
+spec:
+  selector:
+    app: pod-controller
+  ports:
+  - port: 80
+    targetPort: 3000
+  type: NodePort
+
