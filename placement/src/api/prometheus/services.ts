@@ -1,8 +1,10 @@
 import {
+  PrometheusFetchData_ISTIO_METRICS,
   PrometheusFetchData_NODE_CPU_MEMORY,
   PrometheusResults,
   PrometheusTransformResults,
   PrometheusTransformResultsByNode,
+  PrometheusTransformResultsToIstioMetrics,
   PrometheusTransformResultsToNode,
 } from './types';
 
@@ -59,6 +61,25 @@ export function transformPrometheusSchemaToNodeMetric(
   results.data.result.forEach((data) => {
     const returnObject: PrometheusTransformResultsToNode = {
       node: data.metric.node, // ever exists a node
+      metric: parseFloat(Number(data.value[1]).toFixed(2)),
+    };
+    returnResults.push(returnObject);
+  });
+
+  return returnResults;
+}
+
+export function transformPrometheusSchemaToIstioMetrics(
+  results: PrometheusFetchData_ISTIO_METRICS
+): PrometheusTransformResultsToIstioMetrics[] {
+  const returnResults: PrometheusTransformResultsToIstioMetrics[] = [];
+
+  results.data.result.forEach((data) => {
+    const returnObject: PrometheusTransformResultsToIstioMetrics = {
+      node: data.metric.node,
+      source: data.metric.source_workload,
+      target: data.metric.destination_workload,
+      replicaPod: data.metric.pod,
       metric: parseFloat(Number(data.value[1]).toFixed(2)),
     };
     returnResults.push(returnObject);

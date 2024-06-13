@@ -2,13 +2,16 @@ import { promisify } from 'node:util';
 import { execFile } from 'node:child_process';
 import axios from 'axios';
 import {
+  PrometheusFetchData_ISTIO_METRICS,
   PrometheusFetchData_NODE_CPU_MEMORY,
   PrometheusFetchData_POD_CPU_MEMORY,
   PrometheusTransformResults,
   PrometheusTransformResultsByNode,
+  PrometheusTransformResultsToIstioMetrics,
   PrometheusTransformResultsToNode,
 } from './types';
 import {
+  transformPrometheusSchemaToIstioMetrics,
   transformPrometheusSchemaToNodeMetric,
   transformPrometheusSchemaToPodMetric,
   transformPrometheusSchemaToPodMetricByNode,
@@ -64,7 +67,7 @@ class PrometheusApi {
   ): Promise<PrometheusTransformResults[] | undefined> {
     try {
       //get Memory in gb for 2 min
-      const query = `sum(rate(container_memory_working_set_bytes{id!="/",namespace=~"${namespace}"}[2m])) by (pod) / 1024^3`;
+      const query = `sum(rate(container_memory_working_set_bytes{id!="/",namespace=~"${namespace}"}[2m])) by (pod) / 1024^2`;
       const result = await axios.get<PrometheusFetchData_POD_CPU_MEMORY>(
         `http://${ip}/prometheus/api/v1/query?query=${query}`
       );
@@ -84,7 +87,7 @@ class PrometheusApi {
       return undefined;
     }
   }
-  //-----------------------------------------------------------------------------------
+  //--------------------------------------------- Nodes --------------------------------------
   async getNodesCpuRequestedByPods(
     ip: string
   ): Promise<PrometheusTransformResultsToNode[] | undefined> {
@@ -185,31 +188,7 @@ class PrometheusApi {
     }
   }
 
-  async getNodeMemoryUsage(
-    ip: string,
-    namespace: string
-  ): Promise<PrometheusTransformResultsToNode[] | undefined> {
-    try {
-      //get Memory in gb for 2 min
-      const query = `sum(rate(container_memory_working_set_bytes{id!="/",namespace=~"${namespace}"}[2m])) by (pod) / 1024^2`;
-      const result = await axios.get<PrometheusFetchData_NODE_CPU_MEMORY>(
-        `http://${ip}/api/v1/query?query=${query}`
-      );
-
-      if (result.data.data.result.length <= 0) {
-        return [];
-      }
-
-      const transformSchemaForPrometheus =
-        transformPrometheusSchemaToNodeMetric(result.data);
-
-      return transformSchemaForPrometheus;
-    } catch (e: unknown) {
-      const error = e as Error;
-      logger.error(error);
-      return undefined;
-    }
-  }
+  //--------------------------------------------- Pods --------------------------------------
 
   // return value cores
   async getPodsRequestedCpuByNs(
@@ -243,7 +222,7 @@ class PrometheusApi {
     }
   }
 
-  // return value to bytes
+  // return value to mb
   async getPodsRequestedMemoryByNs(
     ip: string,
     namespace: string
@@ -275,8 +254,7 @@ class PrometheusApi {
     namespace: string
   ): Promise<PrometheusTransformResultsByNode[] | undefined> {
     try {
-      //get Memory in gb for 2 min
-      const query = `avg(container_cpu_usage_seconds_total{namespace='${namespace}'}) by (pod,instance)`;
+      const query = `avg(rate(container_cpu_usage_seconds_total{namespace='${namespace}'}[10m])) by (pod,instance)`;
       const result = await axios.get<PrometheusFetchData_POD_CPU_MEMORY>(
         `http://${ip}/api/v1/query?query=${query}`
       );
@@ -301,14 +279,14 @@ class PrometheusApi {
     }
   }
 
-  // return value to bytes
+  // return value to mb
   async getPodsMemoryUsageByNs(
     ip: string,
     namespace: string
-  ): Promise<PrometheusTransformResults[] | undefined> {
+  ): Promise<PrometheusTransformResultsByNode[] | undefined> {
     try {
       //get Memory in mb
-      const query = `avg(container_memory_max_usage_bytes{namespace='${namespace}'}) by (pod,instance) / 1024^2`;
+      const query = `avg(rate(container_memory_max_usage_bytes{namespace='${namespace}'}[10m])) by (pod,instance) / 1024^2`;
       const result = await axios.get<PrometheusFetchData_POD_CPU_MEMORY>(
         `http://${ip}/api/v1/query?query=${query}`
       );
@@ -327,6 +305,111 @@ class PrometheusApi {
       return undefined;
     }
   }
+
+  //--------------------------------------------- Request Bytes --------------------------------------
+  async getPodsRequestBytesSumByNs(
+    ip: string,
+    namespace: string
+  ): Promise<PrometheusTransformResultsToIstioMetrics[] | undefined> {
+    try {
+      //get Memory in mb
+      const query = `rate(istio_request_bytes_sum{connection_security_policy = 'mutual_tls', response_code="200",source_app != 'unknown',  destination_app != 'unknown', namespace='${namespace}'}[10m])`;
+      const result = await axios.get<PrometheusFetchData_ISTIO_METRICS>(
+        `http://${ip}/api/v1/query?query=${query}`
+      );
+
+      if (result.data.data.result.length <= 0) {
+        return [];
+      }
+
+      const transformSchemaForPrometheus =
+        transformPrometheusSchemaToIstioMetrics(result.data);
+
+      return transformSchemaForPrometheus;
+    } catch (e: unknown) {
+      const error = e as Error;
+      logger.error(error);
+      return undefined;
+    }
+  }
+
+  async getPodsResponseBytesSumByNs(
+    ip: string,
+    namespace: string
+  ): Promise<PrometheusTransformResultsToIstioMetrics[] | undefined> {
+    try {
+      //get Memory in mb
+      const query = `rate(istio_response_bytes_sum{connection_security_policy = 'mutual_tls', response_code="200",source_app != 'unknown',  destination_app != 'unknown', namespace='${namespace}'}[10m])`;
+      const result = await axios.get<PrometheusFetchData_ISTIO_METRICS>(
+        `http://${ip}/api/v1/query?query=${query}`
+      );
+
+      if (result.data.data.result.length <= 0) {
+        return [];
+      }
+
+      const transformSchemaForPrometheus =
+        transformPrometheusSchemaToIstioMetrics(result.data);
+
+      return transformSchemaForPrometheus;
+    } catch (e: unknown) {
+      const error = e as Error;
+      logger.error(error);
+      return undefined;
+    }
+  }
+
+  async getPodsRequestBytesCountByNs(
+    ip: string,
+    namespace: string
+  ): Promise<PrometheusTransformResultsToIstioMetrics[] | undefined> {
+    try {
+      //get Memory in mb
+      const query = `rate(istio_request_bytes_count{connection_security_policy = 'mutual_tls', response_code="200",source_app != 'unknown',  destination_app != 'unknown', namespace='${namespace}'}[10m])`;
+      const result = await axios.get<PrometheusFetchData_ISTIO_METRICS>(
+        `http://${ip}/api/v1/query?query=${query}`
+      );
+
+      if (result.data.data.result.length <= 0) {
+        return [];
+      }
+
+      const transformSchemaForPrometheus =
+        transformPrometheusSchemaToIstioMetrics(result.data);
+
+      return transformSchemaForPrometheus;
+    } catch (e: unknown) {
+      const error = e as Error;
+      logger.error(error);
+      return undefined;
+    }
+  }
+
+  async getPodsResponseBytesCountByNs(
+    ip: string,
+    namespace: string
+  ): Promise<PrometheusTransformResultsToIstioMetrics[] | undefined> {
+    try {
+      //get Memory in mb
+      const query = `rate(istio_response_bytes_count{connection_security_policy = 'mutual_tls', response_code="200",source_app != 'unknown',  destination_app != 'unknown', namespace='${namespace}'}[10m])`;
+      const result = await axios.get<PrometheusFetchData_ISTIO_METRICS>(
+        `http://${ip}/api/v1/query?query=${query}`
+      );
+
+      if (result.data.data.result.length <= 0) {
+        return [];
+      }
+
+      const transformSchemaForPrometheus =
+        transformPrometheusSchemaToIstioMetrics(result.data);
+
+      return transformSchemaForPrometheus;
+    } catch (e: unknown) {
+      const error = e as Error;
+      logger.error(error);
+      return undefined;
+    }
+  }
 }
 
 const prometheusApi = new PrometheusApi();
@@ -336,3 +419,15 @@ const prometheusApi = new PrometheusApi();
 //kubectl get ingress <ingress-name> -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
 
 export default prometheusApi;
+
+/** 
+  Typical Usage:
+  --------------
+  Sum Bytes: Useful for understanding the total data transfer over time.
+  Count Bytes: Useful for counting the volume or frequency of data transfers.
+
+  Aggregation:
+  --------------
+  Sum Bytes: Adds up the total size of all the bytes sent or received.
+  Count Bytes: Counts each byte in the transfer, useful for understanding data volume.
+ */

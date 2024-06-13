@@ -28,30 +28,6 @@ setupWatchers().catch((error: unknown) => {
   logger.error(`Could not setup watchers ${err.message}`);
 });
 
-// import { getK8sData } from "./getK8sData";
-
-/**
- * IN THE END WE WILL HAVE THIS OBJECT FOR EVERY CLUSTER
- */
-/**
- * [{
- *  cluster_ip: string,
- *  nodes: [{
- *    node_name: string,
- *    cpu: {
- *      requested_cpu: float, //cpu that need all pods in every node
- *      node_available_cpu: float,  //available cpu for use in every node
- *      max_cpu: float //max cpu that can be used for pods in every node
- *    },
- *    memory: {
- *      requested_memory: float, //memory that need all pods in every node
- *      node_available_memory: float, //available memory for use in every node
- *      max_memory: float  // max memory that can be used for pods in every node
- *    }
- *  }]
- * }]
- */
-
 const setTrafficSplit = async (region: string) => {
   //TODO => for each namespace
   const ns = 'default';

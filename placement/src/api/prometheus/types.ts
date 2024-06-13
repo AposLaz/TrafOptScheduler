@@ -47,3 +47,27 @@ export type PrometheusFetchData_NODE_CPU_MEMORY = {
     }[];
   };
 };
+
+export type PrometheusFetchData_ISTIO_METRICS = {
+  status: string;
+  data: {
+    resultType: string;
+    result: {
+      metric: {
+        node: string;
+        source_workload: string;
+        destination_workload: string;
+        pod: string;
+      };
+      value: [number, string];
+    }[];
+  };
+};
+
+export type PrometheusTransformResultsToIstioMetrics = {
+  node: string;
+  source: string;
+  target: string;
+  replicaPod: string;
+  metric: number;
+};
