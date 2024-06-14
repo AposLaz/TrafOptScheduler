@@ -1,0 +1,276 @@
+{
+  "namespace": "online-boutique",
+  "totalExchBytes": 39506.53,
+  "totalMsgSize": 63.66,
+  "appLinks": [
+    {
+      "source": "frontend",
+      "degreeSourceTargetsAffinity": 0.52,
+      "targets": [
+        {
+          "target": "cartservice",
+          "replicas": [
+            {
+              "pod": "cartservice-d98d6d88-zdc7k",
+              "node": "minikube",
+              "sumBytes": 554.66,
+              "countBytes": 4.76
+            }
+          ],
+          "linkBytesExchanged": 554.66,
+          "linkMessagesSize": 4.76,
+          "affinity": 0.04
+        },
+        {
+          "target": "currencyservice",
+          "replicas": [
+            {
+              "pod": "currencyservice-cb7848887-nwg97",
+              "node": "minikube",
+              "sumBytes": 1855.37,
+              "countBytes": 15.54
+            }
+          ],
+          "linkBytesExchanged": 1855.37,
+          "linkMessagesSize": 15.54,
+          "affinity": 0.15
+        },
+        {
+          "target": "productcatalogservice",
+          "replicas": [
+            {
+              "pod": "productcatalogservice-67c979f897-hrp6n",
+              "node": "minikube",
+              "sumBytes": 2258.45,
+              "countBytes": 12.76
+            },
+            {
+              "pod": "productcatalogservice-67c979f897-wqp5k",
+              "node": "minikube",
+              "sumBytes": 2155.01,
+              "countBytes": 12.28
+            }
+          ],
+          "linkBytesExchanged": 4413.46,
+          "linkMessagesSize": 25.04,
+          "affinity": 0.25
+        },
+        {
+          "target": "shippingservice",
+          "replicas": [
+            {
+              "pod": "shippingservice-547cf784d5-n2xqg",
+              "node": "minikube",
+              "sumBytes": 137.25,
+              "countBytes": 1.14
+            }
+          ],
+          "linkBytesExchanged": 137.25,
+          "linkMessagesSize": 1.14,
+          "affinity": 0.01
+        },
+        {
+          "target": "recommendationservice",
+          "replicas": [
+            {
+              "pod": "recommendationservice-6964c4f6f7-l5ff8",
+              "node": "minikube",
+              "sumBytes": 199.5,
+              "countBytes": 1.26
+            },
+            {
+              "pod": "recommendationservice-6964c4f6f7-s25jn",
+              "node": "minikube",
+              "sumBytes": 198.26,
+              "countBytes": 1.26
+            },
+            {
+              "pod": "recommendationservice-6964c4f6f7-hls8f",
+              "node": "minikube",
+              "sumBytes": 203.54,
+              "countBytes": 1.3
+            }
+          ],
+          "linkBytesExchanged": 601.3,
+          "linkMessagesSize": 3.82,
+          "affinity": 0.04
+        },
+        {
+          "target": "adservice",
+          "replicas": [
+            {
+              "pod": "adservice-5f7b8fffb5-4hkxb",
+              "node": "minikube",
+              "sumBytes": 430.01,
+              "countBytes": 3.06
+            }
+          ],
+          "linkBytesExchanged": 430.01,
+          "linkMessagesSize": 3.06,
+          "affinity": 0.03
+        },
+        {
+          "target": "checkoutservice",
+          "replicas": [
+            {
+              "pod": "checkoutservice-c56766947-zw67h",
+              "node": "minikube",
+              "sumBytes": 46.42,
+              "countBytes": 0.16
+            }
+          ],
+          "linkBytesExchanged": 46.42,
+          "linkMessagesSize": 0.16,
+          "affinity": 0
+        }
+      ],
+      "avgProbability": 0.53
+    },
+    {
+      "source": "loadgenerator",
+      "degreeSourceTargetsAffinity": 0.39,
+      "targets": [
+        {
+          "target": "frontend",
+          "replicas": [
+            {
+              "pod": "frontend-5fcd6f496c-8tpjw",
+              "node": "minikube",
+              "sumBytes": 28154.78,
+              "countBytes": 4.38
+            }
+          ],
+          "linkBytesExchanged": 28154.78,
+          "linkMessagesSize": 4.38,
+          "affinity": 0.39
+        }
+      ],
+      "avgProbability": 0.39
+    },
+    {
+      "source": "recommendationservice",
+      "degreeSourceTargetsAffinity": 0.07,
+      "targets": [
+        {
+          "target": "productcatalogservice",
+          "replicas": [
+            {
+              "pod": "productcatalogservice-67c979f897-hrp6n",
+              "node": "minikube",
+              "sumBytes": 1585.34,
+              "countBytes": 2
+            },
+            {
+              "pod": "productcatalogservice-67c979f897-wqp5k",
+              "node": "minikube",
+              "sumBytes": 1452.54,
+              "countBytes": 1.82
+            }
+          ],
+          "linkBytesExchanged": 3037.88,
+          "linkMessagesSize": 3.82,
+          "affinity": 0.07
+        }
+      ],
+      "avgProbability": 0.07
+    },
+    {
+      "source": "checkoutservice",
+      "degreeSourceTargetsAffinity": 0.01,
+      "targets": [
+        {
+          "target": "productcatalogservice",
+          "replicas": [
+            {
+              "pod": "productcatalogservice-67c979f897-wqp5k",
+              "node": "minikube",
+              "sumBytes": 35.2,
+              "countBytes": 0.2
+            },
+            {
+              "pod": "productcatalogservice-67c979f897-hrp6n",
+              "node": "minikube",
+              "sumBytes": 36.86,
+              "countBytes": 0.22
+            }
+          ],
+          "linkBytesExchanged": 72.06,
+          "linkMessagesSize": 0.42,
+          "affinity": 0
+        },
+        {
+          "target": "paymentservice",
+          "replicas": [
+            {
+              "pod": "paymentservice-5df54f5859-xj97l",
+              "node": "minikube",
+              "sumBytes": 22.4,
+              "countBytes": 0.16
+            }
+          ],
+          "linkBytesExchanged": 22.4,
+          "linkMessagesSize": 0.16,
+          "affinity": 0
+        },
+        {
+          "target": "shippingservice",
+          "replicas": [
+            {
+              "pod": "shippingservice-547cf784d5-n2xqg",
+              "node": "minikube",
+              "sumBytes": 48.82,
+              "countBytes": 0.32
+            }
+          ],
+          "linkBytesExchanged": 48.82,
+          "linkMessagesSize": 0.32,
+          "affinity": 0
+        },
+        {
+          "target": "emailservice",
+          "replicas": [
+            {
+              "pod": "emailservice-68b8c69f87-dnsb5",
+              "node": "minikube",
+              "sumBytes": 36.1,
+              "countBytes": 0.16
+            }
+          ],
+          "linkBytesExchanged": 36.1,
+          "linkMessagesSize": 0.16,
+          "affinity": 0
+        },
+        {
+          "target": "cartservice",
+          "replicas": [
+            {
+              "pod": "cartservice-d98d6d88-zdc7k",
+              "node": "minikube",
+              "sumBytes": 37.27,
+              "countBytes": 0.32
+            }
+          ],
+          "linkBytesExchanged": 37.27,
+          "linkMessagesSize": 0.32,
+          "affinity": 0
+        },
+        {
+          "target": "currencyservice",
+          "replicas": [
+            {
+              "pod": "currencyservice-cb7848887-nwg97",
+              "node": "minikube",
+              "sumBytes": 58.75,
+              "countBytes": 0.56
+            }
+          ],
+          "linkBytesExchanged": 58.75,
+          "linkMessagesSize": 0.56,
+          "affinity": 0.01
+        }
+      ],
+      "avgProbability": 0.01
+    }
+  ],
+  "totalWeightAffinity": 0.99
+}

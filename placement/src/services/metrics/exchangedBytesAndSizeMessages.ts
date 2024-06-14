@@ -130,7 +130,6 @@ export const appExchangedBytesAndSizeMessages = async (
   }
 
   const istioRateBytes: AppLinksReplicas[] = [];
-  //TODO structure istio
 
   for (const appLink of istioRateBytesAppLinks) {
     const existingEntry = istioRateBytes.find(
@@ -139,18 +138,22 @@ export const appExchangedBytesAndSizeMessages = async (
     if (existingEntry) {
       existingEntry.replicas.push(appLink.replicas);
 
-      existingEntry.linkBytesExchanged =
+      const exchBytes =
         existingEntry.linkBytesExchanged + appLink.replicas.sumBytes;
 
-      existingEntry.linkMessagesSize =
+      existingEntry.linkBytesExchanged = parseFloat(exchBytes.toFixed(3));
+
+      const msgSize =
         existingEntry.linkMessagesSize + appLink.replicas.countBytes;
+
+      existingEntry.linkMessagesSize = parseFloat(msgSize.toFixed(3));
     } else {
       istioRateBytes.push({
         source: appLink.source,
         target: appLink.target,
         replicas: [appLink.replicas],
-        linkBytesExchanged: appLink.replicas.sumBytes,
-        linkMessagesSize: appLink.replicas.countBytes,
+        linkBytesExchanged: parseFloat(appLink.replicas.sumBytes.toFixed(3)),
+        linkMessagesSize: parseFloat(appLink.replicas.countBytes.toFixed(3)),
       });
     }
   }
