@@ -2,39 +2,72 @@ import prometheusApi from '../../api/prometheus/prometheusApi';
 import { removeDuplicateZeroValues } from './services';
 import { AppLinks, AppLinksReplicas, TrafficRatesBytes } from './types';
 
+/**
+ * This function fetches traffic metrics for a given namespace from the Prometheus API.
+ * It calculates the total sum of bytes exchanged and the total size of messages
+ * for each app link in the namespace. It also calculates the count of bytes and
+ * messages for each app link in the namespace.
+ *
+ * @param {string} prometheusIp - The IP address of the Prometheus server.
+ * @param {string} namespace - The name of the namespace for which to fetch the metrics.
+ * @returns {Promise<TrafficRatesBytes | undefined>} - A promise that resolves to an object containing the namespace,
+ * traffic metrics for each app link, the total sum of bytes exchanged, and the total size of messages. If the operation
+ * is unsuccessful, the promise resolves to undefined.
+ */
 export const appExchangedBytesAndSizeMessages = async (
   prometheusIp: string,
   namespace: string
 ): Promise<TrafficRatesBytes | undefined> => {
-  const sumRequestBytes = await prometheusApi.getPodsRequestBytesSumByNs(
+  // Fetch the sum of request bytes for each app link in the namespace
+  const sumRequestBytes = await prometheusApi.getHttpPodsRequestBytesSumByNs(
     prometheusIp,
     namespace
   );
 
-  if (!sumRequestBytes) return;
+  // If no data is returned by the API, return undefined
+  if (!sumRequestBytes || sumRequestBytes.length === 0) return;
 
-  // return all not null metrics with duplicates
+  // Return all non-null metrics with duplicates
   const uniqueSumRequestBytes = removeDuplicateZeroValues(sumRequestBytes);
 
-  console.info(uniqueSumRequestBytes);
-
-  const sumResponseBytes = await prometheusApi.getPodsResponseBytesSumByNs(
+  // Fetch the sum of TCP request bytes for each app link in the namespace
+  const sumTcpRequestBytes = await prometheusApi.getTcpPodsRequestBytesSumByNs(
     prometheusIp,
     namespace
   );
 
-  if (!sumResponseBytes) return;
+  // If TCP request bytes data is returned by the API, add it to the uniqueSumRequestBytes array
+  if (sumTcpRequestBytes && sumTcpRequestBytes.length > 0) {
+    const uniqueTcpValues = removeDuplicateZeroValues(sumTcpRequestBytes);
+    uniqueSumRequestBytes.push(...uniqueTcpValues);
+  }
 
-  // return all not null metrics with duplicates
+  // Fetch the sum of response bytes for each app link in the namespace
+  const sumResponseBytes = await prometheusApi.getHttpPodsResponseBytesSumByNs(
+    prometheusIp,
+    namespace
+  );
+
+  // If no data is returned by the API, return undefined
+  if (!sumResponseBytes || sumRequestBytes.length === 0) return;
+
+  // Return all non-null metrics with duplicates
   const uniqueSumResponseBytes = removeDuplicateZeroValues(sumResponseBytes);
 
-  console.info(uniqueSumResponseBytes);
+  // Fetch the sum of TCP response bytes for each app link in the namespace
+  const sumTcpResponseBytes =
+    await prometheusApi.getTcpPodsResponseBytesSumByNs(prometheusIp, namespace);
+
+  // If TCP response bytes data is returned by the API, add it to the uniqueSumResponseBytes array
+  if (sumTcpResponseBytes && sumTcpResponseBytes.length > 0) {
+    const uniqueTcpValues = removeDuplicateZeroValues(sumTcpResponseBytes);
+    uniqueSumResponseBytes.push(...uniqueTcpValues);
+  }
 
   const istioRateBytesAppLinks: AppLinks[] = [];
-
-  // calculate total sum bytes for app in namespace
   let totalSumBytes = 0;
 
+  // Calculate the total sum of bytes exchanged and the total size of messages for each app link in the namespace
   for (const req of uniqueSumRequestBytes) {
     const res = uniqueSumResponseBytes.find(
       (res) =>
@@ -55,44 +88,43 @@ export const appExchangedBytesAndSizeMessages = async (
         pod: req.replicaPod,
         node: req.node,
         sumBytes: sumBytes,
-        countBytes: 0, // we give a default value
+        countBytes: 0, // Default value
       },
     });
 
     totalSumBytes = totalSumBytes + sumBytes;
   }
 
-  const countRequestBytes = await prometheusApi.getPodsRequestBytesCountByNs(
-    prometheusIp,
-    namespace
-  );
+  // Fetch the count of request bytes for each app link in the namespace
+  const countRequestBytes =
+    await prometheusApi.getHttpPodsRequestBytesCountByNs(
+      prometheusIp,
+      namespace
+    );
 
-  if (!countRequestBytes) return;
+  // If no data is returned by the API, return undefined
+  if (!countRequestBytes || sumRequestBytes.length === 0) return;
 
-  // return all not null metrics with duplicates
+  // Return all non-null metrics with duplicates
   const uniqueCountRequestBytes = removeDuplicateZeroValues(countRequestBytes);
 
-  console.info(uniqueCountRequestBytes);
+  // Fetch the count of response bytes for each app link in the namespace
+  const countResponseBytes =
+    await prometheusApi.getHttpPodsResponseBytesCountByNs(
+      prometheusIp,
+      namespace
+    );
 
-  //TODO calculate total app sum of bytes
+  // If no data is returned by the API, return undefined
+  if (!countResponseBytes || sumRequestBytes.length === 0) return;
 
-  const countResponseBytes = await prometheusApi.getPodsResponseBytesCountByNs(
-    prometheusIp,
-    namespace
-  );
-
-  if (!countResponseBytes) return;
-
-  // return all not null metrics with duplicates
+  // Return all non-null metrics with duplicates
   const uniqueCountResponseBytes =
     removeDuplicateZeroValues(countResponseBytes);
 
-  console.info(uniqueCountResponseBytes);
-
-  // calculate total bytes of app in namespace
   let totalCountBytes = 0;
 
-  // Update istioRateBytesAppLinks with count metrics
+  // Update istioRateBytesAppLinks with count metrics and calculate the total bytes and messages for each app link in the namespace
   for (const req of uniqueCountRequestBytes) {
     const res = uniqueCountResponseBytes.find(
       (res) =>
@@ -131,6 +163,7 @@ export const appExchangedBytesAndSizeMessages = async (
 
   const istioRateBytes: AppLinksReplicas[] = [];
 
+  // Combine duplicate app links and calculate the total bytes and messages for each app link in the namespace
   for (const appLink of istioRateBytesAppLinks) {
     const existingEntry = istioRateBytes.find(
       (item) => item.source === appLink.source && item.target === appLink.target

@@ -4,11 +4,12 @@ import { FormattedEdge } from './types';
 
 export const appResponseTimes = async () => {
   // Sample JSON data
-  const rawData: GraphData = await kialiApi.getGraphMetrics(
+  const rawData: GraphData | undefined = await kialiApi.getGraphMetrics(
     '10.103.220.136:20001',
     'online-boutique'
   );
 
+  //console.log(JSON.stringify(rawData, null, 2));
   if (!rawData) return;
 
   const nodeMap = new Map<string, string>();

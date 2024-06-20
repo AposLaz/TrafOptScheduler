@@ -3,7 +3,6 @@ import { Config } from '../../config/config';
 import { GraphData } from './types';
 import { setupConfigs } from '../..';
 import { logger } from '../../config/logger';
-import { RawData } from '../../services/ModSoft';
 
 class KialiApi {
   async getGraph(namespace: string) {
@@ -23,7 +22,7 @@ class KialiApi {
     const url = `http://${ip}/kiali/api/namespaces/graph?graphType=workload&duration=10m&namespaces=${namespace}&layout=dagre`;
 
     try {
-      const response = await axios.get<RawData>(url);
+      const response = await axios.get<GraphData>(url);
       return response.data;
     } catch (e: unknown) {
       const error = e as Error;

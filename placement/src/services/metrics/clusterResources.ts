@@ -19,14 +19,14 @@ export const clusterResources = async () => {
 
   if (!nodesRequestedCpu) return;
 
-  console.log(nodesRequestedCpu);
+  // console.log(nodesRequestedCpu);
 
   const nodesRequestedMemory =
     await prometheusApi.getNodesMemoryRequestedByPods(prometheusIp);
 
   if (!nodesRequestedMemory) return;
 
-  console.log(nodesRequestedMemory);
+  // console.log(nodesRequestedMemory);
 
   const nodesAllocateCpu = await prometheusApi.getNodesAllocateCpuForPods(
     prometheusIp
@@ -34,7 +34,7 @@ export const clusterResources = async () => {
 
   if (!nodesAllocateCpu) return;
 
-  console.log(nodesAllocateCpu);
+  // console.log(nodesAllocateCpu);
 
   const nodesAllocateMemory = await prometheusApi.getNodesAllocateMemoryForPods(
     prometheusIp
@@ -42,7 +42,7 @@ export const clusterResources = async () => {
 
   if (!nodesAllocateMemory) return;
 
-  console.log(nodesAllocateMemory);
+  // console.log(nodesAllocateMemory);
 
   const nodesMetricsCpu = nodesRequestedCpu.map((req) => {
     const alloc = nodesAllocateCpu.find((alloc) => alloc.node === req.node);
@@ -58,7 +58,7 @@ export const clusterResources = async () => {
     }
   });
 
-  console.log(nodesMetricsCpu);
+  // console.log(nodesMetricsCpu);
 
   const nodesMetricsMemory = nodesRequestedMemory.map((req) => {
     const alloc = nodesAllocateMemory.find((alloc) => alloc.node === req.node);
@@ -74,33 +74,33 @@ export const clusterResources = async () => {
     }
   });
 
-  console.log(nodesMetricsMemory);
+  // console.log(nodesMetricsMemory);
 
   const podsRequestedCpu = await prometheusApi.getPodsRequestedCpuByNs(
     prometheusIp,
     namespace
   );
 
-  console.log(podsRequestedCpu);
+  // console.log(podsRequestedCpu);
 
   const podsRequestedMemory = await prometheusApi.getPodsRequestedMemoryByNs(
     prometheusIp,
     namespace
   );
 
-  console.log(podsRequestedMemory);
+  // console.log(podsRequestedMemory);
 
   const cpuUsagePods = await prometheusApi.getPodsCpuUsageByNs(
     prometheusIp,
     namespace
   );
 
-  console.log(cpuUsagePods);
+  // console.log(cpuUsagePods);
 
   const memoryUsagePods = await prometheusApi.getPodsMemoryUsageByNs(
     prometheusIp,
     namespace
   );
 
-  console.log(memoryUsagePods);
+  // console.log(memoryUsagePods);
 };

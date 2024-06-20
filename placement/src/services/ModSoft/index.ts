@@ -2,6 +2,7 @@ import {
   avgProbability,
   calculateAffinitiesForExBytesAndSizeMsgs,
 } from './affinitiesExBytesSizeMsg';
+import { updateMembershipMatrix } from './services';
 
 const modSoft = async () => {
   const prometheusIp = '10.106.109.230:9090';
@@ -23,8 +24,11 @@ const modSoft = async () => {
     success = success + 1;
 
     const graphDataAvgProb = avgProbability(graphDataLinks);
-    console.log(JSON.stringify(graphDataAvgProb, null, 2));
+    updateMembershipMatrix(graphDataAvgProb);
   }
 };
+
+//https://www.youtube.com/watch?v=QfTxqAxJp0U&ab_channel=AndrewBeveridge
+//https://www.youtube.com/watch?v=Xt0vBtBY2BU&ab_channel=Splience
 
 modSoft();

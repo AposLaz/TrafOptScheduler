@@ -2,7 +2,7 @@
   "name": "placecing-algorithms",
   "version": "1.0.0",
   "description": "First of all get resource usage from Nodes, Pods and the available host machines of the cluster. After place a service, resource usage and availability of resources at the host are taken into account",
-  "main": "bin-packing.js",
+  "main": "index.ts",
   "scripts": {
     "start": "ts-node src/index.ts",
     "build": "tsc",

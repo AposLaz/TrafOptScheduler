@@ -24,10 +24,12 @@ export type TrafficExcSizeBytesAffinities = {
   totalMsgSize: number;
 };
 
+// Every sourceTargets is a community in modSoft algorithm
 export type SourceTargetsAppLinks = {
   source: string;
   targets: TargetPodsProps[];
   degreeSourceTargetsAffinity: number; // is the sum of affinities for all targets linked from a given source.
+  communitiesProb: [{ [key: string]: number }];
 };
 
 export type AppLinksGraphAffinities = {

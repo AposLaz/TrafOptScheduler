@@ -1,6 +1,13 @@
 import { PrometheusTransformResultsToIstioMetrics } from '../../api/prometheus/types';
 
-// Utility function to remove duplicate zero values from istio metrics
+/**
+ * This function removes duplicate zero values from an array of Istio metrics.
+ * Duplicate zero values occur when two or more metrics have the same source, target, and replicaPod values,
+ * but their metric values are all zero.
+ *
+ * @param {PrometheusTransformResultsToIstioMetrics[]} dataMetrics - An array of Istio metrics.
+ * @returns {PrometheusTransformResultsToIstioMetrics[]} - An array of Istio metrics with duplicate zero values removed.
+ */
 export const removeDuplicateZeroValues = (
   dataMetrics: PrometheusTransformResultsToIstioMetrics[]
 ) => {
