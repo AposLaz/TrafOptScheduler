@@ -1,6 +1,10 @@
 import prometheusApi from '../../api/prometheus/prometheusApi';
 import { removeDuplicateZeroValues } from './services';
-import { AppLinks, AppLinksReplicas, TrafficRatesBytes } from './types';
+import {
+  AppLinksBytes,
+  AppLinksReplicasBytes,
+  TrafficRatesBytes,
+} from './types';
 
 /**
  * This function fetches traffic metrics for a given namespace from the Prometheus API.
@@ -24,7 +28,7 @@ export const appExchangedBytesAndSizeMessages = async (
     namespace
   );
 
-  // If no data is returned by the API, return undefined
+  // No returned data means that there is no communication in the namespace
   if (!sumRequestBytes || sumRequestBytes.length === 0) return;
 
   // Return all non-null metrics with duplicates
@@ -48,7 +52,7 @@ export const appExchangedBytesAndSizeMessages = async (
     namespace
   );
 
-  // If no data is returned by the API, return undefined
+  // No returned data means that there is no communication in the namespace
   if (!sumResponseBytes || sumRequestBytes.length === 0) return;
 
   // Return all non-null metrics with duplicates
@@ -64,7 +68,7 @@ export const appExchangedBytesAndSizeMessages = async (
     uniqueSumResponseBytes.push(...uniqueTcpValues);
   }
 
-  const istioRateBytesAppLinks: AppLinks[] = [];
+  const istioRateBytesAppLinks: AppLinksBytes[] = [];
   let totalSumBytes = 0;
 
   // Calculate the total sum of bytes exchanged and the total size of messages for each app link in the namespace
@@ -102,7 +106,7 @@ export const appExchangedBytesAndSizeMessages = async (
       namespace
     );
 
-  // If no data is returned by the API, return undefined
+  // No returned data means that there is no communication in the namespace
   if (!countRequestBytes || sumRequestBytes.length === 0) return;
 
   // Return all non-null metrics with duplicates
@@ -161,7 +165,7 @@ export const appExchangedBytesAndSizeMessages = async (
     }
   }
 
-  const istioRateBytes: AppLinksReplicas[] = [];
+  const istioRateBytes: AppLinksReplicasBytes[] = [];
 
   // Combine duplicate app links and calculate the total bytes and messages for each app link in the namespace
   for (const appLink of istioRateBytesAppLinks) {

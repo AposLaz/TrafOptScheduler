@@ -38,7 +38,7 @@ export type ClusterResourcesByNamespace = {
 /**
  * Exchanged Bytes and Total Size Metrics
  */
-export type AppLinks = {
+export type AppLinksBytes = {
   source: string;
   target: string;
   replicas: {
@@ -49,7 +49,7 @@ export type AppLinks = {
   };
 };
 
-export type AppLinksReplicas = {
+export type AppLinksReplicasBytes = {
   source: string;
   target: string;
   replicas: {
@@ -64,7 +64,7 @@ export type AppLinksReplicas = {
 
 export type TrafficRatesBytes = {
   namespace: string;
-  appLinks: AppLinksReplicas[];
+  appLinks: AppLinksReplicasBytes[];
   totalBytesExchanged: number;
   totalMessagesSize: number;
 };
@@ -79,4 +79,66 @@ export type FormattedEdge = {
   responseTime?: string;
   protocol: string;
   rps?: string;
+};
+
+/**
+ * Total Messages exchanged
+ */
+
+export type AppLinksMessages = {
+  source: string;
+  target: string;
+  replicas: {
+    pod: string;
+    node: string;
+    totalMessages: number;
+  };
+};
+
+export type AppLinksReplicasMessages = {
+  source: string;
+  target: string;
+  replicas: {
+    pod: string;
+    node: string;
+    totalMessages: number;
+  }[];
+  linkTotalMessagesExchanged: number;
+};
+
+export type TrafficRatesMessages = {
+  namespace: string;
+  appLinks: AppLinksReplicasMessages[];
+  totalMessagesExchanged: number;
+};
+
+/**
+ * Total Latency between links
+ */
+
+export type AppLinksLatency = {
+  source: string;
+  target: string;
+  replicas: {
+    pod: string;
+    node: string;
+    latency: number;
+  };
+};
+
+export type AppLinksReplicasLatency = {
+  source: string;
+  target: string;
+  replicas: {
+    pod: string;
+    node: string;
+    latency: number;
+  }[];
+  linkTotalLatency: number;
+};
+
+export type TrafficRatesLatency = {
+  namespace: string;
+  appLinks: AppLinksReplicasLatency[];
+  totalLatency: number;
 };

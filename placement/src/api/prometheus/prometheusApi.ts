@@ -713,6 +713,189 @@ class PrometheusApi {
       return undefined;
     }
   }
+
+  /**
+   * This function sends a GET request to the Prometheus API to fetch the sum of request messages sent by all
+   * HTTP pods in the specified namespace, with the following conditions:
+   * - The source and destination apps are not unknown.
+   * - The namespace matches the specified namespace.
+   * The function calculates the increase in the total number of request messages over a 10 minute time window.
+   * If there is no data returned by the API, the function returns an empty array.
+   * If there is an error during the process, the function logs the error and returns undefined.
+   *
+   * @param ip - The IP address of the Prometheus server.
+   * @param namespace - The namespace of the pods to fetch the request message data for.
+   * @returns An array of objects containing the source workload name, target workload name, replica pod name, and the sum of request messages sent, or undefined if there was an error.
+   */
+  async getRequestMessagesByNs(
+    ip: string,
+    namespace: string
+  ): Promise<PrometheusTransformResultsToIstioMetrics[] | undefined> {
+    try {
+      // Construct the Prometheus query to fetch the sum of request messages sent by all HTTP pods in the specified namespace.
+      const query = `sum(ceil(increase(istio_request_messages_total{source_app != 'unknown', destination_app != 'unknown', namespace='${namespace}'}[10m]))) by (pod,node,source_workload,destination_workload)`;
+
+      // Send a GET request to the Prometheus API to fetch the request message data.
+      const result = await axios.get<PrometheusFetchData_ISTIO_METRICS>(
+        `http://${ip}/api/v1/query?query=${query}`
+      );
+
+      // If there is no data returned by the API, return an empty array.
+      if (result.data.data.result.length <= 0) {
+        return [];
+      }
+
+      // Transform the fetched data into a format suitable for further processing. The fetched data is transformed
+      // into an array of objects containing the source workload name, target workload name, replica pod name, and the
+      // sum of request messages sent.
+      const transformSchemaForPrometheus =
+        transformPrometheusSchemaToIstioMetrics(result.data);
+
+      // Return the transformed request message data.
+      return transformSchemaForPrometheus;
+    } catch (e: unknown) {
+      // If there is an error during the process, log the error and return undefined.
+      const error = e as Error;
+      logger.error(error);
+      return undefined;
+    }
+  }
+
+  /**
+   * Fetches the sum of response messages sent by all HTTP pods in the specified namespace from Prometheus and returns the
+   * data in a transformed format.
+   *
+   * @param {string} ip - The IP address of the Prometheus server.
+   * @param {string} namespace - The namespace in which to fetch the response message data.
+   * @return {Promise<PrometheusTransformResultsToIstioMetrics[] | undefined>} - A promise that resolves to an array of
+   * objects containing the source workload name, target workload name, replica pod name, and the sum of response messages sent,
+   * or undefined if there was an error.
+   */
+  async getResponseMessagesByNs(
+    ip: string,
+    namespace: string
+  ): Promise<PrometheusTransformResultsToIstioMetrics[] | undefined> {
+    try {
+      // Construct the Prometheus query to fetch the sum of response messages sent by all HTTP pods in the specified namespace.
+      const query = `sum(ceil(increase(istio_response_messages_total{source_app != 'unknown', destination_app != 'unknown', namespace='${namespace}'}[10m]))) by (pod,node,source_workload,destination_workload)`;
+
+      // Send a GET request to the Prometheus API to fetch the response message data.
+      const result = await axios.get<PrometheusFetchData_ISTIO_METRICS>(
+        `http://${ip}/api/v1/query?query=${query}`
+      );
+
+      // If there is no data returned by the API, return an empty array.
+      if (result.data.data.result.length <= 0) {
+        return [];
+      }
+
+      // Transform the fetched data into a format suitable for further processing. The fetched data is transformed
+      // into an array of objects containing the source workload name, target workload name, replica pod name, and the
+      // sum of response messages sent.
+      const transformSchemaForPrometheus =
+        transformPrometheusSchemaToIstioMetrics(result.data);
+
+      // Return the transformed response message data.
+      return transformSchemaForPrometheus;
+    } catch (e: unknown) {
+      // If there is an error during the process, log the error and return undefined.
+      const error = e as Error;
+      logger.error('axiosErr:', error.message);
+      return undefined;
+    }
+  }
+
+  /**
+   * Fetches the sum of TCP connections opened by all mutual TLS HTTP pods in the specified namespace,
+   * using the Prometheus API.
+   *
+   * @param {string} ip - The IP address of the Prometheus server.
+   * @param {string} namespace - The namespace in which to fetch the TCP connection data.
+   * @return {Promise<PrometheusTransformResultsToIstioMetrics[] | undefined>} - A promise that resolves to an array of
+   * objects containing the source workload name, target workload name, replica pod name, and the sum of TCP connections opened,
+   * or undefined if there was an error.
+   */
+  async getTcpConnectionsByNs(
+    ip: string,
+    namespace: string
+  ): Promise<PrometheusTransformResultsToIstioMetrics[] | undefined> {
+    try {
+      // Construct the Prometheus query to fetch the sum of TCP connections opened by all mutual TLS HTTP pods
+      // in the specified namespace.
+      const query = `sum(ceil(increase(istio_tcp_connections_opened_total{connection_security_policy = 'mutual_tls', source_app != 'unknown',  destination_app != 'unknown', namespace='${namespace}'}[1h]))) by (pod,node,source_workload,destination_workload)`;
+
+      // Send a GET request to the Prometheus API to fetch the TCP connection data.
+      const result = await axios.get<PrometheusFetchData_ISTIO_METRICS>(
+        `http://${ip}/api/v1/query?query=${query}`
+      );
+
+      // If there is no data returned by the API, return an empty array.
+      if (result.data.data.result.length <= 0) {
+        return [];
+      }
+
+      // Transform the fetched data into a format suitable for further processing. The fetched data is transformed
+      // into an array of objects containing the source workload name, target workload name, replica pod name, and the
+      // sum of TCP connections opened.
+      const transformSchemaForPrometheus =
+        transformPrometheusSchemaToIstioMetrics(result.data);
+
+      // Return the transformed TCP connection data.
+      return transformSchemaForPrometheus;
+    } catch (e: unknown) {
+      // If there is an error during the process, log the error and return undefined.
+      const error = e as Error;
+      logger.error(error);
+      return undefined;
+    }
+  }
+
+  /**
+   * Fetches the sum of latency between all mutual TLS HTTP pods in the specified namespace from the Prometheus API.
+   *
+   * @param {string} ip - The IP address of the Prometheus server.
+   * @param {string} namespace - The namespace in which to fetch the latency data.
+   * @return {Promise<PrometheusTransformResultsToIstioMetrics[] | undefined>} - A promise that resolves to an array of
+   * objects containing the source workload name, target workload name, replica pod name, and the sum of latency between pods,
+   * or undefined if there was an error.
+   */
+  async getLatencyBetweenPods(
+    ip: string,
+    namespace: string
+  ): Promise<PrometheusTransformResultsToIstioMetrics[] | undefined> {
+    try {
+      // Construct the Prometheus query to fetch the sum of latency between all mutual TLS HTTP pods
+      // in the specified namespace.
+      // The query filters the data to only include metrics where the connection security policy is mutual_tls,
+      // the destination and source apps are not unknown, and the namespace matches the specified namespace.
+      // The query also aggregates the data by pod, node, destination workload, and source workload.
+      const query = `sum(rate(istio_request_duration_milliseconds_bucket{connection_security_policy = 'mutual_tls',destination_app != 'unknown',source_app != 'unknown',namespace='${namespace}'}[10m])) by (pod,node,destination_workload,source_workload)`;
+
+      // Send a GET request to the Prometheus API to fetch the latency data.
+      const result = await axios.get<PrometheusFetchData_ISTIO_METRICS>(
+        `http://${ip}/api/v1/query?query=${query}`
+      );
+
+      // If there is no data returned by the API, return an empty array.
+      if (result.data.data.result.length <= 0) {
+        return [];
+      }
+
+      // Transform the fetched data into a format suitable for further processing. The fetched data is transformed
+      // into an array of objects containing the source workload name, target workload name, replica pod name, and the
+      // sum of latency between pods.
+      const transformSchemaForPrometheus =
+        transformPrometheusSchemaToIstioMetrics(result.data);
+
+      // Return the transformed latency data.
+      return transformSchemaForPrometheus;
+    } catch (e: unknown) {
+      // If there is an error during the process, log the error and return undefined.
+      const error = e as Error;
+      logger.error(error);
+      return undefined;
+    }
+  }
 }
 
 const prometheusApi = new PrometheusApi();

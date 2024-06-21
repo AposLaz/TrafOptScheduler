@@ -1,8 +1,10 @@
 type Replica = {
   pod: string;
   node: string;
+  latency: number;
   sumBytes: number;
   countBytes: number;
+  totalMessages: number;
 };
 
 type TargetPodsProps = {
@@ -10,6 +12,8 @@ type TargetPodsProps = {
   replicas: Replica[];
   linkBytesExchanged: number;
   linkMessagesSize: number;
+  linkTotalMessages: number;
+  linkTotalLatency: number;
   affinity: number;
 };
 
@@ -17,11 +21,13 @@ export type AppLinksReplicasAffinities = TargetPodsProps & {
   source: string;
 };
 
-export type TrafficExcSizeBytesAffinities = {
+export type TrafficRateAffinities = {
   namespace: string;
   appLinks: AppLinksReplicasAffinities[];
   totalExchBytes: number;
   totalMsgSize: number;
+  totalMsgs: number;
+  totalLatency: number;
 };
 
 // Every sourceTargets is a community in modSoft algorithm
@@ -37,6 +43,8 @@ export type AppLinksGraphAffinities = {
   appLinks: SourceTargetsAppLinks[];
   totalExchBytes: number;
   totalMsgSize: number;
+  totalMsgs: number;
+  totalLatency: number;
   totalWeightAffinity: number; // is the sum of affinities of all target links for each source.
 };
 

@@ -1,8 +1,6 @@
-import {
-  avgProbability,
-  calculateAffinitiesForExBytesAndSizeMsgs,
-} from './affinitiesExBytesSizeMsg';
-import { updateMembershipMatrix } from './services';
+import { avgProbability, calculateAffinities } from './affinitiesFunc';
+import { modularity } from './modularity';
+import { updateMembershipMatrix } from './updateMembershipMatrix';
 
 const modSoft = async () => {
   const prometheusIp = '10.106.109.230:9090';
@@ -12,10 +10,7 @@ const modSoft = async () => {
   let success = 0; // success in each function that runs
 
   while (retriesModsoft < 5 && success < 1) {
-    const graphDataLinks = await calculateAffinitiesForExBytesAndSizeMsgs(
-      prometheusIp,
-      namespace
-    );
+    const graphDataLinks = await calculateAffinities(prometheusIp, namespace);
 
     if (!graphDataLinks) {
       retriesModsoft = retriesModsoft + 1;
@@ -24,7 +19,26 @@ const modSoft = async () => {
     success = success + 1;
 
     const graphDataAvgProb = avgProbability(graphDataLinks);
-    updateMembershipMatrix(graphDataAvgProb);
+
+    let modPartitions: { [key: string]: { [key: string]: number } } = {};
+    let maxModularity = -Infinity;
+    for (let i = 0; i < 5; i++) {
+      const partitions = updateMembershipMatrix(graphDataAvgProb);
+      const modularityQ = modularity(graphDataAvgProb);
+
+      // TODO: maybe add a condition to stop the loop and return the best partitions
+      if (modularityQ > maxModularity) {
+        modPartitions = partitions;
+        maxModularity = modularityQ;
+      }
+      console.log(modularityQ);
+    }
+
+    console.log(JSON.stringify(graphDataAvgProb, null, 2));
+    console.log(modPartitions);
+    console.log(maxModularity);
+
+    // TODO create partitions for each source using communitiesProb
   }
 };
 
