@@ -58,3 +58,5 @@ export type AppLinksGraphAvgPropAndAffinities = Omit<
 > & {
   appLinks: AvgProbabilityGraphAffinities[];
 };
+
+export type PartitionsType = { [key: string]: { [key: string]: number } };

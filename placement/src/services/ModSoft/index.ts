@@ -1,5 +1,6 @@
 import { avgProbability, calculateAffinities } from './affinitiesFunc';
 import { modularity } from './modularity';
+import { filterPartitions } from './services';
 import { updateMembershipMatrix } from './updateMembershipMatrix';
 
 const modSoft = async () => {
@@ -31,14 +32,15 @@ const modSoft = async () => {
         modPartitions = partitions;
         maxModularity = modularityQ;
       }
-      console.log(modularityQ);
     }
 
-    console.log(JSON.stringify(graphDataAvgProb, null, 2));
-    console.log(modPartitions);
-    console.log(maxModularity);
+    // console.log(JSON.stringify(graphDataAvgProb, null, 2));
+    // console.log(modPartitions);
+    // console.log(maxModularity);
 
     // TODO create partitions for each source using communitiesProb
+    const communities = filterPartitions(graphDataAvgProb, modPartitions);
+    console.log(communities);
   }
 };
 

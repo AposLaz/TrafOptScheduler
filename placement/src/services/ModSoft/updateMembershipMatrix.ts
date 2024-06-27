@@ -1,4 +1,4 @@
-import { AppLinksGraphAvgPropAndAffinities } from './types';
+import { AppLinksGraphAvgPropAndAffinities, PartitionsType } from './types';
 
 /**
  * This function creates a partition object based on the given graph data.
@@ -21,7 +21,9 @@ import { AppLinksGraphAvgPropAndAffinities } from './types';
  * @param {AppLinksGraphAvgPropAndAffinities} graphData - The graph data object.
  * @return {Object} The partition object.
  */
-const createPartitions = (graphData: AppLinksGraphAvgPropAndAffinities) => {
+const createPartitions = (
+  graphData: AppLinksGraphAvgPropAndAffinities
+): PartitionsType => {
   // Initialize an empty partition object
   const partitions: { [key: string]: { [key: string]: number } } = {};
 
@@ -100,11 +102,11 @@ const projectionStep = (inDict: {
  * This function updates the membership matrix for each node in the graph data.
  *
  * @param {AppLinksGraphAvgPropAndAffinities} graphData - The graph data containing the links between nodes and their properties.
- * @returns {void}
+ * @returns {PartitionsType}
  */
 export const updateMembershipMatrix = (
   graphData: AppLinksGraphAvgPropAndAffinities
-) => {
+): PartitionsType => {
   // Set the resolution and learning rate
   const resolution = 1;
   const lr = 0.05; // learning rate
