@@ -86,6 +86,51 @@ class PrometheusApi {
     }
   }
 
+  async getTotalCpuUsedByPod(
+    pod: string,
+    ns: string,
+    time: string
+  ): Promise<number | undefined> {
+    try {
+      const query = `sum(rate(container_cpu_usage_seconds_total{container!='', pod='${pod}', instance!='', namespace='${ns}'}[${time}]))`;
+      const result = await axios.get<PrometheusFetchData_POD_CPU_MEMORY>(
+        `http://${setupConfigs.prometheusHost}/api/v1/query?query=${query}`
+      );
+
+      if (result.data.data.result.length <= 0) {
+        return;
+      }
+
+      return parseFloat(Number(result.data.data.result[0].value[1]).toFixed(3));
+    } catch (e: unknown) {
+      const error = e as Error;
+      logger.error(error);
+      return undefined;
+    }
+  }
+
+  async getTotalMemoryUsedByPod(
+    pod: string,
+    ns: string
+  ): Promise<number | undefined> {
+    try {
+      const query = `sum(container_memory_usage_bytes{pod='${pod}',container!='', instance!='', namespace='${ns}'}) / 1024^2`;
+      const result = await axios.get<PrometheusFetchData_POD_CPU_MEMORY>(
+        `http://${setupConfigs.prometheusHost}/api/v1/query?query=${query}`
+      );
+
+      if (result.data.data.result.length <= 0) {
+        return;
+      }
+
+      return parseFloat(Number(result.data.data.result[0].value[1]).toFixed(3));
+    } catch (e: unknown) {
+      const error = e as Error;
+      logger.error(error);
+      return undefined;
+    }
+  }
+
   // This function fetches CPU usage requested by pods on all nodes from Prometheus API.
   //
   // Returns:
@@ -152,6 +197,60 @@ class PrometheusApi {
 
       // Return the transformed data.
       return transformSchemaForPrometheus;
+    } catch (e: unknown) {
+      // If there is an error during the process, log the error and return undefined.
+      const error = e as Error;
+      logger.error(error);
+      return undefined;
+    }
+  }
+
+  async getRequestedCpuByPod(
+    pod: string,
+    ns: string
+  ): Promise<number | undefined> {
+    try {
+      const query = `sum(kube_pod_container_resource_requests{resource='cpu',node!='',pod='${pod}',namespace='${ns}'})`;
+
+      // Send a GET request to the Prometheus API to fetch the data.
+      const result = await axios.get<PrometheusFetchData_POD_CPU_MEMORY>(
+        `http://${setupConfigs.prometheusHost}/api/v1/query?query=${query}`
+      );
+
+      // If there is no data returned by the API, return an empty array.
+      if (result.data.data.result.length <= 0) {
+        return;
+      }
+
+      // Return the transformed data.
+      return parseFloat(Number(result.data.data.result[0].value[1]).toFixed(3));
+    } catch (e: unknown) {
+      // If there is an error during the process, log the error and return undefined.
+      const error = e as Error;
+      logger.error(error);
+      return undefined;
+    }
+  }
+
+  async getRequestedMemoryByPod(
+    pod: string,
+    ns: string
+  ): Promise<number | undefined> {
+    try {
+      const query = `sum(kube_pod_container_resource_requests{resource='memory',node!='',pod='${pod}',namespace='${ns}'}) / 1024^2`;
+
+      // Send a GET request to the Prometheus API to fetch the data.
+      const result = await axios.get<PrometheusFetchData_POD_CPU_MEMORY>(
+        `http://${setupConfigs.prometheusHost}/api/v1/query?query=${query}`
+      );
+
+      // If there is no data returned by the API, return an empty array.
+      if (result.data.data.result.length <= 0) {
+        return;
+      }
+
+      // Return the transformed data.
+      return parseFloat(Number(result.data.data.result[0].value[1]).toFixed(3));
     } catch (e: unknown) {
       // If there is an error during the process, log the error and return undefined.
       const error = e as Error;

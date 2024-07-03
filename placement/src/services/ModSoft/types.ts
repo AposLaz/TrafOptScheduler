@@ -60,3 +60,7 @@ export type AppLinksGraphAvgPropAndAffinities = Omit<
 };
 
 export type PartitionsType = { [key: string]: { [key: string]: number } };
+
+export type CommunitiesReplicaPods = {
+  [key: string]: { pod: string; node: string; mem: number; cpu: number }[];
+};

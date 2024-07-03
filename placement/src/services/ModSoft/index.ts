@@ -1,4 +1,4 @@
-import { binPacking } from '../binPacking';
+import { binPacking } from './binPacking';
 import { avgProbability, calculateAffinities } from './affinitiesFunc';
 import { modularity } from './modularity';
 import { filterPartitions } from './services';
@@ -37,8 +37,7 @@ export const modSoft = async (namespace: string) => {
 
     // TODO create partitions for each source using communitiesProb
     const communities = filterPartitions(graphDataAvgProb, modPartitions);
-    console.log(communities);
-    await binPacking();
+    await binPacking(communities, namespace);
   }
 };
 
