@@ -41,7 +41,8 @@ export type PrometheusFetchData_NODE_CPU_MEMORY = {
     resultType: string;
     result: {
       metric: {
-        node: string;
+        node?: string;
+        instance?: string;
       };
       value: [number, string];
     }[];

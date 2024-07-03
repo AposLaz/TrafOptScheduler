@@ -1,4 +1,5 @@
 import prometheusApi from '../../api/prometheus/prometheusApi';
+import { Config } from '../../config/config';
 import { removeDuplicateZeroValues } from './services';
 import {
   AppLinksLatency,
@@ -7,13 +8,12 @@ import {
 } from './types';
 
 export const totalLatencyBetweenPods = async (
-  prometheusIp: string,
   namespace: string
 ): Promise<TrafficRatesLatency | undefined> => {
   // Fetch the request and response messages for each app link in the namespace from the Prometheus API
   const latency = await prometheusApi.getLatencyBetweenPods(
-    prometheusIp,
-    namespace
+    namespace,
+    Config.SCHEDULE_TIME
   );
 
   // If no returned data means that there is no communication in the namespace, return undefined

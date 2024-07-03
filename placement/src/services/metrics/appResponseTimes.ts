@@ -5,7 +5,6 @@ import { FormattedEdge } from './types';
 export const appResponseTimes = async () => {
   // Sample JSON data
   const rawData: GraphData | undefined = await kialiApi.getGraphMetrics(
-    '10.103.220.136:20001',
     'online-boutique'
   );
 

@@ -4,6 +4,7 @@ import { app } from './app';
 import { Config } from './config/config';
 import { logger } from './config/logger';
 import { gkeSetupConfigs } from './config/setup';
+import { modSoft } from './services/ModSoft';
 import {
   setUpGraphLinks,
   setupDestinationRulesPerZone,
@@ -45,13 +46,11 @@ const setTrafficSplit = async (region: string) => {
   setupDestinationRulesPerZone(trafficAllocPerLink, ns, region);
 };
 
-const initPlacement = async () => {
-  //const clusterData = await getK8sData(); //need run this for get Kubernetes Data
-  //console.log(JSON.stringify(clusterData));
-  // await getPrometheusIp();
-  // await main();
-};
 export let setupConfigs: SetupGkeConfigs;
+
+const initPlacement = async () => {
+  await modSoft('online-boutique');
+};
 
 const initSetup = async () => {
   try {
@@ -61,9 +60,11 @@ const initSetup = async () => {
 
     if (!currentRegion) return;
 
-    await setTrafficSplit(currentRegion);
+    //await setTrafficSplit(currentRegion);
     await initPlacement();
   } catch (error: unknown) {
     logger.error('Error during setup:', error);
   }
 };
+
+initSetup();

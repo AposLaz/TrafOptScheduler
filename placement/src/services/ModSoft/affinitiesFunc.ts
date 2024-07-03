@@ -12,21 +12,19 @@ import {
 
 /**
  * This function calculates affinities for each app link in a given namespace using
- * data from Prometheus. It takes the Prometheus IP and namespace as parameters and
+ * data from Prometheus. It takes the namespace as parameters and
  * returns an object of type AppLinksGraphAffinities.
  *
- * @param {string} promIp - The IP address of the Prometheus server.
  * @param {string} namespace - The Kubernetes namespace for which to calculate affinities.
  * @returns {Promise<AppLinksGraphAffinities | undefined>} - An object containing the
  * namespace and affinities for each app link, or undefined if no data is returned
  * from Prometheus.
  */
 export const calculateAffinities = async (
-  promIp: string,
   namespace: string
 ): Promise<AppLinksGraphAffinities | undefined> => {
   // Fetch traffic data for the given namespace from Prometheus
-  const graphBytes = await appExchangedBytesAndSizeMessages(promIp, namespace);
+  const graphBytes = await appExchangedBytesAndSizeMessages(namespace);
 
   // If no data is returned, log an error and return undefined means that no communication exists
   if (!graphBytes) {
@@ -35,7 +33,7 @@ export const calculateAffinities = async (
     return;
   }
 
-  const graphMessages = await totalMessagesExchanged(promIp, namespace);
+  const graphMessages = await totalMessagesExchanged(namespace);
 
   // If no data is returned, log an error and return undefined means that no communication exists
   if (!graphMessages) {
@@ -44,7 +42,7 @@ export const calculateAffinities = async (
     return;
   }
 
-  const graphLatency = await totalLatencyBetweenPods(promIp, namespace);
+  const graphLatency = await totalLatencyBetweenPods(namespace);
 
   // If no data is returned, log an error and return undefined means that no communication exists
   if (!graphLatency) {

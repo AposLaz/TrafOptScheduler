@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 // required environment variables
-const requiredEnvVariables: Array<string> = ['ALL_CLUSTERS_IP', 'KIALI_PORT'];
+const requiredEnvVariables: Array<string> = [];
 
 requiredEnvVariables.forEach((envVarName: string) => {
   if (!process.env[envVarName]) {
@@ -12,7 +12,6 @@ requiredEnvVariables.forEach((envVarName: string) => {
 
 export const Config = {
   CLUSTERS_IP: '', //process.env.ALL_CLUSTERS_IP!.split(","),
-  KIALI_PORT: '', // process.env.KIALI_PORT as string,
-  ISTIO_IP: '', //process.env.ISTIO_IP as string,
   APP_PORT: process.env.APP_PORT ?? 3000,
+  SCHEDULE_TIME: process.env.SCHEDULE_TIME ?? '30m', // this is the time that our app is running before scheduling
 };

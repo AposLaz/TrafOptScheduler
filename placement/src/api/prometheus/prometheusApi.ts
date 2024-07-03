@@ -1,11 +1,8 @@
-import { promisify } from 'node:util';
-import { execFile } from 'node:child_process';
 import axios from 'axios';
 import {
   PrometheusFetchData_ISTIO_METRICS,
   PrometheusFetchData_NODE_CPU_MEMORY,
   PrometheusFetchData_POD_CPU_MEMORY,
-  PrometheusTransformResults,
   PrometheusTransformResultsByNode,
   PrometheusTransformResultsToIstioMetrics,
   PrometheusTransformResultsToNode,
@@ -13,98 +10,97 @@ import {
 import {
   transformPrometheusSchemaToIstioMetrics,
   transformPrometheusSchemaToNodeMetric,
-  transformPrometheusSchemaToPodMetric,
   transformPrometheusSchemaToPodMetricByNode,
 } from './services';
 import { logger } from '../../config/logger';
-
-const promisifiedExecFile = promisify(execFile);
+import { setupConfigs } from '../..';
 
 class PrometheusApi {
-  async getPrometheusIpAddress(): Promise<string | undefined> {
+  /**
+   * This function sends a GET request to the Prometheus API to fetch the total
+   * CPU used by pods in each node.
+   *
+   * Returns:
+   * - Promise<PrometheusTransformResultsToNode[] | undefined> - A promise that
+   *   resolves to an array of objects containing the total CPU used by pods in
+   *   each node. If the request to the Prometheus API is unsuccessful, the
+   *   promise resolves to undefined.
+   */
+  async getTotalCpuUsedByPodsInEachNode(
+    time: string
+  ): Promise<PrometheusTransformResultsToNode[] | undefined> {
     try {
-      const command = `kubectl get ingress prometheus-ingress -n istio-system -o jsonpath='{.status.loadBalancer.ingress[0].ip}'`;
-      const { stdout } = await promisifiedExecFile('bash', ['-c', command]);
+      // The query calculates the total CPU used by pods by summing the CPU
+      // usage of all containers in each node. The 'rate' function calculates
+      // the derivative of the given metric over time, which in this case is the
+      // rate at which the CPU usage of the containers is changing. The '[time]'
+      // specifies that the rate is calculated over a 10 minute interval.
+      const query = `sum(rate(container_cpu_usage_seconds_total{container!='', pod!='', instance!=''}[${time}])) by (instance)`;
 
-      return stdout;
+      // Send a GET request to the Prometheus API to fetch the data.
+      const result = await axios.get<PrometheusFetchData_NODE_CPU_MEMORY>(
+        `http://${setupConfigs.prometheusHost}/api/v1/query?query=${query}`
+      );
+
+      // If there is no data returned by the API, return an empty array.
+      if (result.data.data.result.length <= 0) {
+        return [];
+      }
+
+      // Transform the fetched data into a format suitable for further processing.
+      // The fetched data is transformed into an array of objects containing the node name and the total CPU used by pods in that node.
+      const transformSchemaForPrometheus =
+        transformPrometheusSchemaToNodeMetric(result.data);
+
+      // Return the transformed data.
+      return transformSchemaForPrometheus;
     } catch (e: unknown) {
+      // If there is an error during the process, log the error and return undefined.
       const error = e as Error;
-      logger.error('stderr:', error.message);
+      logger.error(error);
       return undefined;
     }
   }
 
-  //fetch data every 2minutes
-  async getPrometheusCPUusageForAllPodsInNamespace(
-    ip: string,
-    namespace: string
-  ): Promise<PrometheusTransformResults[] | undefined> {
+  async getTotalMemoryUsedByPodsInEachNode(): Promise<
+    PrometheusTransformResultsToNode[] | undefined
+  > {
     try {
-      const query = `sum (rate (container_cpu_usage_seconds_total{id!="/",namespace=~"${namespace}"}[2m])) by (pod)`;
-      const result = await axios.get<PrometheusFetchData_POD_CPU_MEMORY>(
-        `http://${ip}/prometheus/api/v1/query?query=${query}`
+      const query = `sum(container_memory_usage_bytes{pod!='',container!='', instance!=''}) by (instance) / 1024^2`;
+      const result = await axios.get<PrometheusFetchData_NODE_CPU_MEMORY>(
+        `http://${setupConfigs.prometheusHost}/api/v1/query?query=${query}`
       );
 
       if (result.data.data.result.length <= 0) {
         return [];
       }
 
-      const transformSchemaForPrometheus = transformPrometheusSchemaToPodMetric(
-        result.data.data.result
-      );
+      const transformSchemaForPrometheus =
+        transformPrometheusSchemaToNodeMetric(result.data);
 
       return transformSchemaForPrometheus;
     } catch (e: unknown) {
       const error = e as Error;
-      logger.error('axiosErr:', error.message);
+      logger.error(error);
       return undefined;
     }
   }
 
-  async getPrometheusMemoryusageForAllPodsInNamespace(
-    ip: string,
-    namespace: string
-  ): Promise<PrometheusTransformResults[] | undefined> {
-    try {
-      //get Memory in gb for 2 min
-      const query = `sum(rate(container_memory_working_set_bytes{id!="/",namespace=~"${namespace}"}[2m])) by (pod) / 1024^2`;
-      const result = await axios.get<PrometheusFetchData_POD_CPU_MEMORY>(
-        `http://${ip}/prometheus/api/v1/query?query=${query}`
-      );
-
-      if (result.data.data.result.length <= 0) {
-        return [];
-      }
-
-      const transformSchemaForPrometheus = transformPrometheusSchemaToPodMetric(
-        result.data.data.result
-      );
-
-      return transformSchemaForPrometheus;
-    } catch (e: unknown) {
-      const error = e as Error;
-      logger.error('axiosErr:', error.message);
-      return undefined;
-    }
-  }
   // This function fetches CPU usage requested by pods on all nodes from Prometheus API.
-  //
-  // Parameters:
-  // - ip: string - IP address of the Prometheus server.
   //
   // Returns:
   // - Promise<PrometheusTransformResultsToNode[] | undefined> - A promise that resolves to an array of objects
   //   containing CPU usage requested by pods on all nodes. If the request to Prometheus API is unsuccessful, the
   //   promise resolves to undefined.
-  async getNodesCpuRequestedByPods(
-    ip: string
-  ): Promise<PrometheusTransformResultsToNode[] | undefined> {
+  async getNodesCpuRequestedByPods(): Promise<
+    PrometheusTransformResultsToNode[] | undefined
+  > {
     try {
-      const query = `sum(kube_pod_container_resource_requests{resource='cpu'}) by (node)`;
+      const query = `sum(kube_pod_container_resource_requests{resource='cpu',node!=''}) by (node)`;
 
       // Send a GET request to the Prometheus API to fetch the data.
       const result = await axios.get<PrometheusFetchData_NODE_CPU_MEMORY>(
-        `http://${ip}/api/v1/query?query=${query}`
+        `http://${setupConfigs.prometheusHost}/api/v1/query?query=${query}`
       );
 
       // If there is no data returned by the API, return an empty array.
@@ -128,22 +124,19 @@ class PrometheusApi {
 
   // This function fetches the amount of memory requested by pods on all nodes from the Prometheus API.
   //
-  // Parameters:
-  // - ip: string - The IP address of the Prometheus server.
-  //
   // Returns:
   // - Promise<PrometheusTransformResultsToNode[] | undefined> - A promise that resolves to an array of objects
   //   containing the amount of memory requested by pods on all nodes. If the request to the Prometheus API is
   //   unsuccessful, the promise resolves to undefined.
-  async getNodesMemoryRequestedByPods(
-    ip: string
-  ): Promise<PrometheusTransformResultsToNode[] | undefined> {
+  async getNodesMemoryRequestedByPods(): Promise<
+    PrometheusTransformResultsToNode[] | undefined
+  > {
     try {
-      const query = `sum(kube_pod_container_resource_requests{resource='memory'}) by (node) / 1024^2`;
+      const query = `sum(kube_pod_container_resource_requests{resource='memory',node!=''}) by (node) / 1024^2`;
 
       // Send a GET request to the Prometheus API to fetch the data.
       const result = await axios.get<PrometheusFetchData_NODE_CPU_MEMORY>(
-        `http://${ip}/api/v1/query?query=${query}`
+        `http://${setupConfigs.prometheusHost}/api/v1/query?query=${query}`
       );
 
       // If there is no data returned by the API, return an empty array.
@@ -169,20 +162,17 @@ class PrometheusApi {
 
   // This function sends a GET request to the Prometheus API to fetch the amount of CPU allocated to pods on all nodes.
   //
-  // Parameters:
-  // - ip: string - The IP address of the Prometheus server.
-  //
   // Returns:
   // - Promise<PrometheusTransformResultsToNode[] | undefined> - A promise that resolves to an array of objects
   //   containing the amount of CPU allocated to pods on all nodes. If the request to the Prometheus API is
   //   unsuccessful, the promise resolves to undefined.
-  async getNodesAllocateCpuForPods(
-    ip: string
-  ): Promise<PrometheusTransformResultsToNode[] | undefined> {
+  async getNodesAllocateCpuForPods(): Promise<
+    PrometheusTransformResultsToNode[] | undefined
+  > {
     try {
       const query = `kube_node_status_allocatable{resource='cpu'}`;
       const result = await axios.get<PrometheusFetchData_NODE_CPU_MEMORY>(
-        `http://${ip}/api/v1/query?query=${query}`
+        `http://${setupConfigs.prometheusHost}/api/v1/query?query=${query}`
       );
 
       // If there is no data returned by the API, return an empty array.
@@ -209,17 +199,14 @@ class PrometheusApi {
   /**
    * This function sends a GET request to the Prometheus API to fetch the amount of memory allocated to pods on all nodes.
    *
-   * Parameters:
-   * - ip: string - The IP address of the Prometheus server.
-   *
    * Returns:
    * - Promise<PrometheusTransformResultsToNode[] | undefined> - A promise that resolves to an array of objects
    *   containing the amount of memory allocated to pods on all nodes. If the request to the Prometheus API is
    *   unsuccessful, the promise resolves to undefined.
    */
-  async getNodesAllocateMemoryForPods(
-    ip: string
-  ): Promise<PrometheusTransformResultsToNode[] | undefined> {
+  async getNodesAllocateMemoryForPods(): Promise<
+    PrometheusTransformResultsToNode[] | undefined
+  > {
     try {
       // The query calculates the amount of memory allocated to pods by dividing the total amount of memory
       // available on each node by 1024^2 (which converts the value to megabytes).
@@ -227,7 +214,7 @@ class PrometheusApi {
 
       // Send a GET request to the Prometheus API to fetch the data.
       const result = await axios.get<PrometheusFetchData_NODE_CPU_MEMORY>(
-        `http://${ip}/api/v1/query?query=${query}`
+        `http://${setupConfigs.prometheusHost}/api/v1/query?query=${query}`
       );
 
       // If there is no data returned by the API, return an empty array.
@@ -256,23 +243,21 @@ class PrometheusApi {
   /**
    * This function fetches the amount of CPU requested by pods in a specified namespace from the Prometheus API.
    *
-   * @param {string} ip - The IP address of the Prometheus server.
    * @param {string} namespace - The namespace in which to fetch the CPU requests.
    * @return {Promise<PrometheusTransformResultsByNode[] | undefined>} A promise that resolves to an array of objects
    * containing the amount of CPU requested by pods in the specified namespace. If the request to the Prometheus API is
    * unsuccessful, the promise resolves to undefined.
    */
   async getPodsRequestedCpuByNs(
-    ip: string,
     namespace: string
   ): Promise<PrometheusTransformResultsByNode[] | undefined> {
     try {
       // requests made by all pods in the specified namespace and groups the results by pod and node.
-      const query = `sum(kube_pod_container_resource_requests{resource='cpu',namespace='${namespace}'}) by (pod,node)`;
+      const query = `sum(kube_pod_container_resource_requests{resource='cpu',namespace='${namespace}',node!='',pod!=''}) by (pod,node)`;
 
       // Send a GET request to the Prometheus API to fetch the data.
       const result = await axios.get<PrometheusFetchData_POD_CPU_MEMORY>(
-        `http://${ip}/api/v1/query?query=${query}`
+        `http://${setupConfigs.prometheusHost}/api/v1/query?query=${query}`
       );
 
       // If there is no data returned by the API, return an empty array.
@@ -304,23 +289,21 @@ class PrometheusApi {
    * Fetches the amount of memory requested by all pods in a specified namespace from the Prometheus API and
    * transforms the fetched data into a format suitable for further processing.
    *
-   * @param {string} ip - The IP address of the Prometheus server.
    * @param {string} namespace - The name of the namespace for which to fetch the memory usage data.
    * @return {Promise<PrometheusTransformResultsByNode[] | undefined>} - A promise that resolves to an array of objects
    * containing the pod name, node name, and the amount of memory requested by the pod. If the operation is
    * unsuccessful, the promise resolves to undefined.
    */
   async getPodsRequestedMemoryByNs(
-    ip: string,
     namespace: string
   ): Promise<PrometheusTransformResultsByNode[] | undefined> {
     try {
       // The query groups the results by pod and node.
-      const query = `sum(kube_pod_container_resource_requests{resource='memory',namespace='${namespace}'}) by (pod,node) / 1024^2`;
+      const query = `sum(kube_pod_container_resource_requests{resource='memory',namespace='${namespace}',node!='',pod!=''}) by (pod,node) / 1024^2`;
 
       // Sends a GET request to the Prometheus API to fetch the data.
       const result = await axios.get<PrometheusFetchData_POD_CPU_MEMORY>(
-        `http://${ip}/api/v1/query?query=${query}`
+        `http://${setupConfigs.prometheusHost}/api/v1/query?query=${query}`
       );
 
       // If there is no data returned by the API, return an empty array.
@@ -346,22 +329,21 @@ class PrometheusApi {
   /**
    * Fetches the CPU usage of all pods in a specified namespace from the Prometheus API.
    *
-   * @param {string} ip - The IP address of the Prometheus server.
    * @param {string} namespace - The name of the namespace for which to fetch the CPU usage data.
    * @return {Promise<PrometheusTransformResultsByNode[] | undefined>} - A promise that resolves to an array of objects
    * containing the pod name, node name, and the CPU usage of the pod. If the operation is
    * unsuccessful, the promise resolves to undefined.
    */
   async getPodsCpuUsageByNs(
-    ip: string,
-    namespace: string
+    namespace: string,
+    time: string
   ): Promise<PrometheusTransformResultsByNode[] | undefined> {
     try {
-      const query = `avg(rate(container_cpu_usage_seconds_total{namespace='${namespace}'}[10m])) by (pod,instance)`;
+      const query = `avg(rate(container_cpu_usage_seconds_total{namespace='${namespace}',instance!='',pod!=''}[${time}])) by (pod,instance)`;
 
       // Sends a GET request to the Prometheus API to fetch the CPU usage data.
       const result = await axios.get<PrometheusFetchData_POD_CPU_MEMORY>(
-        `http://${ip}/api/v1/query?query=${query}`
+        `http://${setupConfigs.prometheusHost}/api/v1/query?query=${query}`
       );
 
       // If there is no data returned by the API, return an empty array.
@@ -394,21 +376,20 @@ class PrometheusApi {
    * Fetches the memory usage of all pods in the specified namespace from Prometheus and returns the data in a
    * transformed format.
    *
-   * @param {string} ip - The IP address of the Prometheus server.
    * @param {string} namespace - The namespace in which to fetch the memory usage data.
    * @return {Promise<PrometheusTransformResultsByNode[] | undefined>} - A promise that resolves to an array of objects
    * containing the pod name, node name, and the memory usage of the pod, or undefined if there was an error.
    */
   async getPodsMemoryUsageByNs(
-    ip: string,
-    namespace: string
+    namespace: string,
+    time: string
   ): Promise<PrometheusTransformResultsByNode[] | undefined> {
     try {
-      const query = `avg(rate(container_memory_max_usage_bytes{namespace='${namespace}'}[10m])) by (pod,instance) / 1024^2`;
+      const query = `avg(rate(container_memory_max_usage_bytes{namespace='${namespace}',instance!='',pod!=''}[${time}])) by (pod,instance) / 1024^2`;
 
       // Sends a GET request to the Prometheus API to fetch the memory usage data.
       const result = await axios.get<PrometheusFetchData_POD_CPU_MEMORY>(
-        `http://${ip}/api/v1/query?query=${query}`
+        `http://${setupConfigs.prometheusHost}/api/v1/query?query=${query}`
       );
 
       // If there is no data returned by the API, return an empty array.
@@ -435,15 +416,14 @@ class PrometheusApi {
    * Fetches the sum of request bytes sent by all pods in the specified namespace from Prometheus and returns the
    * data in a transformed format.
    *
-   * @param {string} ip - The IP address of the Prometheus server.
    * @param {string} namespace - The namespace in which to fetch the request bytes data.
    * @return {Promise<PrometheusTransformResultsToIstioMetrics[] | undefined>} - A promise that resolves to an array of
    * objects containing the source and target workload names, replica pod name, and the sum of request bytes sent, or
    * undefined if there was an error.
    */
   async getHttpPodsRequestBytesSumByNs(
-    ip: string,
-    namespace: string
+    namespace: string,
+    time: string
   ): Promise<PrometheusTransformResultsToIstioMetrics[] | undefined> {
     try {
       // The Prometheus query fetches the sum of request bytes sent by all pods in the specified namespace, with the
@@ -451,11 +431,11 @@ class PrometheusApi {
       // - The connection security policy is mutual TLS.
       // - The response code is 200.
       // - The source and destination apps are not unknown.
-      const query = `rate(istio_request_bytes_sum{connection_security_policy = 'mutual_tls', response_code="200",source_app != 'unknown',  destination_app != 'unknown', namespace='${namespace}'}[10m])`;
+      const query = `rate(istio_request_bytes_sum{connection_security_policy = 'mutual_tls', response_code="200",source_app != 'unknown',  destination_app != 'unknown', namespace='${namespace}'}[${time}])`;
 
       // Sends a GET request to the Prometheus API to fetch the request bytes data.
       const result = await axios.get<PrometheusFetchData_ISTIO_METRICS>(
-        `http://${ip}/api/v1/query?query=${query}`
+        `http://${setupConfigs.prometheusHost}/api/v1/query?query=${query}`
       );
 
       // If there is no data returned by the API, return an empty array.
@@ -483,15 +463,14 @@ class PrometheusApi {
    * Fetches the sum of response bytes received by all pods in the specified namespace from Prometheus and returns the
    * data in a transformed format.
    *
-   * @param {string} ip - The IP address of the Prometheus server.
    * @param {string} namespace - The namespace in which to fetch the response bytes data.
    * @return {Promise<PrometheusTransformResultsToIstioMetrics[] | undefined>} - A promise that resolves to an array of
    * objects containing the source and target workload names, replica pod name, and the sum of response bytes received,
    * or undefined if there was an error.
    */
   async getHttpPodsResponseBytesSumByNs(
-    ip: string,
-    namespace: string
+    namespace: string,
+    time: string
   ): Promise<PrometheusTransformResultsToIstioMetrics[] | undefined> {
     try {
       // The Prometheus query fetches the sum of response bytes received by all pods in the specified namespace, with the
@@ -499,11 +478,11 @@ class PrometheusApi {
       // - The connection security policy is mutual TLS.
       // - The response code is 200.
       // - The source and destination apps are not unknown.
-      const query = `rate(istio_response_bytes_sum{connection_security_policy = 'mutual_tls', response_code="200",source_app != 'unknown',  destination_app != 'unknown', namespace='${namespace}'}[10m])`;
+      const query = `rate(istio_response_bytes_sum{connection_security_policy = 'mutual_tls', response_code="200",source_app != 'unknown',  destination_app != 'unknown', namespace='${namespace}'}[${time}])`;
 
       // Sends a GET request to the Prometheus API to fetch the response bytes data.
       const result = await axios.get<PrometheusFetchData_ISTIO_METRICS>(
-        `http://${ip}/api/v1/query?query=${query}`
+        `http://${setupConfigs.prometheusHost}/api/v1/query?query=${query}`
       );
 
       // If there is no data returned by the API, return an empty array.
@@ -534,25 +513,24 @@ class PrometheusApi {
    * for further processing. The fetched data includes the source workload name, target workload name,
    * replica pod name, and the sum of request bytes sent.
    *
-   * @param {string} ip - The IP address of the Prometheus server.
    * @param {string} namespace - The name of the namespace where the pods are located.
    * @return {Promise<PrometheusTransformResultsToIstioMetrics[] | undefined>} - An array of objects containing the source workload name, target workload name,
    * replica pod name, and the sum of request bytes sent, or undefined if there was an error.
    */
   async getTcpPodsRequestBytesSumByNs(
-    ip: string,
-    namespace: string
+    namespace: string,
+    time: string
   ): Promise<PrometheusTransformResultsToIstioMetrics[] | undefined> {
     try {
       // The Prometheus query fetches the sum of request bytes sent by all TCP pods in the specified namespace, with the
       // following conditions:
       // - The connection security policy is mutual TLS.
       // - The source and destination apps are not unknown.
-      const query = `rate(istio_tcp_sent_bytes_total{connection_security_policy = 'mutual_tls', source_app != 'unknown',  destination_app != 'unknown', namespace='${namespace}'}[10m])`;
+      const query = `rate(istio_tcp_sent_bytes_total{connection_security_policy = 'mutual_tls', source_app != 'unknown',  destination_app != 'unknown', namespace='${namespace}'}[${time}])`;
 
       // Sends a GET request to the Prometheus API to fetch the request bytes data.
       const result = await axios.get<PrometheusFetchData_ISTIO_METRICS>(
-        `http://${ip}/api/v1/query?query=${query}`
+        `http://${setupConfigs.prometheusHost}/api/v1/query?query=${query}`
       );
 
       // If there is no data returned by the API, return an empty array.
@@ -580,14 +558,13 @@ class PrometheusApi {
    * This function fetches the sum of response bytes sent by all TCP pods in the specified namespace.
    * This is useful for monitoring database traffic.
    *
-   * @param {string} ip - The IP address of the Prometheus server.
    * @param {string} namespace - The name of the namespace where the TCP pods are located.
    * @return {Promise<PrometheusTransformResultsToIstioMetrics[] | undefined>} - An array of objects containing the source workload name, target workload name,
    * replica pod name, and the sum of response bytes sent, or undefined if there was an error.
    */
   async getTcpPodsResponseBytesSumByNs(
-    ip: string,
-    namespace: string
+    namespace: string,
+    time: string
   ): Promise<PrometheusTransformResultsToIstioMetrics[] | undefined> {
     try {
       // We use the Prometheus API to query data. The query fetches the sum of response bytes sent by all TCP pods in the specified namespace, with the
@@ -595,11 +572,11 @@ class PrometheusApi {
       // - The connection security policy is mutual TLS.
       // - The source and destination apps are not unknown.
       // We use the `rate` function to calculate the rate of change of the response bytes over a 10 minute time window.
-      const query = `rate(istio_tcp_received_bytes_total{connection_security_policy = 'mutual_tls', source_app != 'unknown',  destination_app != 'unknown', namespace='${namespace}'}[10m])`;
+      const query = `rate(istio_tcp_received_bytes_total{connection_security_policy = 'mutual_tls', source_app != 'unknown',  destination_app != 'unknown', namespace='${namespace}'}[${time}])`;
 
       // Sends a GET request to the Prometheus API to fetch the response bytes data.
       const result = await axios.get<PrometheusFetchData_ISTIO_METRICS>(
-        `http://${ip}/api/v1/query?query=${query}`
+        `http://${setupConfigs.prometheusHost}/api/v1/query?query=${query}`
       );
 
       // If there is no data returned by the API, return an empty array.
@@ -633,21 +610,20 @@ class PrometheusApi {
    * If there is no data returned by the API, the function returns an empty array.
    * If there is an error during the process, the function logs the error and returns undefined.
    *
-   * @param ip - The IP address of the Prometheus server.
    * @param namespace - The namespace of the pods to fetch the request bytes data for.
    * @returns An array of objects containing the source workload name, target workload name, replica pod name, and the sum of request bytes sent, or undefined if there was an error.
    */
   async getHttpPodsRequestBytesCountByNs(
-    ip: string,
-    namespace: string
+    namespace: string,
+    time: string
   ): Promise<PrometheusTransformResultsToIstioMetrics[] | undefined> {
     try {
       // Construct the Prometheus query to fetch the sum of request bytes sent by all HTTP pods in the specified namespace.
-      const query = `rate(istio_request_bytes_count{connection_security_policy = 'mutual_tls', response_code="200",source_app != 'unknown',  destination_app != 'unknown', namespace='${namespace}'}[10m])`;
+      const query = `rate(istio_request_bytes_count{connection_security_policy = 'mutual_tls', response_code="200",source_app != 'unknown',  destination_app != 'unknown', namespace='${namespace}'}[${time}])`;
 
       // Send a GET request to the Prometheus API to fetch the request bytes data.
       const result = await axios.get<PrometheusFetchData_ISTIO_METRICS>(
-        `http://${ip}/api/v1/query?query=${query}`
+        `http://${setupConfigs.prometheusHost}/api/v1/query?query=${query}`
       );
 
       // If there is no data returned by the API, return an empty array.
@@ -674,23 +650,22 @@ class PrometheusApi {
   /**
    * Fetches the sum of response bytes sent by all HTTP pods in the specified namespace from the Prometheus API.
    *
-   * @param ip - The IP address of the Prometheus server.
    * @param namespace - The namespace of the pods to fetch the response bytes data for.
    * @returns An array of objects containing the source workload name, target workload name, replica pod name, and the sum of response bytes sent, or undefined if there was an error.
    */
   async getHttpPodsResponseBytesCountByNs(
-    ip: string,
-    namespace: string
+    namespace: string,
+    time: string
   ): Promise<PrometheusTransformResultsToIstioMetrics[] | undefined> {
     try {
       // Construct the Prometheus query to fetch the sum of response bytes sent by all HTTP pods in the specified namespace.
       // The query filters the data to only include metrics where the connection security policy is mutual_tls, the response code is 200,
       // the source and destination apps are not unknown, and the namespace matches the specified namespace.
-      const query = `rate(istio_response_bytes_count{connection_security_policy = 'mutual_tls', response_code="200",source_app != 'unknown',  destination_app != 'unknown', namespace='${namespace}'}[10m])`;
+      const query = `rate(istio_response_bytes_count{connection_security_policy = 'mutual_tls', response_code="200",source_app != 'unknown',  destination_app != 'unknown', namespace='${namespace}'}[${time}])`;
 
       // Send a GET request to the Prometheus API to fetch the response bytes data.
       const result = await axios.get<PrometheusFetchData_ISTIO_METRICS>(
-        `http://${ip}/api/v1/query?query=${query}`
+        `http://${setupConfigs.prometheusHost}/api/v1/query?query=${query}`
       );
 
       // If there is no data returned by the API, return an empty array.
@@ -723,21 +698,20 @@ class PrometheusApi {
    * If there is no data returned by the API, the function returns an empty array.
    * If there is an error during the process, the function logs the error and returns undefined.
    *
-   * @param ip - The IP address of the Prometheus server.
    * @param namespace - The namespace of the pods to fetch the request message data for.
    * @returns An array of objects containing the source workload name, target workload name, replica pod name, and the sum of request messages sent, or undefined if there was an error.
    */
   async getRequestMessagesByNs(
-    ip: string,
-    namespace: string
+    namespace: string,
+    time: string
   ): Promise<PrometheusTransformResultsToIstioMetrics[] | undefined> {
     try {
       // Construct the Prometheus query to fetch the sum of request messages sent by all HTTP pods in the specified namespace.
-      const query = `sum(ceil(increase(istio_request_messages_total{source_app != 'unknown', destination_app != 'unknown', namespace='${namespace}'}[10m]))) by (pod,node,source_workload,destination_workload)`;
+      const query = `sum(ceil(increase(istio_request_messages_total{source_app != 'unknown', destination_app != 'unknown', namespace='${namespace}'}[${time}]))) by (pod,node,source_workload,destination_workload)`;
 
       // Send a GET request to the Prometheus API to fetch the request message data.
       const result = await axios.get<PrometheusFetchData_ISTIO_METRICS>(
-        `http://${ip}/api/v1/query?query=${query}`
+        `http://${setupConfigs.prometheusHost}/api/v1/query?query=${query}`
       );
 
       // If there is no data returned by the API, return an empty array.
@@ -765,23 +739,22 @@ class PrometheusApi {
    * Fetches the sum of response messages sent by all HTTP pods in the specified namespace from Prometheus and returns the
    * data in a transformed format.
    *
-   * @param {string} ip - The IP address of the Prometheus server.
    * @param {string} namespace - The namespace in which to fetch the response message data.
    * @return {Promise<PrometheusTransformResultsToIstioMetrics[] | undefined>} - A promise that resolves to an array of
    * objects containing the source workload name, target workload name, replica pod name, and the sum of response messages sent,
    * or undefined if there was an error.
    */
   async getResponseMessagesByNs(
-    ip: string,
-    namespace: string
+    namespace: string,
+    time: string
   ): Promise<PrometheusTransformResultsToIstioMetrics[] | undefined> {
     try {
       // Construct the Prometheus query to fetch the sum of response messages sent by all HTTP pods in the specified namespace.
-      const query = `sum(ceil(increase(istio_response_messages_total{source_app != 'unknown', destination_app != 'unknown', namespace='${namespace}'}[10m]))) by (pod,node,source_workload,destination_workload)`;
+      const query = `sum(ceil(increase(istio_response_messages_total{source_app != 'unknown', destination_app != 'unknown', namespace='${namespace}'}[${time}]))) by (pod,node,source_workload,destination_workload)`;
 
       // Send a GET request to the Prometheus API to fetch the response message data.
       const result = await axios.get<PrometheusFetchData_ISTIO_METRICS>(
-        `http://${ip}/api/v1/query?query=${query}`
+        `http://${setupConfigs.prometheusHost}/api/v1/query?query=${query}`
       );
 
       // If there is no data returned by the API, return an empty array.
@@ -809,14 +782,12 @@ class PrometheusApi {
    * Fetches the sum of TCP connections opened by all mutual TLS HTTP pods in the specified namespace,
    * using the Prometheus API.
    *
-   * @param {string} ip - The IP address of the Prometheus server.
    * @param {string} namespace - The namespace in which to fetch the TCP connection data.
    * @return {Promise<PrometheusTransformResultsToIstioMetrics[] | undefined>} - A promise that resolves to an array of
    * objects containing the source workload name, target workload name, replica pod name, and the sum of TCP connections opened,
    * or undefined if there was an error.
    */
   async getTcpConnectionsByNs(
-    ip: string,
     namespace: string
   ): Promise<PrometheusTransformResultsToIstioMetrics[] | undefined> {
     try {
@@ -826,7 +797,7 @@ class PrometheusApi {
 
       // Send a GET request to the Prometheus API to fetch the TCP connection data.
       const result = await axios.get<PrometheusFetchData_ISTIO_METRICS>(
-        `http://${ip}/api/v1/query?query=${query}`
+        `http://${setupConfigs.prometheusHost}/api/v1/query?query=${query}`
       );
 
       // If there is no data returned by the API, return an empty array.
@@ -853,15 +824,14 @@ class PrometheusApi {
   /**
    * Fetches the sum of latency between all mutual TLS HTTP pods in the specified namespace from the Prometheus API.
    *
-   * @param {string} ip - The IP address of the Prometheus server.
    * @param {string} namespace - The namespace in which to fetch the latency data.
    * @return {Promise<PrometheusTransformResultsToIstioMetrics[] | undefined>} - A promise that resolves to an array of
    * objects containing the source workload name, target workload name, replica pod name, and the sum of latency between pods,
    * or undefined if there was an error.
    */
   async getLatencyBetweenPods(
-    ip: string,
-    namespace: string
+    namespace: string,
+    time: string
   ): Promise<PrometheusTransformResultsToIstioMetrics[] | undefined> {
     try {
       // Construct the Prometheus query to fetch the sum of latency between all mutual TLS HTTP pods
@@ -869,11 +839,11 @@ class PrometheusApi {
       // The query filters the data to only include metrics where the connection security policy is mutual_tls,
       // the destination and source apps are not unknown, and the namespace matches the specified namespace.
       // The query also aggregates the data by pod, node, destination workload, and source workload.
-      const query = `sum(rate(istio_request_duration_milliseconds_bucket{connection_security_policy = 'mutual_tls',destination_app != 'unknown',source_app != 'unknown',namespace='${namespace}'}[10m])) by (pod,node,destination_workload,source_workload)`;
+      const query = `sum(rate(istio_request_duration_milliseconds_bucket{connection_security_policy = 'mutual_tls',destination_app != 'unknown',source_app != 'unknown',namespace='${namespace}'}[${time}])) by (pod,node,destination_workload,source_workload)`;
 
       // Send a GET request to the Prometheus API to fetch the latency data.
       const result = await axios.get<PrometheusFetchData_ISTIO_METRICS>(
-        `http://${ip}/api/v1/query?query=${query}`
+        `http://${setupConfigs.prometheusHost}/api/v1/query?query=${query}`
       );
 
       // If there is no data returned by the API, return an empty array.

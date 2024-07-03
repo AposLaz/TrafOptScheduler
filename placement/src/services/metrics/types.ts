@@ -1,4 +1,30 @@
 /**
+ * Cluster Common Resources
+ */
+
+export type ClusterCommonResources = {
+  node: string;
+  metrics: {
+    allocation: number;
+    requested: number;
+    available: number;
+  };
+};
+
+export type ClusterResourcesMemCpu = {
+  node: string;
+  cpu: {
+    allocation: number;
+    requested: number;
+    available: number;
+  };
+  memory: {
+    allocation: number;
+    requested: number;
+    available: number;
+  };
+};
+/**
  * Cluster resources
  */
 export type ClusterResourcesByNamespace = {
@@ -9,7 +35,7 @@ export type ClusterResourcesByNamespace = {
       memory: {
         available: number;
         allocation: number; // this is the memory that can be used by pods
-        usage: number;
+        requested: number;
       };
       cpu: {
         available: number;

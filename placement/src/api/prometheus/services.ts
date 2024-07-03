@@ -87,7 +87,9 @@ export function transformPrometheusSchemaToNodeMetric(
 
   results.data.result.forEach((data) => {
     const returnObject: PrometheusTransformResultsToNode = {
-      node: data.metric.node, // ever exists a node
+      node: data.metric.node
+        ? data.metric.node
+        : (data.metric.instance as string), // ever exists a node
       metric: parseFloat(Number(data.value[1]).toFixed(2)),
     };
     returnResults.push(returnObject);

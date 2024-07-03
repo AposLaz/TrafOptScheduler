@@ -1,12 +1,11 @@
 import axios from 'axios';
-import { Config } from '../../config/config';
 import { GraphData } from './types';
 import { setupConfigs } from '../..';
 import { logger } from '../../config/logger';
 
 class KialiApi {
   async getGraph(namespace: string) {
-    const url = `http://${setupConfigs.kialiIP}:${Config.KIALI_PORT}/kiali/api/namespaces/graph?edges=noEdgeLabels&graphType=service&unusedNodes=false&operationNodes=false&injectServiceNodes=true&duration=60s&refresh=15000&namespaces=${namespace}&layout=dagre`;
+    const url = `http://${setupConfigs.kialiHost}/kiali/api/namespaces/graph?edges=noEdgeLabels&graphType=service&unusedNodes=false&operationNodes=false&injectServiceNodes=true&duration=60s&refresh=15000&namespaces=${namespace}&layout=dagre`;
 
     try {
       const response = await axios.get<GraphData>(url);
@@ -18,8 +17,8 @@ class KialiApi {
     }
   }
 
-  async getGraphMetrics(ip: string, namespace: string) {
-    const url = `http://${ip}/kiali/api/namespaces/graph?graphType=workload&duration=10m&namespaces=${namespace}&layout=dagre`;
+  async getGraphMetrics(namespace: string) {
+    const url = `http://${setupConfigs.kialiHost}/kiali/api/namespaces/graph?graphType=workload&duration=10m&namespaces=${namespace}&layout=dagre`;
 
     try {
       const response = await axios.get<GraphData>(url);

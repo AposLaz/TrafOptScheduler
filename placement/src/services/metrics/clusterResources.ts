@@ -3,48 +3,50 @@
  */
 
 import prometheusApi from '../../api/prometheus/prometheusApi';
+import { PrometheusTransformResultsToNode } from '../../api/prometheus/types';
+import { Config } from '../../config/config';
+import { logger } from '../../config/logger';
+import { ClusterCommonResources, ClusterResourcesMemCpu } from './types';
 
-export const clusterResources = async () => {
-  //   const promIp = await gkeSetupConfigs();
-  //   console.log(promIp.prometheusIP);
+const calculateMaxMetricPerNode = (
+  array: PrometheusTransformResultsToNode[]
+) => {
+  const maxCpuUsageRequested = array.reduce<
+    Record<string, PrometheusTransformResultsToNode>
+  >((acc, curr) => {
+    const { node, metric } = curr;
+    if (!acc[node] || metric > acc[node].metric) {
+      acc[node] = { node, metric };
+    }
+    return acc;
+  }, {});
 
-  const prometheusIp = '10.106.109.230:9090';
-  const namespace = 'online-boutique';
+  return Object.values(maxCpuUsageRequested);
+};
 
-  // const NamespaceMetricsByNode: ClusterMetricsByNamespace = [];
+export const clusterCpu = async (): Promise<
+  ClusterCommonResources[] | undefined
+> => {
+  // total cpu usage pods in each node
+  const nodesTotalCpuPodsUsage =
+    await prometheusApi.getTotalCpuUsedByPodsInEachNode(Config.SCHEDULE_TIME);
 
-  const nodesRequestedCpu = await prometheusApi.getNodesCpuRequestedByPods(
-    prometheusIp
-  );
+  if (!nodesTotalCpuPodsUsage) return;
+
+  const nodesRequestedCpu = await prometheusApi.getNodesCpuRequestedByPods();
 
   if (!nodesRequestedCpu) return;
 
-  // console.log(nodesRequestedCpu);
+  // find max cpu between nodesTotalCpuPodsUsage & nodesRequestedCpu
+  const combinedCpu = [...nodesTotalCpuPodsUsage, ...nodesRequestedCpu];
 
-  const nodesRequestedMemory =
-    await prometheusApi.getNodesMemoryRequestedByPods(prometheusIp);
+  const maxTotalCpuUsedOrRequested = calculateMaxMetricPerNode(combinedCpu);
 
-  if (!nodesRequestedMemory) return;
-
-  // console.log(nodesRequestedMemory);
-
-  const nodesAllocateCpu = await prometheusApi.getNodesAllocateCpuForPods(
-    prometheusIp
-  );
+  const nodesAllocateCpu = await prometheusApi.getNodesAllocateCpuForPods();
 
   if (!nodesAllocateCpu) return;
 
-  // console.log(nodesAllocateCpu);
-
-  const nodesAllocateMemory = await prometheusApi.getNodesAllocateMemoryForPods(
-    prometheusIp
-  );
-
-  if (!nodesAllocateMemory) return;
-
-  // console.log(nodesAllocateMemory);
-
-  const nodesMetricsCpu = nodesRequestedCpu.map((req) => {
+  const nodesMetricsCpu = maxTotalCpuUsedOrRequested.map((req) => {
     const alloc = nodesAllocateCpu.find((alloc) => alloc.node === req.node);
     if (alloc) {
       return {
@@ -58,9 +60,35 @@ export const clusterResources = async () => {
     }
   });
 
-  // console.log(nodesMetricsCpu);
+  return nodesMetricsCpu as ClusterCommonResources[];
+};
 
-  const nodesMetricsMemory = nodesRequestedMemory.map((req) => {
+export const clusterMemory = async (): Promise<
+  ClusterCommonResources[] | undefined
+> => {
+  // total memory usage pods in each node
+  const nodesTotalMemoryPodsUsage =
+    await prometheusApi.getTotalMemoryUsedByPodsInEachNode();
+
+  if (!nodesTotalMemoryPodsUsage) return;
+
+  const nodesRequestedMemory =
+    await prometheusApi.getNodesMemoryRequestedByPods();
+
+  if (!nodesRequestedMemory) return;
+
+  const combinedMem = [...nodesTotalMemoryPodsUsage, ...nodesRequestedMemory];
+
+  const maxTotalMemUsedOrRequested = calculateMaxMetricPerNode(combinedMem);
+
+  const nodesAllocateMemory =
+    await prometheusApi.getNodesAllocateMemoryForPods();
+
+  if (!nodesAllocateMemory) return;
+
+  // console.log(nodesAllocateMemory);
+
+  const nodesMetricsMemory = maxTotalMemUsedOrRequested.map((req) => {
     const alloc = nodesAllocateMemory.find((alloc) => alloc.node === req.node);
     if (alloc) {
       return {
@@ -74,33 +102,51 @@ export const clusterResources = async () => {
     }
   });
 
-  // console.log(nodesMetricsMemory);
+  return nodesMetricsMemory as ClusterCommonResources[];
+};
 
-  const podsRequestedCpu = await prometheusApi.getPodsRequestedCpuByNs(
-    prometheusIp,
-    namespace
-  );
+export const clusterResources = async () => {
+  const clusterCpuResources = await clusterCpu();
+  if (!clusterCpuResources) {
+    logger.error('Failed to get cluster cpu resources');
+    return;
+  }
 
-  // console.log(podsRequestedCpu);
+  const clusterMemResources = await clusterMemory();
+  if (!clusterMemResources) {
+    logger.error('Failed to get cluster memory resources');
+    return;
+  }
 
-  const podsRequestedMemory = await prometheusApi.getPodsRequestedMemoryByNs(
-    prometheusIp,
-    namespace
-  );
+  const clusterResourcesMemCpu = clusterCpuResources.map((cpuData) => {
+    const memData = clusterMemResources.find(
+      (memData) => memData.node === cpuData.node
+    );
+    if (memData) {
+      return {
+        node: cpuData.node,
+        cpu: cpuData.metrics,
+        memory: memData.metrics,
+      };
+    }
+  });
 
-  // console.log(podsRequestedMemory);
+  return clusterResourcesMemCpu as ClusterResourcesMemCpu[];
 
-  const cpuUsagePods = await prometheusApi.getPodsCpuUsageByNs(
-    prometheusIp,
-    namespace
-  );
+  // MEMORY
+  // total total memory usage pods in each node
 
-  // console.log(cpuUsagePods);
+  //console.log(nodesMetricsMemory);
 
-  const memoryUsagePods = await prometheusApi.getPodsMemoryUsageByNs(
-    prometheusIp,
-    namespace
-  );
+  // const podsRequestedCpu = await prometheusApi.getPodsRequestedCpuByNs(
+  //   namespace
+  // );
 
-  // console.log(memoryUsagePods);
+  // const podsRequestedMemory = await prometheusApi.getPodsRequestedMemoryByNs(
+  //   namespace
+  // );
+
+  // const cpuUsagePods = await prometheusApi.getPodsCpuUsageByNs(namespace);
+
+  // const memoryUsagePods = await prometheusApi.getPodsMemoryUsageByNs(namespace);
 };

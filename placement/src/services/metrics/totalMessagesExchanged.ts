@@ -1,4 +1,5 @@
 import prometheusApi from '../../api/prometheus/prometheusApi';
+import { Config } from '../../config/config';
 import { removeDuplicateZeroValues } from './services';
 import {
   AppLinksMessages,
@@ -17,13 +18,12 @@ import {
  * traffic metrics for each app link, the total sum of messages exchanged. If the operation is unsuccessful, the promise resolves to undefined.
  */
 export const totalMessagesExchanged = async (
-  prometheusIp: string,
   namespace: string
 ): Promise<TrafficRatesMessages | undefined> => {
   // Fetch the request and response messages for each app link in the namespace from the Prometheus API
   const requestMsgs = await prometheusApi.getRequestMessagesByNs(
-    prometheusIp,
-    namespace
+    namespace,
+    Config.SCHEDULE_TIME
   );
 
   // If no returned data means that there is no communication in the namespace, return undefined
@@ -33,8 +33,8 @@ export const totalMessagesExchanged = async (
   const uniqueRequestMsgs = removeDuplicateZeroValues(requestMsgs);
 
   const responseMsgs = await prometheusApi.getResponseMessagesByNs(
-    prometheusIp,
-    namespace
+    namespace,
+    Config.SCHEDULE_TIME
   );
 
   // If no returned data means that there is no communication in the namespace, return undefined
@@ -43,10 +43,7 @@ export const totalMessagesExchanged = async (
   // Remove duplicate zero values from the response messages
   const uniqueResponseMsgs = removeDuplicateZeroValues(responseMsgs);
 
-  const tcpConnections = await prometheusApi.getTcpConnectionsByNs(
-    prometheusIp,
-    namespace
-  );
+  const tcpConnections = await prometheusApi.getTcpConnectionsByNs(namespace);
 
   if (tcpConnections && tcpConnections.length > 0) {
     const uniqueTcpValues = removeDuplicateZeroValues(tcpConnections);

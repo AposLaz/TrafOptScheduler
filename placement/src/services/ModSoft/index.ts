@@ -1,17 +1,15 @@
+import { binPacking } from '../binPacking';
 import { avgProbability, calculateAffinities } from './affinitiesFunc';
 import { modularity } from './modularity';
 import { filterPartitions } from './services';
 import { updateMembershipMatrix } from './updateMembershipMatrix';
 
-const modSoft = async () => {
-  const prometheusIp = '10.106.109.230:9090';
-  const namespace = 'online-boutique';
-
+export const modSoft = async (namespace: string) => {
   let retriesModsoft = 0;
   let success = 0; // success in each function that runs
 
   while (retriesModsoft < 5 && success < 1) {
-    const graphDataLinks = await calculateAffinities(prometheusIp, namespace);
+    const graphDataLinks = await calculateAffinities(namespace);
 
     if (!graphDataLinks) {
       retriesModsoft = retriesModsoft + 1;
@@ -27,7 +25,6 @@ const modSoft = async () => {
       const partitions = updateMembershipMatrix(graphDataAvgProb);
       const modularityQ = modularity(graphDataAvgProb);
 
-      // TODO: maybe add a condition to stop the loop and return the best partitions
       if (modularityQ > maxModularity) {
         modPartitions = partitions;
         maxModularity = modularityQ;
@@ -41,10 +38,9 @@ const modSoft = async () => {
     // TODO create partitions for each source using communitiesProb
     const communities = filterPartitions(graphDataAvgProb, modPartitions);
     console.log(communities);
+    await binPacking();
   }
 };
 
 //https://www.youtube.com/watch?v=QfTxqAxJp0U&ab_channel=AndrewBeveridge
 //https://www.youtube.com/watch?v=Xt0vBtBY2BU&ab_channel=Splience
-
-modSoft();

@@ -1,4 +1,5 @@
 import prometheusApi from '../../api/prometheus/prometheusApi';
+import { Config } from '../../config/config';
 import { removeDuplicateZeroValues } from './services';
 import {
   AppLinksBytes,
@@ -19,13 +20,12 @@ import {
  * is unsuccessful, the promise resolves to undefined.
  */
 export const appExchangedBytesAndSizeMessages = async (
-  prometheusIp: string,
   namespace: string
 ): Promise<TrafficRatesBytes | undefined> => {
   // Fetch the sum of request bytes for each app link in the namespace
   const sumRequestBytes = await prometheusApi.getHttpPodsRequestBytesSumByNs(
-    prometheusIp,
-    namespace
+    namespace,
+    Config.SCHEDULE_TIME
   );
 
   // No returned data means that there is no communication in the namespace
@@ -36,8 +36,8 @@ export const appExchangedBytesAndSizeMessages = async (
 
   // Fetch the sum of TCP request bytes for each app link in the namespace
   const sumTcpRequestBytes = await prometheusApi.getTcpPodsRequestBytesSumByNs(
-    prometheusIp,
-    namespace
+    namespace,
+    Config.SCHEDULE_TIME
   );
 
   // If TCP request bytes data is returned by the API, add it to the uniqueSumRequestBytes array
@@ -48,8 +48,8 @@ export const appExchangedBytesAndSizeMessages = async (
 
   // Fetch the sum of response bytes for each app link in the namespace
   const sumResponseBytes = await prometheusApi.getHttpPodsResponseBytesSumByNs(
-    prometheusIp,
-    namespace
+    namespace,
+    Config.SCHEDULE_TIME
   );
 
   // No returned data means that there is no communication in the namespace
@@ -60,7 +60,10 @@ export const appExchangedBytesAndSizeMessages = async (
 
   // Fetch the sum of TCP response bytes for each app link in the namespace
   const sumTcpResponseBytes =
-    await prometheusApi.getTcpPodsResponseBytesSumByNs(prometheusIp, namespace);
+    await prometheusApi.getTcpPodsResponseBytesSumByNs(
+      namespace,
+      Config.SCHEDULE_TIME
+    );
 
   // If TCP response bytes data is returned by the API, add it to the uniqueSumResponseBytes array
   if (sumTcpResponseBytes && sumTcpResponseBytes.length > 0) {
@@ -102,8 +105,8 @@ export const appExchangedBytesAndSizeMessages = async (
   // Fetch the count of request bytes for each app link in the namespace
   const countRequestBytes =
     await prometheusApi.getHttpPodsRequestBytesCountByNs(
-      prometheusIp,
-      namespace
+      namespace,
+      Config.SCHEDULE_TIME
     );
 
   // No returned data means that there is no communication in the namespace
@@ -115,8 +118,8 @@ export const appExchangedBytesAndSizeMessages = async (
   // Fetch the count of response bytes for each app link in the namespace
   const countResponseBytes =
     await prometheusApi.getHttpPodsResponseBytesCountByNs(
-      prometheusIp,
-      namespace
+      namespace,
+      Config.SCHEDULE_TIME
     );
 
   // If no data is returned by the API, return undefined

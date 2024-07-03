@@ -302,8 +302,20 @@ class KubernetesApi {
     ns: string
   ): Promise<string | undefined> {
     try {
-      const command = `kubectl get svc -n ${ns} --selector=app=${svc} \
-       --output=jsonpath='{.items[*].status.loadBalancer.ingress[0].ip}'`;
+      const command = `kubectl get svc ${svc} -n ${ns} --output=jsonpath='{.status.loadBalancer.ingress[0].ip}'`;
+      const { stdout } = await promisifiedExecFile('bash', ['-c', command]);
+
+      return stdout;
+    } catch (e: unknown) {
+      const error = e as Error;
+      logger.error('stderr:', error.message);
+      return undefined;
+    }
+  }
+
+  async getPortBySvc(svc: string, ns: string): Promise<string | undefined> {
+    try {
+      const command = `kubectl get svc ${svc} -n ${ns} -o jsonpath='{.spec.ports[0].port}'`;
       const { stdout } = await promisifiedExecFile('bash', ['-c', command]);
 
       return stdout;
