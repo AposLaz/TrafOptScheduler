@@ -23,7 +23,7 @@ spec:
   selector:
     matchLabels:
       app: frontend
-  replicas: 2
+  replicas: 4
   template:
     metadata:
       labels:

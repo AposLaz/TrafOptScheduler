@@ -4,12 +4,12 @@ import { app } from './app';
 import { Config } from './config/config';
 import { logger } from './config/logger';
 import { gkeSetupConfigs } from './config/setup';
-import { modSoft } from './services/ModSoft';
+import { modSoft } from './services/modSoft';
 import {
   setUpGraphLinks,
   setupDestinationRulesPerZone,
   trafficAllocation,
-} from './services/trafficSplit';
+} from './services/trafficGenerator/trafficSplit';
 import { SetupGkeConfigs } from './types';
 import { setupWatchers } from './watchers';
 
