@@ -4,16 +4,16 @@ import {
   DestinationRuleFromToZones,
   DestinationRuleProps,
   TrafficSummaryPerZone,
-} from './types';
-import kubernetesApi from '../api/k8s/kubernetesApi';
-import kialiApi from '../api/kiali/kialiApi';
-import { createLinksForSourceAndTarget } from '../api/kiali/services';
-import { GraphEdges } from '../api/kiali/types';
-import { to2Digits } from '../common/helper';
+} from '../../services/types';
+import kubernetesApi from '../../api/k8s/kubernetesApi';
+import kialiApi from '../../api/kiali/kialiApi';
+import { createLinksForSourceAndTarget } from '../../api/kiali/services';
+import { GraphEdges } from '../../api/kiali/types';
+import { to2Digits } from '../../common/helper';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
 import * as fs from 'fs';
-import { logger } from '../config/logger';
+import { logger } from '../../config/logger';
 
 export const setUpGraphLinks = async (
   ns: string

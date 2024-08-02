@@ -4,7 +4,7 @@
 
 import { getK8sClient } from '../../config/k8sClient';
 import { CommunitiesReplicaPods, PartitionsType } from './types';
-import { clusterResources } from '../metrics/clusterResources';
+import { clusterResources } from '../../services/metrics/clusterResources';
 import * as k8s from '@kubernetes/client-node';
 import prometheusApi from '../../api/prometheus/prometheusApi';
 /**

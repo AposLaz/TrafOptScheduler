@@ -1,7 +1,7 @@
 import { logger } from '../../config/logger';
-import { appExchangedBytesAndSizeMessages } from '../metrics/exchangedBytesAndSizeMessages';
-import { totalLatencyBetweenPods } from '../metrics/latencyBetweenPods';
-import { totalMessagesExchanged } from '../metrics/totalMessagesExchanged';
+import { appExchangedBytesAndSizeMessages } from '../../services/metrics/exchangedBytesAndSizeMessages';
+import { totalLatencyBetweenPods } from '../../services/metrics/latencyBetweenPods';
+import { totalMessagesExchanged } from '../../services/metrics/totalMessagesExchanged';
 import {
   AppLinksGraphAffinities,
   AppLinksGraphAvgPropAndAffinities,

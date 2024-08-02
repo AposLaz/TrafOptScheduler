@@ -2,10 +2,10 @@ import kialiApi from '../../api/kiali/kialiApi';
 import { GraphData } from '../../api/kiali/types';
 import { FormattedEdge } from './types';
 
-export const appResponseTimes = async () => {
+export const appResponseTimes = async (namespace: string) => {
   // Sample JSON data
   const rawData: GraphData | undefined = await kialiApi.getGraphMetrics(
-    'online-boutique'
+    namespace
   );
 
   //console.log(JSON.stringify(rawData, null, 2));

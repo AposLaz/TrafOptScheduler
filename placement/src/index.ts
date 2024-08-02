@@ -4,12 +4,12 @@ import { app } from './app';
 import { Config } from './config/config';
 import { logger } from './config/logger';
 import { gkeSetupConfigs } from './config/setup';
-import { modSoft } from './services/modSoft';
+
 import {
   setUpGraphLinks,
   setupDestinationRulesPerZone,
   trafficAllocation,
-} from './services/trafficGenerator/trafficSplit';
+} from './algorithms/optTraffic/optTraffic';
 import { SetupGkeConfigs } from './types';
 import { setupWatchers } from './watchers';
 
@@ -29,7 +29,7 @@ setupWatchers().catch((error: unknown) => {
   logger.error(`Could not setup watchers ${err.message}`);
 });
 
-const setTrafficSplit = async (region: string) => {
+const setTrafficLocalization = async (region: string) => {
   //TODO => for each namespace
   const ns = 'default';
 
@@ -48,9 +48,7 @@ const setTrafficSplit = async (region: string) => {
 
 export let setupConfigs: SetupGkeConfigs;
 
-const initPlacement = async () => {
-  await modSoft('online-boutique');
-};
+const initPlacement = async () => {};
 
 const initSetup = async () => {
   try {
@@ -60,8 +58,7 @@ const initSetup = async () => {
 
     if (!currentRegion) return;
 
-    //await setTrafficSplit(currentRegion);
-    await initPlacement();
+    //await setTrafficLocalization(currentRegion);
   } catch (error: unknown) {
     logger.error('Error during setup:', error);
   }
