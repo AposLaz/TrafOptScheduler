@@ -7,7 +7,7 @@ import {
 } from '../../services/types';
 import kubernetesApi from '../../api/k8s/kubernetesApi';
 import kialiApi from '../../api/kiali/kialiApi';
-import { createLinksForSourceAndTarget } from '../../api/kiali/services';
+import { createLinksForSourceAndTarget } from '../../services/traffic/services';
 import { GraphEdges } from '../../api/kiali/types';
 import { to2Digits } from '../../common/helper';
 import * as path from 'path';
@@ -29,6 +29,7 @@ export const setUpGraphLinks = async (
   ) {
     return;
   }
+  console.log(JSON.stringify(getKialiGraph, null, 2));
 
   logger.info(
     `[${ns}] get upstream k8s services and downstream k8s services...`

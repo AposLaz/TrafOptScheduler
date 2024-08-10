@@ -4,7 +4,7 @@ import {
   createArrayFromStringWithNewLine,
   createArrayFromStringWithSpace,
 } from '../../common/helper';
-import { DeployList, DeploymentType } from './types';
+import { DeployList, DeploymentType, podLocation } from './types';
 import { logger } from '../../config/logger';
 
 const promisifiedExecFile = promisify(execFile);
@@ -259,25 +259,30 @@ class KubernetesApi {
     }
   }
 
-  async getZoneByNodeByPod(
+  async getRegionZoneNodeByPod(
     pod: string,
     namespace: string
-  ): Promise<string | undefined> {
+  ): Promise<podLocation | undefined> {
     try {
       const command_1 = `kubectl get pod ${pod} -n ${namespace} -o=jsonpath='{.spec.nodeName}'`;
       const node = await promisifiedExecFile('bash', ['-c', command_1]);
 
       if (node.stdout) {
-        const command_2 = `kubectl get node ${node.stdout} -o json | jq -r '.metadata.labels["topology.kubernetes.io/zone"]' `;
-        const zone = await promisifiedExecFile('bash', ['-c', command_2]);
+        const command_2 = `kubectl get node ${node.stdout} -o json | jq -r '.metadata.labels | to_entries[] | select(.key | test("topology.kubernetes.io/(region|zone)")) | .value'`;
+        const result = await promisifiedExecFile('bash', ['-c', command_2]);
+        const [region, zone] = result.stdout.trim().split('\n');
 
-        return zone.stdout.replace(/\n$/, '');
+        return {
+          region: region,
+          zone: zone,
+          node: node.stdout,
+        };
       }
 
       return undefined;
     } catch (e: unknown) {
       const error = e as Error;
-      logger.error('stderr:', error.message);
+      logger.error(`stderr: ${error.message}`);
       return undefined;
     }
   }

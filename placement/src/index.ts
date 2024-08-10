@@ -5,11 +5,7 @@ import { Config } from './config/config';
 import { logger } from './config/logger';
 import { gkeSetupConfigs } from './config/setup';
 
-import {
-  setUpGraphLinks,
-  setupDestinationRulesPerZone,
-  trafficAllocation,
-} from './algorithms/optTraffic/optTraffic';
+import { setUpGraphLinks } from './services/traffic/trafficLocalization';
 import { SetupGkeConfigs } from './types';
 import { setupWatchers } from './watchers';
 
@@ -31,7 +27,7 @@ setupWatchers().catch((error: unknown) => {
 
 const setTrafficLocalization = async (region: string) => {
   //TODO => for each namespace
-  const ns = 'default';
+  const ns = 'online-boutique';
 
   const links = await setUpGraphLinks(ns);
   if (!links) {
@@ -39,11 +35,11 @@ const setTrafficLocalization = async (region: string) => {
     return;
   }
 
-  const trafficAllocPerLink = links.map((clusterPods) =>
-    trafficAllocation(clusterPods)
-  );
-  logger.info(JSON.stringify(trafficAllocPerLink, null, 2));
-  setupDestinationRulesPerZone(trafficAllocPerLink, ns, region);
+  // const trafficAllocPerLink = links.map((clusterPods) =>
+  //   trafficAllocation(clusterPods)
+  // );
+  // logger.info(JSON.stringify(trafficAllocPerLink, null, 2));
+  // setupDestinationRulesPerZone(trafficAllocPerLink, ns, region);
 };
 
 export let setupConfigs: SetupGkeConfigs;
@@ -58,7 +54,7 @@ const initSetup = async () => {
 
     if (!currentRegion) return;
 
-    //await setTrafficLocalization(currentRegion);
+    await setTrafficLocalization(currentRegion);
   } catch (error: unknown) {
     logger.error('Error during setup:', error);
   }

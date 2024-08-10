@@ -1,4 +1,4 @@
-import { GraphData, GraphEdges } from './types';
+import { GraphData, GraphEdges } from '../../api/kiali/types';
 
 export const createLinksForSourceAndTarget = (
   graph: GraphData,
@@ -19,7 +19,7 @@ export const createLinksForSourceAndTarget = (
   const graphNodesApps = graph.elements.nodes
     .filter(
       (node) =>
-        node.data.nodeType === 'app' && node.data.namespace === namespace
+        node.data.nodeType === 'workload' && node.data.namespace === namespace
     )
     .map((node) => ({
       app: node.data.app,
