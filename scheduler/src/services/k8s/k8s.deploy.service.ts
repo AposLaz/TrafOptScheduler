@@ -1,6 +1,7 @@
 import * as k8s from '@kubernetes/client-node';
-import { ReplicasAction } from '../types';
-import { sleep } from '../common/helpers';
+import { ReplicasAction } from '../../types';
+import { sleep } from '../../common/helpers';
+import { logger } from '../../config/logger';
 
 // add replicas
 export const handleDeployReplicas = async (
@@ -37,17 +38,17 @@ export const handleDeployReplicas = async (
 export const readyStatusDeploy = async (
   k8sClient: k8s.AppsV1Api,
   deployName: string,
-  ns: string
-) => {
+  ns: string,
+  maxRound: number
+): Promise<boolean> => {
   let status = 'NotReady';
-  const maxTime = 10;
-  let time = 0;
+  let round = 0;
 
-  while (status !== 'Ready' && time < maxTime) {
-    console.log(time);
+  while (round < maxRound) {
+    console.log(round);
     // wait one second for each repeat
-    await sleep(2000);
-    time++;
+    await sleep(1000);
+    round++;
 
     const deploymentResponse = await k8sClient.readNamespacedDeployment(
       deployName,
@@ -60,5 +61,18 @@ export const readyStatusDeploy = async (
     const readyReplicas = deployment.status?.readyReplicas || 0;
 
     readyReplicas === desiredReplicas && (status = 'Ready');
+
+    if (status === 'Ready') {
+      logger.info(
+        `[INFO] All replicas are ready for deployment: ${deployName}`
+      );
+
+      return true;
+    }
   }
+
+  logger.error(
+    `[ERROR] All replicas are not ready for deployment add it to queue: ${deployName}`
+  );
+  return false;
 };

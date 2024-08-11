@@ -1,4 +1,4 @@
-import { getK8sClient } from '../config/k8sClient';
+import { getK8sClient } from '../../config/k8sClient';
 import * as k8s from '@kubernetes/client-node';
 
 export const getAppsApiClient = () => {

@@ -1,26 +1,26 @@
 import * as k8s from '@kubernetes/client-node';
 
 // apply taints to nodes
-export const addTaints = async (
+export const addTaint = async (
   k8sClient: k8s.CoreV1Api,
   nodeName: string,
-  newTaints: k8s.V1Taint[]
+  newTaint: k8s.V1Taint
 ) => {
   // set up k8s api
   const node = await k8sClient.readNode(nodeName);
 
   const taintsExists = node.body.spec?.taints;
 
-  let concatTaints = newTaints;
+  let concatTaints = [newTaint];
 
   if (taintsExists) {
     // check if exist taints with different key
     const taintsDiff = taintsExists.filter(
-      (taint) => !newTaints.some((newTaint) => newTaint.key === taint.key)
+      (taint) => newTaint.key !== taint.key
     );
 
     // if other taints exists let them
-    if (taintsDiff.length > 0) concatTaints = [...newTaints, ...taintsDiff];
+    if (taintsDiff.length > 0) concatTaints = [newTaint, ...taintsDiff];
   }
 
   node.body.spec!.taints = concatTaints;
@@ -29,9 +29,9 @@ export const addTaints = async (
 };
 
 // delete taints with specific key from all nodes
-export const deleteTaints = async (
+export const deleteTaint = async (
   k8sClient: k8s.CoreV1Api,
-  taintKey: string[]
+  taintKey: string
 ) => {
   const nodes = await k8sClient.listNode();
 
@@ -39,7 +39,7 @@ export const deleteTaints = async (
     if (node.spec?.taints) {
       // check if exists taints with different key and get them
       const taintsDiff = node.spec.taints.filter(
-        (taint) => !taintKey.some((key) => key === taint.key)
+        (taint) => taintKey !== taint.key
       );
 
       // if other taints exists let them and remove taints with key = taintKey
