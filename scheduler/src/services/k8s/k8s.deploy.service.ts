@@ -3,6 +3,17 @@ import { ReplicasAction } from '../../types';
 import { sleep } from '../../common/helpers';
 import { logger } from '../../config/logger';
 
+export const deploymentMatchLabels = async (
+  k8sClient: k8s.AppsV1Api,
+  deployName: string,
+  ns: string
+) => {
+  const deploy = await k8sClient.readNamespacedDeployment(deployName, ns);
+  const matchLabels = deploy.body.spec?.selector.matchLabels;
+
+  return matchLabels;
+};
+
 // add replicas
 export const handleDeployReplicas = async (
   k8sClient: k8s.AppsV1Api,
@@ -35,6 +46,7 @@ export const handleDeployReplicas = async (
   );
 };
 
+// check if the deployment is ready
 export const readyStatusDeploy = async (
   k8sClient: k8s.AppsV1Api,
   deployName: string,
@@ -45,7 +57,7 @@ export const readyStatusDeploy = async (
   let round = 0;
 
   while (round < maxRound) {
-    console.log(round);
+    console.log('Deploy - ' + deployName + ' - round - ' + round);
     // wait one second for each repeat
     await sleep(1000);
     round++;
@@ -63,16 +75,14 @@ export const readyStatusDeploy = async (
     readyReplicas === desiredReplicas && (status = 'Ready');
 
     if (status === 'Ready') {
-      logger.info(
-        `[INFO] All replicas are ready for deployment: ${deployName}`
-      );
+      logger.info(`All replicas are ready for deployment: ${deployName}`);
 
       return true;
     }
   }
 
   logger.error(
-    `[ERROR] All replicas are not ready for deployment add it to queue: ${deployName}`
+    `All replicas are not ready for deployment add it to queue: ${deployName}`
   );
   return false;
 };

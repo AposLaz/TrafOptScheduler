@@ -68,7 +68,9 @@ class QueueFileSystemHandlerApi {
 
       // delete specific deployment from the file and after that write it back
       const appendQueue = queue.filter(
-        (item) => item.deploymentName !== deploy.deploymentName
+        (item) =>
+          item.deploymentName !== deploy.deploymentName &&
+          item.deletePod !== deploy.deletePod
       );
 
       //write data to the filesystem

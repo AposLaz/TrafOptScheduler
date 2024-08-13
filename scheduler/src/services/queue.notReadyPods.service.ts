@@ -19,14 +19,14 @@ export const checkNotReadyPodsInQueue = () => {
 
     // decode json data to the right format
     const queueData: DeploymentNotReadyFilesystem[] = JSON.parse(data);
-    logger.info(`[INFO] Deployment queue length: ${queueData.length}`);
+    logger.info(`Deployment queue length: ${queueData.length}`);
 
     for (const deploy of queueData) {
       // Fire-and-forget with concurrency control
       (async () => {
         await semaphore.acquire(); // Wait for a slot to be available
         try {
-          await retryUntilReadyStatusDeploy(deploy, true);
+          await retryUntilReadyStatusDeploy(deploy, false);
         } finally {
           semaphore.release(); // Release the slot
         }
@@ -49,7 +49,7 @@ export const retryUntilReadyStatusDeploy = async (
 
   // write deploy from the file
   if (write) {
-    logger.info(`[INFO] Write deploy to the file: ${deploy.deploymentName}`);
+    logger.info(`Write deploy to the file: ${deploy.deploymentName}`);
     // write deploy from the file
     queueApi.writeDeployToQueueFile(deploy);
   }
@@ -79,7 +79,7 @@ export const retryUntilReadyStatusDeploy = async (
     'delete'
   );
 
-  logger.info(`[INFO] Delete deploy from the file: ${deploy.deploymentName}`);
+  logger.info(`Delete deploy from the file: ${deploy.deploymentName}`);
   // delete deploy from the file
   queueApi.deleteDeployFromQueueFile(deploy);
 };

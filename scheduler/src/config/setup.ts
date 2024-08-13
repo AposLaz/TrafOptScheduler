@@ -15,7 +15,7 @@ const createMountPath = () => {
     const err = error as Error;
     logger.error(err.message);
     throw new Error(
-      `[ERROR] Unable to create required directories [${queuePath}], please check permissions.`
+      `Unable to create required directories [${queuePath}], please check permissions.`
     );
   }
 };
@@ -31,7 +31,7 @@ const createQueueFile = () => {
     const err = error as Error;
     logger.error(err.message);
     throw new Error(
-      `[ERROR] Unable to create required file [${queueFile}], please check permissions..`
+      `Unable to create required file [${queueFile}], please check permissions..`
     );
   }
 };

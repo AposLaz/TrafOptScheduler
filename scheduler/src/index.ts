@@ -3,7 +3,13 @@ import { app } from './app';
 import { Config } from './config/config';
 import { logger } from './config/logger';
 import './config/setup';
+import { reschedulePods } from './services/compare.resourses.service';
+import {
+  getAppsApiClient,
+  getCoreApiClient,
+} from './services/k8s/k8s.client.service';
 import { checkNotReadyPodsInQueue } from './services/queue.notReadyPods.service';
+import { scheduler } from './services/scheduler.service';
 
 const initRestApi = async () => {
   app.listen(Config.APP_PORT, () => {
@@ -16,22 +22,27 @@ initRestApi().catch((error: unknown) => {
   logger.error(`Could not setup api ${err.message}`);
 });
 
-const deployModels = {
-  deploymentName: 'server-app-deployment',
-  namespace: 'default',
-  deletePod: 'server-app-deployment-febfcf83-d3vr', // delete a random pod from another node
-};
-
 const initSetup = async () => {
   try {
     // check if all deploys are ready in background
-    Promise.all([checkNotReadyPodsInQueue()]).then(() => {
+    /*Promise.all([checkNotReadyPodsInQueue()]).then(() => {
       logger.info('All Deploys are ready');
-    });
-
-    //await scheduler();
+    });*/
+    const apiK8sClient = getCoreApiClient();
+    const appsApiK8sClient = getAppsApiClient();
+    for (const namespace of Config.NAMESPACES) {
+      try {
+        //await scheduler(apiK8sClient, appsApiK8sClient);
+        await reschedulePods(apiK8sClient, appsApiK8sClient, namespace);
+      } catch (error) {
+        logger.error(`Error reschedule pods in namespace: ${namespace}`);
+        logger.error(error);
+      }
+    }
   } catch (error: unknown) {
-    logger.error('Error during setup:', error);
+    const err = error as Error;
+    logger.error(`Could not setup api`);
+    throw new Error(err.message);
   }
 };
 

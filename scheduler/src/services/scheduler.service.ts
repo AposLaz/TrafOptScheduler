@@ -1,7 +1,6 @@
 import { logger } from '../config/logger';
 import { k8sMapper } from '../mapper/mapper';
 import { DeploymentPlacementModel } from '../types';
-import { getAppsApiClient, getCoreApiClient } from './k8s/k8s.client.service';
 import {
   handleDeployReplicas,
   readyStatusDeploy,
@@ -12,30 +11,18 @@ import * as k8s from '@kubernetes/client-node';
 import { retryUntilReadyStatusDeploy } from './queue.notReadyPods.service';
 import { Semaphore } from '../handler/semaphore.handler';
 import { SemaphoreConcLimits } from '../enums';
-
-const deployModels: DeploymentPlacementModel[] = [
-  {
-    deploymentName: 'server-app-deployment',
-    node: 'gke-cluster-0-default-pool-febfcf83-d3vr',
-    namespace: 'default',
-    deletePod: 'server-app-deployment-febfcf83-d3vr', // delete a random pod from another node
-  },
-  {
-    deploymentName: 'pong-server-deployment',
-    node: 'gke-cluster-0-default-pool-febfcf83-d3vr',
-    namespace: 'default',
-    deletePod: 'pong-server-deployment-febfcf83-d3vr',
-  },
-];
+import { deployModels } from '../data/deploy';
+import { getPodsCurrentResources } from './metrics/cpu.ram.resources.service';
 
 // Initialize the semaphore with the desired concurrency limit
 const semaphore = Semaphore.getInstance(SemaphoreConcLimits.MAX_CONCURRENCY); // Get the singleton instance with a max of default 20 concurrent tasks
 
-export const scheduler = async () => {
+export const scheduler = async (
+  apiK8sClient: k8s.CoreV1Api,
+  appsApiK8sClient: k8s.AppsV1Api
+) => {
   try {
-    const apiK8sClient = getCoreApiClient();
-    const appsApiK8sClient = getAppsApiClient();
-
+    getPodsCurrentResources(apiK8sClient, 'default');
     // for each pod create the new pod
     for (const deploy of deployModels) {
       await createPodToSpecificNode(apiK8sClient, appsApiK8sClient, deploy);
@@ -50,21 +37,21 @@ const createPodToSpecificNode = async (
   appsApiK8sClient: k8s.AppsV1Api,
   deploy: DeploymentPlacementModel
 ) => {
-  const { node, deploymentName, namespace } = deploy;
+  const { nodes, deploymentName, namespace } = deploy;
 
   const deployName = deploymentName;
 
   const taint = k8sMapper.toNodeTaints(deploy);
 
   // taint nodes
-  await addTaint(apiK8sClient, node, taint);
+  await addTaint(apiK8sClient, nodes, taint);
 
   // create new pod
   await handleDeployReplicas(appsApiK8sClient, deployName, namespace, 'add');
 
   // delete taints from nodes
   const taintKey = taint.key;
-  await deleteTaint(apiK8sClient, taintKey);
+  await deleteTaint(apiK8sClient, nodes, taintKey);
 
   // after delete a taint wait a pod for 10 seconds to be app and running and after delete a pod from another node
   // wait until all replica pods of the deployment are READY

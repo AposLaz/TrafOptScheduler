@@ -1,47 +1,23 @@
 import * as k8s from '@kubernetes/client-node';
 
-// export const getPodsCurrentResources = async (
-//   k8sClient: k8s.CoreV1Api,
-//   podName: string,
-//   ns: string
-// ) => {
-//   try {
-//     const topPodsRes1 = await k8s.topPods(
-//       k8sClient,
-//       metricsClient,
-//       kubeSystemNamespcae
-//     );
-//     const podsColumns = topPodsRes1.map((pod) => {
-//       return {
-//         POD: pod.Pod.metadata.name,
-//         'CPU(cores)': pod.CPU.CurrentUsage,
-//         'MEMORY(bytes)': pod.Memory.CurrentUsage,
-//       };
-//     });
-//     console.log('Top pods');
-//     console.table(podsColumns);
+export const getPodsByLabels = async (
+  k8sClient: k8s.CoreV1Api,
+  namespace: string,
+  label: string
+) => {
+  const pods = await k8sClient.listNamespacedPod(
+    namespace,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    label
+  );
 
-//     const topPodsRes2 = await k8s.topPods(
-//       k8sApi,
-//       metricsClient,
-//       kubeSystemNamespcae
-//     );
-//     const podsAndContainersColumns = topPodsRes2.flatMap((pod) => {
-//       return pod.Containers.map((containerUsage) => {
-//         return {
-//           POD: pod.Pod.metadata.name,
-//           NAME: containerUsage.Container,
-//           'CPU(cores)': containerUsage.CPUUsage.CurrentUsage,
-//           'MEMORY(bytes)': containerUsage.MemoryUsage.CurrentUsage,
-//         };
-//       });
-//     });
-//     console.log('Top containers');
-//     console.table(podsAndContainersColumns);
-//   } catch (err) {
-//     console.error(err);
-//   }
-// };
+  if (pods.body.items.length === 0) return;
+
+  return pods.body.items;
+};
 
 export const deletePod = async (
   k8sClient: k8s.CoreV1Api,
