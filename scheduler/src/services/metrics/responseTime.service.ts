@@ -4,7 +4,7 @@ import { logger } from '../../config/logger';
 import { getSvc } from '../k8s/k8s.svc.service';
 import * as k8s from '@kubernetes/client-node';
 
-export const appsLatency = async (
+export const appsResponseTime = async (
   k8sClient: k8s.CoreV1Api,
   namespace: string
 ) => {
@@ -21,10 +21,12 @@ export const appsLatency = async (
       ? `${promSVC.clusterIp}:${port!.port}`
       : `${promSVC.externalIp![0].ip}:${port!.port}`;
 
-  const latency = prometheusApi.getLatencyBetweenPods(prometheusUrl, namespace);
+  const rs = prometheusApi.getResponseTimeBetweenPods(prometheusUrl, namespace);
 
-  if (!latency) {
-    logger.error(`Error getting latency for pods in namespace: ${namespace}`);
+  if (!rs) {
+    logger.error(
+      `Error getting response time for pods in namespace: ${namespace}`
+    );
   }
-  return latency;
+  return rs;
 };

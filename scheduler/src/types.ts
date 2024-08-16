@@ -1,15 +1,25 @@
+/** DEFAULT TYPES */
+
+export type ObjectStrings = { [key: string]: string[] };
+
+/************************ RESPONSE TIME TYPES */
+
 export type DeploymentLabels = {
   deployment: string;
   matchLabels: { [key: string]: string };
 };
 
+type NodePodsMap = {
+  name: string;
+  pods: string[];
+};
+
 export type DeploymentReplicasData = DeploymentLabels & {
-  nodes: {
-    name: string;
-    pods: string[];
-  }[];
+  nodes: NodePodsMap[];
   replicasNum: number;
 };
+
+/*********************************** TAINT TYPES */
 
 export type ReplicasAction = 'add' | 'delete';
 
@@ -49,76 +59,6 @@ export type NodeType = {
   allocatable: Resources;
   requested: Resources;
   limits: Resources;
-};
-
-/**************************************************************************************************/
-/*************************                    KIALI TYPES                  ************************/
-/**************************************************************************************************/
-
-export type FormattedEdge = {
-  source: string;
-  target: string;
-  responseTime?: string;
-  protocol: string;
-  rps?: string;
-};
-
-type TrafficRates = {
-  tcp?: string;
-  grpc?: string;
-  http?: string;
-  https?: string;
-};
-
-type Traffic = {
-  protocol: string;
-  rates: TrafficRates;
-};
-
-type ServiceData = {
-  id: string;
-  cluster: string;
-  nodeType: string;
-  namespace: string;
-  service: string;
-  workload: string;
-  app?: string;
-  version?: string;
-  destServices: { namespace: string; name: string }[];
-  traffic: Traffic[];
-  isRoot?: boolean;
-};
-
-type Node = {
-  data: ServiceData;
-};
-
-type EdgeData = {
-  id: string;
-  source: string; // ID of the source pod
-  target: string; // ID of the target pod
-  responseTime?: string;
-  traffic: Traffic;
-};
-
-type Edge = {
-  data: EdgeData;
-};
-
-export type GraphData = {
-  timestamp: number;
-  duration: number;
-  graphType: string;
-  elements: {
-    nodes: Node[];
-    edges: Edge[]; // Add edges here
-  };
-};
-
-export type GraphEdges = {
-  source: string | undefined;
-  target: string | undefined;
-  namespace: string;
 };
 
 /**************************************************************************************************/

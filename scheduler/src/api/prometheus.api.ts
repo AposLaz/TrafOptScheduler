@@ -18,12 +18,12 @@ export class PrometheusApi {
    * objects containing the source workload name, target workload name, replica pod name, and the sum of latency between pods,
    * or undefined if there was an error.
    */
-  async getLatencyBetweenPods(
+  async getResponseTimeBetweenPods(
     ip: string,
     namespace: string
   ): Promise<PrometheusTransformResultsToIstioMetrics[] | undefined> {
     try {
-      // Construct the Prometheus query to fetch the sum of latency between all mutual TLS HTTP pods
+      // Construct the Prometheus query to fetch the sum of response time between all mutual TLS HTTP pods
       // in the specified namespace.
       // The query filters the data to only include metrics where the connection security policy is mutual_tls,
       // the destination and source apps are not unknown, and the namespace matches the specified namespace.
