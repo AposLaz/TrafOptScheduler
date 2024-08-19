@@ -12,7 +12,6 @@ import { retryUntilReadyStatusDeploy } from './queue.notReadyPods.service';
 import { Semaphore } from '../handler/semaphore.handler';
 import { SemaphoreConcLimits } from '../enums';
 import { deployModels } from '../data/deploy';
-import { getPodsCurrentResources } from './metrics/cpu.ram.resources.service';
 
 // Initialize the semaphore with the desired concurrency limit
 const semaphore = Semaphore.getInstance(SemaphoreConcLimits.MAX_CONCURRENCY); // Get the singleton instance with a max of default 20 concurrent tasks
@@ -22,7 +21,6 @@ export const scheduler = async (
   appsApiK8sClient: k8s.AppsV1Api
 ) => {
   try {
-    getPodsCurrentResources(apiK8sClient, 'default');
     // for each pod create the new pod
     for (const deploy of deployModels) {
       await createPodToSpecificNode(apiK8sClient, appsApiK8sClient, deploy);

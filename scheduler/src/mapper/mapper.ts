@@ -21,27 +21,29 @@ const k8sMapper = {
     deletePod: deployment.deletePod,
   }),
   toPodResources: (pods: k8s.PodStatus[]): PodType[] => {
+    // CPU to milicores & RAM to MB
     return pods.map((pod) => {
       return {
         namespace: pod.Pod.metadata!.namespace as string,
         node: pod.Pod.spec!.nodeName as string,
         podName: pod.Pod.metadata!.name as string,
         usage: {
-          cpu: pod.CPU.CurrentUsage as number,
+          cpu: Number(pod.CPU.CurrentUsage) * 1000,
           memory: Number(pod.Memory.CurrentUsage) / (1024 * 1024),
         },
         requested: {
-          cpu: pod.CPU.RequestTotal as number,
+          cpu: Number(pod.CPU.RequestTotal) * 1000,
           memory: Number(pod.Memory.RequestTotal) / (1024 * 1024),
         },
         limits: {
-          cpu: pod.CPU.LimitTotal as number,
+          cpu: Number(pod.CPU.LimitTotal) * 1000,
           memory: Number(pod.Memory.LimitTotal) / (1024 * 1024),
         },
       };
     });
   },
   toNodeResources: (nodes: k8s.NodeStatus[]): NodeType[] => {
+    // CPU to milicores & RAM to MB
     return nodes.map((node) => {
       return {
         name: node.Node.metadata!.name as string,
@@ -49,6 +51,7 @@ const k8sMapper = {
           cpu: Number(node.CPU.Capacity) * 1000,
           memory: Number(node.Memory.Capacity) / (1024 * 1024),
         },
+        //Allocatable represents the resources of a node that are available for scheduling. Defaults to Capacity.
         allocatable: {
           cpu: convertResourcesStringToNumber(
             node.Node.status!.allocatable!.cpu

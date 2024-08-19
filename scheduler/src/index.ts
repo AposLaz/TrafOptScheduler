@@ -3,7 +3,7 @@ import { app } from './app';
 import { Config } from './config/config';
 import { logger } from './config/logger';
 import './config/setup';
-import { reschedulePods } from './services/compare.resourses.service';
+import { findReschedulePods } from './services/find.rescheduling.pods.service';
 import {
   getAppsApiClient,
   getCoreApiClient,
@@ -33,7 +33,16 @@ const initSetup = async () => {
     for (const namespace of Config.NAMESPACES) {
       try {
         //await scheduler(apiK8sClient, appsApiK8sClient);
-        await reschedulePods(apiK8sClient, appsApiK8sClient, namespace);
+        const res = await findReschedulePods(
+          apiK8sClient,
+          appsApiK8sClient,
+          namespace
+        );
+        if (!res) {
+          logger.info(`No pods to reschedule in namespace: ${namespace}`);
+        }
+
+        console.log(res);
       } catch (error) {
         logger.error(`Error reschedule pods in namespace: ${namespace}`);
         logger.error(error);

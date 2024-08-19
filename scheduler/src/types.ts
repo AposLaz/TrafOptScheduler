@@ -16,7 +16,6 @@ type NodePodsMap = {
 
 export type DeploymentReplicasData = DeploymentLabels & {
   nodes: NodePodsMap[];
-  replicasNum: number;
 };
 
 /*********************************** TAINT TYPES */
@@ -25,7 +24,7 @@ export type ReplicasAction = 'add' | 'delete';
 
 export type DeploymentPlacementModel = {
   deploymentName: string;
-  nodes: string[];
+  nodes: string[]; // taint these nodes
   namespace: string;
   deletePod: string;
 };
