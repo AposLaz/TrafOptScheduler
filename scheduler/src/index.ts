@@ -25,24 +25,26 @@ initRestApi().catch((error: unknown) => {
 const initSetup = async () => {
   try {
     // check if all deploys are ready in background
-    /*Promise.all([checkNotReadyPodsInQueue()]).then(() => {
-      logger.info('All Deploys are ready');
-    });*/
+    // /*Promise.all([checkNotReadyPodsInQueue()]).then(() => {
+    //   logger.info('All Deploys are ready');
+    // });*/
     const apiK8sClient = getCoreApiClient();
     const appsApiK8sClient = getAppsApiClient();
     for (const namespace of Config.NAMESPACES) {
       try {
-        //await scheduler(apiK8sClient, appsApiK8sClient);
         const res = await findReschedulePods(
           apiK8sClient,
           appsApiK8sClient,
           namespace
         );
+
         if (!res) {
           logger.info(`No pods to reschedule in namespace: ${namespace}`);
+          continue;
         }
 
         console.log(res);
+        await scheduler(apiK8sClient, appsApiK8sClient, res);
       } catch (error) {
         logger.error(`Error reschedule pods in namespace: ${namespace}`);
         logger.error(error);

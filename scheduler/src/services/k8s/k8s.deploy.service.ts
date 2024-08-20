@@ -23,8 +23,12 @@ export const handleDeployReplicas = async (
 ) => {
   const deploy = await k8sClient.readNamespacedDeployment(deployName, ns);
 
-  if (action === 'add') deploy.body.spec!.replicas!++;
+  if (action === 'add') {
+    logger.info(`Adding 1 replicas to deployment ${deployName}`);
+    deploy.body.spec!.replicas!++;
+  }
   if (action === 'delete') {
+    logger.info(`Deleting 1 replicas to deployment ${deployName}`);
     deploy.body.spec!.replicas!--;
   }
 

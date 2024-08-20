@@ -18,6 +18,13 @@ export type DeploymentReplicasData = DeploymentLabels & {
   nodes: NodePodsMap[];
 };
 
+export type CandidateReschedulingPods = DeploymentPlacementModel & {
+  candidateNode: string; // this is the node where the pod will be created
+  currentNode: string;
+  maxPodCpu: number;
+  maxPodRam: number;
+};
+
 /*********************************** TAINT TYPES */
 
 export type ReplicasAction = 'add' | 'delete';
@@ -60,9 +67,7 @@ export type NodeType = {
   limits: Resources;
 };
 
-/**************************************************************************************************/
-/*************************               PROMETHEUS TYPES                  ************************/
-/**************************************************************************************************/
+/*********************************** PROMETHEUS TYPES */
 
 export type PrometheusFetchData_Istio_Metrics = {
   status: string;

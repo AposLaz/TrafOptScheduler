@@ -1,11 +1,11 @@
 import axios from 'axios';
 import { logger } from '../config/logger';
-import { transformPrometheusSchemaToIstioMetrics } from '../services/prometheus/prometheus.service';
 import {
   PrometheusFetchData_Istio_Metrics,
   PrometheusTransformResultsToIstioMetrics,
 } from '../types';
 import { Config } from '../config/config';
+import { prometheusMapper } from '../mapper/prometheus.mapper';
 
 const time = Config.CRONJOB_TIME;
 
@@ -43,8 +43,9 @@ export class PrometheusApi {
       // Transform the fetched data into a format suitable for further processing. The fetched data is transformed
       // into an array of objects containing the source workload name, target workload name, replica pod name, and the
       // sum of latency between pods.
-      const transformSchemaForPrometheus =
-        transformPrometheusSchemaToIstioMetrics(result.data);
+      const transformSchemaForPrometheus = prometheusMapper.toIstioMetrics(
+        result.data
+      );
 
       // Return the transformed latency data.
       return transformSchemaForPrometheus;

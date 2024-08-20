@@ -7,6 +7,7 @@ import { logger } from '../config/logger';
 import { deploymentMatchLabels } from './k8s/k8s.deploy.service';
 import { getPodsByLabels } from './k8s/k8s.pod.service';
 import {
+  CandidateReschedulingPods,
   DeploymentLabels,
   DeploymentPlacementModel,
   DeploymentReplicasData,
@@ -21,18 +22,27 @@ export const findReschedulePods = async (
   appsApiK8sClient: k8s.AppsV1Api,
   namespace: string
 ): Promise<DeploymentPlacementModel[] | undefined> => {
+  // get pods and node resources for specific namespace
   const podsResources = await getPodsCurrentResources(apiK8sClient, namespace);
   const nodesResources = await getNodesResources(apiK8sClient);
 
-  /************** Response Time **************/
+  // get response time
   const responseTime = await appsResponseTime(apiK8sClient, namespace);
   if (!responseTime) return;
 
-  // descending order response time
-  const sortResponseTime = responseTime.sort((a, b) => b.metric - a.metric);
+  //filter response time that exceed the threshold
+  const highRtPods = responseTime.filter(
+    (pod) => pod.metric > Config.RESPONSE_TIME_THRESHOLD
+  );
 
+  if (highRtPods.length === 0) return;
+
+  // descending order response time
+  const sortResponseTime = highRtPods.sort((a, b) => b.metric - a.metric);
+  console.log('*****************SORTED RESPONSE TIME*******************');
+  console.log(sortResponseTime);
   // We want from source service, to find the source replica pods and their node, so that to identify how many replica pods are running on a node
-  //  I want to move downstream pods in the same node as the biggest number of replica pods
+  // I want to move downstream pods in the same node as the biggest number of replica pods
   // If are current in the same node, don't do anything
   // get distinct sources because there is not other way to identify the upstream replica pods of a node
 
@@ -52,19 +62,14 @@ export const findReschedulePods = async (
   // if a pod is **MARKED** as rescheduled, first we will check if exists resources on the **TARGET NODE**
   // if not exists resources on the **TARGET NODE**, then we will try remove a pod with small amount of response time and MAX(cpu_usage,cpu_requested) & MAX(ram_usage,ram_requested)
   // and we will reschedule this pod first in another node & after we will reschedule the **MARKED** pod.
-  const highRtPods = sortResponseTime.filter(
-    (pod) => pod.metric > Config.RESPONSE_TIME_THRESHOLD
-  );
-
-  if (highRtPods.length === 0) return;
 
   // get all nodes names
   const nodeNames = nodesResources.map((node) => node.name);
 
-  // in this array store all pods info that will be rescheduled
-  const replacementPods: DeploymentPlacementModel[] = [];
+  // in this array store all pods info that will be marked as rescheduled
+  const replacementPods: CandidateReschedulingPods[] = [];
 
-  for (const dmPod of highRtPods) {
+  for (const dmPod of sortResponseTime) {
     // find upstream replica pods of the destination pod
     const sourceUpstreamPod = sourceReplicaPodsNode.find(
       (umPod) => umPod.deployment === dmPod.source
@@ -108,6 +113,7 @@ export const findReschedulePods = async (
 
     const weightConst = 0.5;
 
+    // for each node find the number of upstream replica pods
     sourceUpstreamPod.nodes.forEach((node) => {
       if (
         node.pods.length > candidateNode.rs &&
@@ -148,7 +154,7 @@ export const findReschedulePods = async (
 
         // check if c2Node has available resources
         const c2Available =
-          c2CpuAvailable - maxPodCpu > 0 && c2RamAvailable - maxPodRam > 0;
+          c2CpuAvailable - maxPodCpu > 50 && c2RamAvailable - maxPodRam > 50;
 
         // if c2Node has available resources then calculate best scheduling node base of (LFU)
         if (c2Available) {
@@ -168,17 +174,79 @@ export const findReschedulePods = async (
       }
     });
 
-    // TODO CHECK IF CANDIDATE NODE HAS AVAILABLE RESOURCES. OTHER MAKE AN EXCHANGE
+    // if the candidate node is the same as the current node then continue. Pod is in the ideal node. May need a new replica
+    if (dmPod.node === candidateNode.node) continue;
 
     replacementPods.push({
       deploymentName: dmPod.target,
       nodes: nodeNames.filter((node) => node !== candidateNode.node), // taint these nodes except candidate node
       namespace: namespace,
       deletePod: dmPod.replicaPod,
+      candidateNode: candidateNode.node,
+      currentNode: dmPod.node,
+      maxPodCpu: maxPodCpu,
+      maxPodRam: maxPodRam,
     });
   }
 
-  return replacementPods;
+  /*
+  console.log('*****************MARKED RESCHEDULED*******************');
+  console.log(replacementPods);
+  // TODO CHECK IF CANDIDATE NODE HAS AVAILABLE RESOURCES. OTHER MAKE AN EXCHANGE
+  // for each candidate rescheduled pod find if the candidate rescheduling node have sufficient resources
+  for (const markPod of replacementPods) {
+    // get node resources
+    const cNode = nodesResources.find((n) => n.name === markPod!.candidateNode);
+
+    if (!cNode) continue;
+
+    const cCpuAvailable = cNode.allocatable.cpu - cNode.requested.cpu;
+    const cRamAvailable = cNode.allocatable.memory - cNode.requested.memory;
+
+    // check if cNode has available resources
+    const cAvailable =
+      cCpuAvailable - markPod.maxPodCpu > 50 &&
+      cRamAvailable - markPod.maxPodRam > 50;
+
+    // the candidate node does not have enough resources for exchange
+    // if (
+    //   cCpuAvailable - markPod.maxPodCpu < 50 ||
+    //   cRamAvailable - markPod.maxPodRam < 50
+    // ) {
+    //   continue;
+    // }
+
+    // node does not have sufficient resources.
+    // Have to remove from this node pods with the least available resources and least response time
+    if (!cAvailable) {
+      // check if other rescheduled pods will be moved from the current pod to the rescheduled node
+      // filter all replacement pods and find rescheduling pods that will be moved from the candidate Node of a pod
+      const otherReplacementPods = replacementPods.filter(
+        (rp) => rp.currentNode === markPod.candidateNode
+      );
+
+      if (otherReplacementPods.length !== 0) {
+        // then check if these pods has resources higher or equal than the rescheduled pod
+        // if find candidates then continue;
+        //
+        // if not then continue and find pods that can be rescheduled from the candidate node
+      }
+      console.log('*****************FIND NEW CANDIDATES*******************');
+      console.log(otherReplacementPods);
+      console.log('*****************POD RESOURCES*******************');
+      console.log(podsResources);
+      const 
+      // find pods that have least response time and resources like the rescheduled pod
+      // find nodes that have enough space then try to find a node with enough space for evicted pods
+      // if any node have enough space then this rescheduled pod can not move to a new node. Continue
+      // find which pod are in this node
+    }
+
+    // IN THE BEGINNING CHECK REPLICA PODS OF DOWNSTREAM DEPLOYMENT. TODO AT LEAST ONE REPLICA POD MUST BE IN DIFFERENT NODE/ZONE THAN
+    // THE OTHER REPLICA PODS FOR FAULT TOLERANCE
+  }*/
+
+  return replacementPods as DeploymentPlacementModel[];
 };
 
 /**
