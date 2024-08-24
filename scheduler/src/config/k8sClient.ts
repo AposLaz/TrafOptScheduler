@@ -1,4 +1,5 @@
 import * as k8s from '@kubernetes/client-node';
+import { Config } from './config';
 
 // use Singleton Pattern
 class K8sClientConfig {
@@ -9,7 +10,11 @@ class K8sClientConfig {
   public static getInstance(): k8s.KubeConfig {
     if (!K8sClientConfig.instance) {
       K8sClientConfig.instance = new k8s.KubeConfig();
-      K8sClientConfig.instance.loadFromDefault(); // in-cluster loadFromCluster()
+
+      // choose client based on environment
+      Config.ENV === 'production'
+        ? K8sClientConfig.instance.loadFromCluster() // runs in the Cluster
+        : K8sClientConfig.instance.loadFromDefault(); // runs in development mode
     }
     return K8sClientConfig.instance;
   }

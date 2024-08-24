@@ -1,17 +1,22 @@
 import {
   getNodesResources,
   getPodsCurrentResources,
-} from './metrics/cpu.ram.resources.service';
+} from './metrics/cpu.memory.resources.service';
 import * as k8s from '@kubernetes/client-node';
 import { logger } from '../config/logger';
 import { deploymentMatchLabels } from './k8s/k8s.deploy.service';
 import { getPodsByLabels } from './k8s/k8s.pod.service';
 import {
+  CandidateAndCurrentNodes,
   CandidateReschedulingPods,
   DeploymentLabels,
   DeploymentPlacementModel,
   DeploymentReplicasData,
+  MapResourcesNode,
+  NodeType,
+  ObjectResources,
   ObjectStrings,
+  PrometheusTransformResultsToIstioMetrics,
 } from '../types';
 import { appsResponseTime } from './metrics/responseTime.service';
 import { Config } from '../config/config';
@@ -28,17 +33,46 @@ export const findReschedulePods = async (
 
   // get response time
   const responseTime = await appsResponseTime(apiK8sClient, namespace);
-  if (!responseTime) return;
+  if (!responseTime) {
+    logger.warn(`No response time found in namespace: ${namespace}`);
+    return;
+  }
 
   //filter response time that exceed the threshold
   const highRtPods = responseTime.filter(
     (pod) => pod.metric > Config.RESPONSE_TIME_THRESHOLD
   );
 
-  if (highRtPods.length === 0) return;
+  ///********************************************************* DUMMY DATA */
+  highRtPods.push({
+    node: 'gke-cluster-0-default-pool-aec86d71-cd4d',
+    source: 'checkoutservice',
+    target: 'paymentservice',
+    replicaPod: 'paymentservice-55646bb857-jkzgx',
+    metric: 7.89,
+  });
+  //****************************************************** */
+
+  if (highRtPods.length === 0) {
+    logger.info(`No high response time found in namespace: ${namespace}`);
+    return;
+  }
+
+  // keep only only one copy of dm replica pods, this one with the highest response time
+  const uniqueDmRsPods = Object.values(
+    highRtPods.reduce<Record<string, PrometheusTransformResultsToIstioMetrics>>(
+      (acc, obj) => {
+        if (!acc[obj.replicaPod] || acc[obj.replicaPod].metric < obj.metric) {
+          acc[obj.replicaPod] = obj;
+        }
+        return acc;
+      },
+      {}
+    )
+  );
 
   // descending order response time
-  const sortResponseTime = highRtPods.sort((a, b) => b.metric - a.metric);
+  const sortResponseTime = uniqueDmRsPods.sort((a, b) => b.metric - a.metric);
   console.log('*****************SORTED RESPONSE TIME*******************');
   console.log(sortResponseTime);
   // We want from source service, to find the source replica pods and their node, so that to identify how many replica pods are running on a node
@@ -88,15 +122,15 @@ export const findReschedulePods = async (
       continue;
     }
 
-    // get pod cpu and ram
+    // get pod cpu and memory
     const cpuPodUsage = dtPodResources.usage.cpu;
     const cpuPodRequested = dtPodResources.requested.cpu;
 
-    const ramPodUsage = dtPodResources.usage.memory;
-    const ramPodRequested = dtPodResources.requested.memory;
+    const memoryPodUsage = dtPodResources.usage.memory;
+    const memoryPodRequested = dtPodResources.requested.memory;
 
     const maxPodCpu = Math.max(cpuPodUsage, cpuPodRequested);
-    const maxPodRam = Math.max(ramPodUsage, ramPodRequested);
+    const maxPodMemory = Math.max(memoryPodUsage, memoryPodRequested);
 
     // find replica pods in the current node
     const candidatePodNode = sourceUpstreamPod.nodes.find(
@@ -147,24 +181,25 @@ export const findReschedulePods = async (
         const c2CpuAvailable = c2Node.allocatable.cpu - c2Node.requested.cpu;
 
         // find if nodes have available ram
-        const c1RamAvailable =
+        const c1MemoryAvailable =
           c1Node.allocatable.memory - c1Node.requested.memory;
-        const c2RamAvailable =
+        const c2MemoryAvailable =
           c2Node.allocatable.memory - c2Node.requested.memory;
 
         // check if c2Node has available resources
         const c2Available =
-          c2CpuAvailable - maxPodCpu > 50 && c2RamAvailable - maxPodRam > 50;
+          c2CpuAvailable - maxPodCpu > 50 &&
+          c2MemoryAvailable - maxPodMemory > 50;
 
         // if c2Node has available resources then calculate best scheduling node base of (LFU)
         if (c2Available) {
           const c1Weight =
             weightConst * (maxPodCpu / c1CpuAvailable) +
-            weightConst * (maxPodRam / c1RamAvailable);
+            weightConst * (maxPodMemory / c1MemoryAvailable);
 
           const c2Weight =
             weightConst * (maxPodCpu / c2CpuAvailable) +
-            weightConst * (maxPodRam / c2RamAvailable);
+            weightConst * (maxPodMemory / c2MemoryAvailable);
 
           if (c1Weight < c2Weight) {
             candidateNode.node = node.name;
@@ -185,8 +220,84 @@ export const findReschedulePods = async (
       candidateNode: candidateNode.node,
       currentNode: dmPod.node,
       maxPodCpu: maxPodCpu,
-      maxPodRam: maxPodRam,
+      maxPodMemory: maxPodMemory,
     });
+  }
+
+  // sum resources of all replica pods per node and check if all of them can be rescheduled in the destination nodes
+  // if neither can. And also in their node does not exists resources then continue and log the message.
+
+  // find unique candidate nodes
+  const uniqueCandidateNodes = [
+    ...new Set(replacementPods.map((pod) => pod.candidateNode)),
+  ];
+
+  const candNodesAvailResources: MapResourcesNode[] =
+    getNodesAvailableResources(uniqueCandidateNodes, nodesResources);
+
+  // nodes that replica pods already located
+  const uniqueCurrentNodes = [
+    ...new Set(replacementPods.map((pod) => pod.currentNode)),
+  ];
+
+  const currentNodesAvailResources: MapResourcesNode[] =
+    getNodesAvailableResources(uniqueCurrentNodes, nodesResources);
+
+  //first sum all scheduling pod resources that have the same candidate node in the same node
+
+  console.log(candNodesAvailResources);
+  const sumPodResources = sumCpuAndMemoryByNode(replacementPods);
+
+  // all the pods of the current node can be scheduled to the candidate node
+  const nodeOfPodsThatCanBeRescheduledToTheCandidateNode: CandidateAndCurrentNodes[] =
+    [];
+
+  // for each candidate node of pod resources, find if exists a current node that can schedule all its pods there
+  for (const node in sumPodResources) {
+    const getCandNode = candNodesAvailResources.find((n) => n.name === node);
+    if (!getCandNode) continue;
+
+    // for all pods in each current node check if the resources are sufficient for rescheduling
+    sumPodResources[node].forEach((pod) => {
+      if (
+        getCandNode.cpu - pod.totalCpu > 0 &&
+        getCandNode.memory - pod.totalMemory > 0
+      ) {
+        nodeOfPodsThatCanBeRescheduledToTheCandidateNode.push({
+          currentNode: pod.currentNode,
+          candidateNode: getCandNode.name,
+        });
+      }
+    });
+  }
+  // neither one node have available resources for rescheduling pods all pods
+  if (nodeOfPodsThatCanBeRescheduledToTheCandidateNode.length === 0) {
+    logger.warn(
+      `[namespace - ${namespace}] No candidate nodes have available resources for rescheduling all pods to new nodes`
+    );
+  }
+
+  // // if there are some nodes that have available resources for rescheduling pods
+  if (
+    nodeOfPodsThatCanBeRescheduledToTheCandidateNode.length !==
+    uniqueCurrentNodes.length
+  ) {
+    const logCurrNodes = nodeOfPodsThatCanBeRescheduledToTheCandidateNode
+      .map((n) => n.currentNode)
+      .join(', ');
+
+    const logCandNodes = nodeOfPodsThatCanBeRescheduledToTheCandidateNode
+      .map((n) => n.candidateNode)
+      .join(', ');
+
+    console.log(nodeOfPodsThatCanBeRescheduledToTheCandidateNode);
+    logger.info(
+      `[namespace - ${namespace}] All pods from node/s [${logCurrNodes}] can be rescheduled to node/s [${logCandNodes}] respectively`
+    );
+
+    // if these pods of these nodes rescheduled then will free their resources
+    // end the turn here
+    // in the next turn the remain pods from other nodes will be rescheduled
   }
 
   /*
@@ -235,7 +346,6 @@ export const findReschedulePods = async (
       console.log(otherReplacementPods);
       console.log('*****************POD RESOURCES*******************');
       console.log(podsResources);
-      const 
       // find pods that have least response time and resources like the rescheduled pod
       // find nodes that have enough space then try to find a node with enough space for evicted pods
       // if any node have enough space then this rescheduled pod can not move to a new node. Continue
@@ -246,7 +356,58 @@ export const findReschedulePods = async (
     // THE OTHER REPLICA PODS FOR FAULT TOLERANCE
   }*/
 
+  // TODO if response time of some replica pods is higher than 500 and these pods does not marked as rescheduled, then try to create a new replica pod for them
+  // in the same node as their most replica sources.
+
   return replacementPods as DeploymentPlacementModel[];
+};
+
+// Function to sum CPU and RAM usage for each node
+const sumCpuAndMemoryByNode = (
+  pods: CandidateReschedulingPods[]
+): ObjectResources => {
+  const usageByNode: ObjectResources = {};
+
+  pods.forEach((pod) => {
+    const candidateNode = pod.candidateNode;
+
+    if (!usageByNode[candidateNode]) {
+      usageByNode[candidateNode] = [
+        { totalCpu: 0, totalMemory: 0, currentNode: pod.currentNode },
+      ];
+    }
+
+    const findIndexOfCurrentNode = usageByNode[candidateNode].findIndex(
+      (n) => n.currentNode === pod.currentNode
+    );
+
+    usageByNode[candidateNode][findIndexOfCurrentNode] = {
+      totalCpu:
+        usageByNode[candidateNode][findIndexOfCurrentNode].totalCpu +
+        pod.maxPodCpu,
+      totalMemory:
+        usageByNode[candidateNode][findIndexOfCurrentNode].totalMemory +
+        pod.maxPodMemory,
+      currentNode: pod.currentNode,
+    };
+  });
+
+  return usageByNode;
+};
+
+const getNodesAvailableResources = (
+  nodes: string[],
+  resources: NodeType[]
+): MapResourcesNode[] => {
+  return nodes.map((node) => {
+    const cNode = resources.find((n) => n.name === node);
+    if (!cNode) return;
+    return {
+      name: cNode.name,
+      cpu: cNode.allocatable.cpu - cNode.requested.cpu,
+      memory: cNode.allocatable.memory - cNode.requested.memory,
+    };
+  }) as MapResourcesNode[];
 };
 
 /**

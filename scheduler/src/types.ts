@@ -1,6 +1,21 @@
 /** DEFAULT TYPES */
 
 export type ObjectStrings = { [key: string]: string[] };
+export type ObjectResources = Record<
+  string,
+  { totalCpu: number; totalMemory: number; currentNode: string }[]
+>;
+export type MapResourcesNode = {
+  name: string;
+  cpu: number;
+  memory: number;
+};
+/************************* EXCHANGE PODS */
+
+export type CandidateAndCurrentNodes = {
+  currentNode: string;
+  candidateNode: string;
+};
 
 /************************ RESPONSE TIME TYPES */
 
@@ -22,7 +37,7 @@ export type CandidateReschedulingPods = DeploymentPlacementModel & {
   candidateNode: string; // this is the node where the pod will be created
   currentNode: string;
   maxPodCpu: number;
-  maxPodRam: number;
+  maxPodMemory: number;
 };
 
 /*********************************** TAINT TYPES */

@@ -13,7 +13,7 @@ export const appsResponseTime = async (
     Config.PROMETHEUS_SVC,
     Config.PROMETHEUS_NAMESPACE
   );
-  console.log(promSVC);
+
   const port = promSVC.ports!.find((p) => p.name === 'http');
 
   const prometheusUrl =

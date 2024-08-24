@@ -11,8 +11,8 @@ requiredEnvVariables.forEach((envVarName: string) => {
 });
 
 export const Config = {
-  ENV: process.env.ENV ?? 'dev',
-  APP_PORT: process.env.APP_PORT ?? 3000,
+  ENV: process.env.ENV ?? 'production',
+  APP_PORT: process.env.APP_PORT ?? '3000',
   NAMESPACES: process.env.NAMESPACES?.split(',') ?? ['default'], // default is the default namespace
   PROMETHEUS_SVC: process.env.PROMETHEUS_SVC ?? 'prometheus',
   PROMETHEUS_NAMESPACE: process.env.PROMETHEUS_NAMESPACE ?? 'istio-system',

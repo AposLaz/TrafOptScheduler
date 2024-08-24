@@ -25,9 +25,9 @@ initRestApi().catch((error: unknown) => {
 const initSetup = async () => {
   try {
     // check if all deploys are ready in background
-    // /*Promise.all([checkNotReadyPodsInQueue()]).then(() => {
-    //   logger.info('All Deploys are ready');
-    // });*/
+    Promise.all([checkNotReadyPodsInQueue()]).then(() => {
+      logger.info('All Deploys are ready');
+    });
     const apiK8sClient = getCoreApiClient();
     const appsApiK8sClient = getAppsApiClient();
     for (const namespace of Config.NAMESPACES) {
@@ -44,7 +44,7 @@ const initSetup = async () => {
         }
 
         console.log(res);
-        await scheduler(apiK8sClient, appsApiK8sClient, res);
+        //await scheduler(apiK8sClient, appsApiK8sClient, res);
       } catch (error) {
         logger.error(`Error reschedule pods in namespace: ${namespace}`);
         logger.error(error);
