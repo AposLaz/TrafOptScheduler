@@ -22,7 +22,7 @@
     "child_process": "^1.0.2",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
-    "express": "^4.19.2",
+    "express": "^4.20.0",
     "js-yaml": "^4.1.0",
     "winston": "^3.13.0"
   },
