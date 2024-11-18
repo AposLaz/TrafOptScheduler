@@ -1,5 +1,8 @@
 type TrafficRates = {
-  [key: string]: string;
+  tcp?: string;
+  grpc?: string;
+  http?: string;
+  https?: string;
 };
 
 type Traffic = {
@@ -9,10 +12,11 @@ type Traffic = {
 
 type ServiceData = {
   id: string;
+  cluster: string;
   nodeType: string;
   namespace: string;
-  service?: string;
-  workload?: string;
+  service: string;
+  workload: string;
   app?: string;
   version?: string;
   destServices: { namespace: string; name: string }[];
@@ -28,6 +32,8 @@ type EdgeData = {
   id: string;
   source: string; // ID of the source pod
   target: string; // ID of the target pod
+  responseTime?: string;
+  traffic: Traffic;
 };
 
 type Edge = {

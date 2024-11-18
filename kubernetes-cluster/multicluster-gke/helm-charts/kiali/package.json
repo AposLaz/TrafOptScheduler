@@ -11,6 +11,6 @@
   "license": "ISC",
   "dependencies": {
     "js-yaml": "^4.1.0",
-    "nodemon": "^3.0.1"
+    "nodemon": "^3.1.1"
   }
 }

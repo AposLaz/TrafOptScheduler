@@ -59,5 +59,7 @@ export interface KubernetesData {
 }
 
 export type SetupGkeConfigs = {
-  istioIP: string;
+  istioHost: string;
+  kialiHost: string;
+  prometheusHost: string;
 };

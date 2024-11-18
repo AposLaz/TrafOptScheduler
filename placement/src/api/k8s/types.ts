@@ -1,46 +1,46 @@
-export interface Metadata {
+export type Metadata = {
   annotations?: { [key: string]: string };
   labels?: { [key: string]: string };
   name: string;
   namespace: string;
-}
+};
 
-export interface RamCpuData {
+export type RamCpuData = {
   memory: string;
   cpu: string;
-}
+};
 
-export interface RequestLimit {
+export type RequestLimit = {
   requests: RamCpuData;
   limits: RamCpuData;
-}
+};
 
-export interface Resources {
+export type Resources = {
   resources: RequestLimit;
-}
+};
 
-export interface PodSpec {
+export type PodSpec = {
   containers: Resources[];
-}
+};
 
-export interface PodType {
+export type PodType = {
   metadata?: Metadata;
   spec: PodSpec;
-}
+};
 
-export interface DeploySpec {
+export type DeploySpec = {
   replicas?: number;
   revisionHistoryLimit?: number;
   template: PodType;
-}
+};
 
-export interface DeployStatus {
+export type DeployStatus = {
   availableReplicas?: number;
   readyReplicas?: number;
   replicas?: number;
-}
+};
 
-export interface DeploymentType {
+export type DeploymentType = {
   apiVersion?: string;
   /**
    * Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
@@ -49,11 +49,17 @@ export interface DeploymentType {
   metadata: Metadata;
   spec: DeploySpec;
   status?: DeployStatus;
-}
+};
 
-export interface DeployList {
+export type DeployList = {
   apiVersion?: string;
   items: DeploymentType[];
   kind?: string;
   metadata?: { resourceVersion?: string };
-}
+};
+
+export type podLocation = {
+  node: string;
+  zone: string;
+  region: string;
+};

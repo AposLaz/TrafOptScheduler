@@ -1,0 +1,21 @@
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: hello-svc
+spec:
+  host: hello-svc.default.svc.cluster.local
+  trafficPolicy:
+    loadBalancer:
+      localityLbSetting:
+        enabled: true
+        distribute:
+          - from: europe-west8/europe-west8-c/*
+            to:
+              europe-west8/europe-west8-c/*: 100
+          - from: europe-west8/europe-west8-a/*
+            to:
+              europe-west8/europe-west8-a/*: 100
+    outlierDetection:
+      consecutive5xxErrors: 100
+      interval: 1s
+      baseEjectionTime: 1m

@@ -1,0 +1,476 @@
+{
+  "namespace": "online-boutique",
+  "totalExchBytes": 22382.09,
+  "totalMsgSize": 40.32,
+  "totalMsgs": 40480,
+  "totalLatency": 316.01,
+  "appLinks": [
+    {
+      "source": "frontend",
+      "communitiesProb": [
+        {
+          "frontend": 0.6583,
+          "productcatalogservice": 0.0943,
+          "currencyservice": 0,
+          "cartservice": 0.1468,
+          "recommendationservice": 0.1006,
+          "checkoutservice": 0,
+          "shippingservice": 0,
+          "adservice": 0,
+          "redis-cart": 0,
+          "paymentservice": 0,
+          "emailservice": 0
+        }
+      ],
+      "degreeSourceTargetsAffinity": 0.69792,
+      "targets": [
+        {
+          "target": "productcatalogservice",
+          "replicas": [
+            {
+              "pod": "productcatalogservice-67c979f897-hrp6n",
+              "node": "minikube",
+              "sumBytes": 1267.99,
+              "countBytes": 7.02,
+              "totalMessages": 4218,
+              "latency": 66.43
+            },
+            {
+              "pod": "productcatalogservice-67c979f897-wqp5k",
+              "node": "minikube",
+              "sumBytes": 1303.11,
+              "countBytes": 7.1,
+              "totalMessages": 4244,
+              "latency": 67.25
+            }
+          ],
+          "linkBytesExchanged": 2571.1,
+          "linkMessagesSize": 14.12,
+          "linkTotalMessages": 17008,
+          "linkTotalLatency": 133.68,
+          "affinity": 0.35297
+        },
+        {
+          "target": "currencyservice",
+          "replicas": [
+            {
+              "pod": "currencyservice-cb7848887-nwg97",
+              "node": "minikube",
+              "sumBytes": 1158,
+              "countBytes": 4.52,
+              "totalMessages": 5485,
+              "latency": 61.87
+            },
+            {
+              "pod": "currencyservice-cb7848887-nwg97",
+              "node": "minikube",
+              "sumBytes": 551.58,
+              "countBytes": 0,
+              "totalMessages": 5485,
+              "latency": 61.87
+            }
+          ],
+          "linkBytesExchanged": 1709.58,
+          "linkMessagesSize": 4.52,
+          "linkTotalMessages": 10945,
+          "linkTotalLatency": 61.87,
+          "affinity": 0.19337
+        },
+        {
+          "target": "cartservice",
+          "replicas": [
+            {
+              "pod": "cartservice-d98d6d88-zdc7k",
+              "node": "minikube",
+              "sumBytes": 356.18,
+              "countBytes": 2.86,
+              "totalMessages": 1755,
+              "latency": 16.72
+            }
+          ],
+          "linkBytesExchanged": 356.18,
+          "linkMessagesSize": 2.86,
+          "linkTotalMessages": 3467,
+          "linkTotalLatency": 16.72,
+          "affinity": 0.06041
+        },
+        {
+          "target": "recommendationservice",
+          "replicas": [
+            {
+              "pod": "recommendationservice-6964c4f6f7-l5ff8",
+              "node": "minikube",
+              "sumBytes": 124.27,
+              "countBytes": 0.76,
+              "totalMessages": 461,
+              "latency": 6.31
+            },
+            {
+              "pod": "recommendationservice-6964c4f6f7-s25jn",
+              "node": "minikube",
+              "sumBytes": 109.16,
+              "countBytes": 0.66,
+              "totalMessages": 411,
+              "latency": 5.43
+            },
+            {
+              "pod": "recommendationservice-6964c4f6f7-hls8f",
+              "node": "minikube",
+              "sumBytes": 121.59,
+              "countBytes": 0.74,
+              "totalMessages": 444,
+              "latency": 6.04
+            }
+          ],
+          "linkBytesExchanged": 355.02,
+          "linkMessagesSize": 2.16,
+          "linkTotalMessages": 2618,
+          "linkTotalLatency": 17.779999999999998,
+          "affinity": 0.05128
+        },
+        {
+          "target": "checkoutservice",
+          "replicas": [
+            {
+              "pod": "checkoutservice-c56766947-zw67h",
+              "node": "minikube",
+              "sumBytes": 26.16,
+              "countBytes": 0.07,
+              "totalMessages": 86,
+              "latency": 0.78
+            },
+            {
+              "pod": "checkoutservice-c56766947-zw67h",
+              "node": "minikube",
+              "sumBytes": 23.23,
+              "countBytes": 0,
+              "totalMessages": 86,
+              "latency": 0.78
+            }
+          ],
+          "linkBytesExchanged": 49.39,
+          "linkMessagesSize": 0.07,
+          "linkTotalMessages": 164,
+          "linkTotalLatency": 0.78,
+          "affinity": 0.00298
+        },
+        {
+          "target": "shippingservice",
+          "replicas": [
+            {
+              "pod": "shippingservice-547cf784d5-n2xqg",
+              "node": "minikube",
+              "sumBytes": 84.09,
+              "countBytes": 0.66,
+              "totalMessages": 412,
+              "latency": 4.87
+            }
+          ],
+          "linkBytesExchanged": 84.09,
+          "linkMessagesSize": 0.66,
+          "linkTotalMessages": 815,
+          "linkTotalLatency": 4.87,
+          "affinity": 0.01506
+        },
+        {
+          "target": "adservice",
+          "replicas": [
+            {
+              "pod": "adservice-5f7b8fffb5-4hkxb",
+              "node": "minikube",
+              "sumBytes": 38.87,
+              "countBytes": 0.45,
+              "totalMessages": 596,
+              "latency": 12.1
+            },
+            {
+              "pod": "adservice-5f7b8fffb5-4hkxb",
+              "node": "minikube",
+              "sumBytes": 66.39,
+              "countBytes": 0,
+              "totalMessages": 596,
+              "latency": 12.1
+            },
+            {
+              "pod": "adservice-5f7b8fffb5-4hkxb",
+              "node": "minikube",
+              "sumBytes": 20.73,
+              "countBytes": 0,
+              "totalMessages": 596,
+              "latency": 12.1
+            }
+          ],
+          "linkBytesExchanged": 125.99,
+          "linkMessagesSize": 0.45,
+          "linkTotalMessages": 822,
+          "linkTotalLatency": 12.1,
+          "affinity": 0.02185
+        }
+      ],
+      "avgProbability": 0.714
+    },
+    {
+      "source": "loadgenerator",
+      "communitiesProb": [
+        {
+          "loadgenerator": 0.5587,
+          "frontend": 0.4413,
+          "productcatalogservice": 0,
+          "currencyservice": 0,
+          "cartservice": 0,
+          "recommendationservice": 0,
+          "checkoutservice": 0,
+          "shippingservice": 0,
+          "adservice": 0,
+          "redis-cart": 0,
+          "paymentservice": 0,
+          "emailservice": 0
+        }
+      ],
+      "degreeSourceTargetsAffinity": 0.17203,
+      "targets": [
+        {
+          "target": "frontend",
+          "replicas": [
+            {
+              "pod": "frontend-5fcd6f496c-7sscl",
+              "node": "minikube",
+              "sumBytes": 5235.1,
+              "countBytes": 0.8,
+              "totalMessages": 0,
+              "latency": 10.53
+            },
+            {
+              "pod": "frontend-5fcd6f496c-8tpjw",
+              "node": "minikube",
+              "sumBytes": 4850.62,
+              "countBytes": 0.78,
+              "totalMessages": 0,
+              "latency": 10.9
+            },
+            {
+              "pod": "frontend-5fcd6f496c-58dnd",
+              "node": "minikube",
+              "sumBytes": 4782.27,
+              "countBytes": 0.76,
+              "totalMessages": 0,
+              "latency": 13.72
+            }
+          ],
+          "linkBytesExchanged": 14867.99,
+          "linkMessagesSize": 2.34,
+          "linkTotalMessages": 0,
+          "linkTotalLatency": 35.15,
+          "affinity": 0.17203
+        }
+      ],
+      "avgProbability": 0.176
+    },
+    {
+      "source": "checkoutservice",
+      "communitiesProb": [
+        {
+          "checkoutservice": 0.9788,
+          "productcatalogservice": 0,
+          "currencyservice": 0,
+          "shippingservice": 0,
+          "cartservice": 0.0212,
+          "paymentservice": 0,
+          "emailservice": 0,
+          "redis-cart": 0
+        }
+      ],
+      "degreeSourceTargetsAffinity": 0.03876,
+      "targets": [
+        {
+          "target": "productcatalogservice",
+          "replicas": [
+            {
+              "pod": "productcatalogservice-67c979f897-hrp6n",
+              "node": "minikube",
+              "sumBytes": 36.78,
+              "countBytes": 0.2,
+              "totalMessages": 120,
+              "latency": 1.83
+            },
+            {
+              "pod": "productcatalogservice-67c979f897-wqp5k",
+              "node": "minikube",
+              "sumBytes": 39.4,
+              "countBytes": 0.22,
+              "totalMessages": 136,
+              "latency": 2.07
+            }
+          ],
+          "linkBytesExchanged": 76.18,
+          "linkMessagesSize": 0.42,
+          "linkTotalMessages": 512,
+          "linkTotalLatency": 3.9,
+          "affinity": 0.01048
+        },
+        {
+          "target": "currencyservice",
+          "replicas": [
+            {
+              "pod": "currencyservice-cb7848887-nwg97",
+              "node": "minikube",
+              "sumBytes": 60.35,
+              "countBytes": 0.54,
+              "totalMessages": 327,
+              "latency": 3.99
+            }
+          ],
+          "linkBytesExchanged": 60.35,
+          "linkMessagesSize": 0.54,
+          "linkTotalMessages": 653,
+          "linkTotalLatency": 3.99,
+          "affinity": 0.01212
+        },
+        {
+          "target": "shippingservice",
+          "replicas": [
+            {
+              "pod": "shippingservice-547cf784d5-n2xqg",
+              "node": "minikube",
+              "sumBytes": 35.39,
+              "countBytes": 0.22,
+              "totalMessages": 136,
+              "latency": 1.85
+            }
+          ],
+          "linkBytesExchanged": 35.39,
+          "linkMessagesSize": 0.22,
+          "linkTotalMessages": 272,
+          "linkTotalLatency": 1.85,
+          "affinity": 0.00531
+        },
+        {
+          "target": "cartservice",
+          "replicas": [
+            {
+              "pod": "cartservice-d98d6d88-zdc7k",
+              "node": "minikube",
+              "sumBytes": 35.69,
+              "countBytes": 0.28,
+              "totalMessages": 174,
+              "latency": 1.68
+            }
+          ],
+          "linkBytesExchanged": 35.69,
+          "linkMessagesSize": 0.28,
+          "linkTotalMessages": 342,
+          "linkTotalLatency": 1.68,
+          "affinity": 0.00599
+        },
+        {
+          "target": "paymentservice",
+          "replicas": [
+            {
+              "pod": "paymentservice-5df54f5859-xj97l",
+              "node": "minikube",
+              "sumBytes": 14.09,
+              "countBytes": 0.1,
+              "totalMessages": 67,
+              "latency": 0.82
+            }
+          ],
+          "linkBytesExchanged": 14.09,
+          "linkMessagesSize": 0.1,
+          "linkTotalMessages": 133,
+          "linkTotalLatency": 0.82,
+          "affinity": 0.00247
+        },
+        {
+          "target": "emailservice",
+          "replicas": [
+            {
+              "pod": "emailservice-68b8c69f87-dnsb5",
+              "node": "minikube",
+              "sumBytes": 22.63,
+              "countBytes": 0.1,
+              "totalMessages": 60,
+              "latency": 0.79
+            }
+          ],
+          "linkBytesExchanged": 22.63,
+          "linkMessagesSize": 0.1,
+          "linkTotalMessages": 120,
+          "linkTotalLatency": 0.79,
+          "affinity": 0.00239
+        }
+      ],
+      "avgProbability": 0.04
+    },
+    {
+      "source": "recommendationservice",
+      "communitiesProb": [
+        {
+          "recommendationservice": 0.9396,
+          "productcatalogservice": 0.0604
+        }
+      ],
+      "degreeSourceTargetsAffinity": 0.0654,
+      "targets": [
+        {
+          "target": "productcatalogservice",
+          "replicas": [
+            {
+              "pod": "productcatalogservice-67c979f897-hrp6n",
+              "node": "minikube",
+              "sumBytes": 820.74,
+              "countBytes": 1.02,
+              "totalMessages": 618,
+              "latency": 9.61
+            },
+            {
+              "pod": "productcatalogservice-67c979f897-wqp5k",
+              "node": "minikube",
+              "sumBytes": 894.02,
+              "countBytes": 1.12,
+              "totalMessages": 670,
+              "latency": 10.42
+            }
+          ],
+          "linkBytesExchanged": 1714.76,
+          "linkMessagesSize": 2.14,
+          "linkTotalMessages": 2606,
+          "linkTotalLatency": 20.03,
+          "affinity": 0.0654
+        }
+      ],
+      "avgProbability": 0.067
+    },
+    {
+      "source": "cartservice",
+      "communitiesProb": [
+        {
+          "cartservice": 0.9973,
+          "redis-cart": 0.0027
+        }
+      ],
+      "degreeSourceTargetsAffinity": 0.00274,
+      "targets": [
+        {
+          "target": "redis-cart",
+          "replicas": [
+            {
+              "pod": "redis-cart-7ff8f4d6ff-gvsxg",
+              "node": "minikube",
+              "sumBytes": 303.66,
+              "countBytes": 0,
+              "totalMessages": 3,
+              "latency": 0
+            }
+          ],
+          "linkBytesExchanged": 303.66,
+          "linkMessagesSize": 0,
+          "linkTotalMessages": 3,
+          "linkTotalLatency": 0,
+          "affinity": 0.00274
+        }
+      ],
+      "avgProbability": 0.003
+    }
+  ],
+  "totalWeightAffinity": 0.97685
+}
