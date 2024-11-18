@@ -14,7 +14,7 @@ All environment variables and their default values
 |------|----|---------------|-------------|
 | `ENV` | `string`| `production` | use different value from `production` only if you want to run ExScheduler in development mode using the kubeconfig from you local machine |
 | `APP_PORT` |`string`| `3000` | the port on which the app runs |
-| `NAMESPACES` |`string`| `default` | the app will watch and apply rescheduling policies only on these namespaces. Use comma-separated namespaces, e.g., `my-namespace-1, my-namespace-2,...` |
+| `NAMESPACES` |`string`| `default` | the app will watch and apply rescheduling strategies only on these namespaces. Use comma-separated namespaces, e.g., `my-namespace-1, my-namespace-2,...` |
 | `PROMETHEUS_SVC` | `string` | `prometheus` | the name of the Prometheus kubernetes service |
 | `PROMETHEUS_NAMESPACE` | `string` | `istio-system` | the name of namespace that the Prometheus service runs |
 | `CRONJOB_TIME` | `string` | `* * * * *` | by default ExScheduler runs every 1 minute and takes approximately 30 seconds to complete its process for 3 namespaces. You can modify this value and provide a cron job with an interval greater than one minute. |
@@ -36,8 +36,11 @@ Definition table
 | `Upstream` or `Um` Pods | the pods that send requests |
 | `Downstream` or `Dm` Pods | the pods that receive requests from `Upstream` Pods |
 
-### The problem 
+### Limitations
 
+- probes and healthchecks may need more time than usual. Probes is a proble that the exchange of recent pods may take longer time than usual. We have to get it into account. 
+
+### The problem 
 
 
 ### Solution
