@@ -38,6 +38,7 @@
     "eslint": "^8.49.0",
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-import": "^2.29.0",
+    "mocha": "^10.8.2",
     "nodemon": "^3.0.1",
     "prettier": "^2.6.1",
     "ts-node": "^10.9.1",
