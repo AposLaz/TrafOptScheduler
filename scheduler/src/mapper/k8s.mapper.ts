@@ -9,6 +9,17 @@ import {
 import { convertResourcesStringToNumber } from '../common/helpers';
 
 const k8sMapper = {
+  toNamespace: (
+    ns: string,
+    labels?: { [key: string]: string }
+  ): k8s.V1Namespace => ({
+    metadata: {
+      name: ns,
+      labels: {
+        ...labels,
+      },
+    },
+  }),
   toNodeTaints: (taintDeploy: DeploymentPlacementModel): k8s.V1Taint => ({
     key: taintDeploy.deploymentName, // key is the pod name
     effect: TaintEffects.NO_SCHEDULE,

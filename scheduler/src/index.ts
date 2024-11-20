@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+
+/*
 import { app } from './app';
 import { Config } from './config/config';
 import { logger } from './config/logger';
@@ -7,7 +9,7 @@ import { findReschedulePods } from './services/find.rescheduling.pods.service';
 import {
   getAppsApiClient,
   getCoreApiClient,
-} from './services/k8s/k8s.client.service';
+} from './services/k8s/adapters/k8s.client.service';
 import { checkNotReadyPodsInQueue } from './services/queue.notReadyPods.service';
 import { scheduler } from './services/scheduler.service';
 
@@ -56,5 +58,5 @@ const initSetup = async () => {
     throw new Error(err.message);
   }
 };
-
-initSetup();
+*/
+//initSetup();

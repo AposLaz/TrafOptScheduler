@@ -1,14 +1,19 @@
+/*
+
 import { queueApi } from '../api/queue.filesystem.api';
 import { logger } from '../config/logger';
 import { SemaphoreConcLimits } from '../enums';
 import { Semaphore } from '../handler/semaphore.handler';
 import { DeploymentNotReadyFilesystem } from '../types';
-import { getAppsApiClient, getCoreApiClient } from './k8s/k8s.client.service';
+import {
+  getAppsApiClient,
+  getCoreApiClient,
+} from './k8s/adapters/k8s.client.service';
 import {
   handleDeployReplicas,
   readyStatusDeploy,
-} from './k8s/k8s.deploy.service';
-import { deletePod } from './k8s/k8s.pod.service';
+} from './k8s/adapters/k8s.deploy.service';
+import { deletePod } from './k8s/adapters/k8s.pod.service';
 
 const semaphore = Semaphore.getInstance(SemaphoreConcLimits.MAX_CONCURRENCY); // Get the singleton instance with a max of default 20 concurrent tasks
 
@@ -83,3 +88,4 @@ export const retryUntilReadyStatusDeploy = async (
   // delete deploy from the file
   queueApi.deleteDeployFromQueueFile(deploy);
 };
+*/

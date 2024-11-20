@@ -1,12 +1,13 @@
+/*
 import { logger } from '../config/logger';
 import { k8sMapper } from '../mapper/k8s.mapper';
 import { DeploymentPlacementModel } from '../types';
 import {
   handleDeployReplicas,
   readyStatusDeploy,
-} from './k8s/k8s.deploy.service';
-import { addTaint, deleteTaint } from './k8s/k8s.node.service';
-import { deletePod } from './k8s/k8s.pod.service';
+} from './k8s/adapters/k8s.deploy.service';
+import { addTaint, deleteTaint } from './k8s/adapters/k8s.node.service';
+import { deletePod } from './k8s/adapters/k8s.pod.service';
 import * as k8s from '@kubernetes/client-node';
 import { retryUntilReadyStatusDeploy } from './queue.notReadyPods.service';
 import { Semaphore } from '../handler/semaphore.handler';
@@ -89,3 +90,4 @@ export const scheduler = async (
     logger.error(error);
   }
 };
+*/

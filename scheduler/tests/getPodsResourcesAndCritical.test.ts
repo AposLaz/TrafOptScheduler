@@ -5,10 +5,19 @@
 // get the resources again
 // get the resources that the pods have reached the limit of 80% CPU
 
+import { K8sManager } from '../src/services/k8s/K8sManager';
+
 // connect to the client
 // deploy the app to the namespace
-beforeAll(() => {
+beforeAll(async () => {
   console.log('setUp the app');
+  // create namespace
+  const k8sManager = new K8sManager();
+
+  await k8sManager.createNamespace('online-boutique', {
+    'istio-injection': 'enabled',
+  });
+  // deploy the application
 });
 
 // disconnect from the client

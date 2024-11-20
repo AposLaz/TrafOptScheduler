@@ -1,3 +1,10 @@
+export enum K8sClientTypeApi {
+  APPS = 'apps',
+  CORE = 'core',
+  OBJECTS = 'objects',
+  METRICS = 'metrics',
+}
+
 export enum TaintEffects {
   NO_SCHEDULE = 'NoSchedule',
   NO_EXECUTE = 'NoExecute',

@@ -1,5 +1,6 @@
 import * as k8s from '@kubernetes/client-node';
 import { Config } from './config';
+import { K8sClientTypeApi } from '../enums';
 
 // use Singleton Pattern
 class K8sClientConfig {
@@ -11,7 +12,7 @@ class K8sClientConfig {
     if (!K8sClientConfig.instance) {
       K8sClientConfig.instance = new k8s.KubeConfig();
 
-      // choose client based on environment
+      // choose client based on the environment
       Config.ENV === 'production'
         ? K8sClientConfig.instance.loadFromCluster() // runs in the Cluster
         : K8sClientConfig.instance.loadFromDefault(); // runs in development mode
@@ -20,15 +21,26 @@ class K8sClientConfig {
   }
 }
 
-export const getK8sClient = () => {
-  try {
+// use Factory Pattern for K8s Clients
+export class K8sClientApiFactory {
+  static getClient(
+    type: K8sClientApiFactory
+  ): k8s.AppsV1Api | k8s.CoreV1Api | k8s.KubernetesObjectApi | k8s.Metrics {
     const kc = K8sClientConfig.getInstance();
 
-    return kc;
-  } catch (error: unknown) {
-    const err = error as Error;
-    throw new Error(
-      `[ERROR] Could not setup k8s client: \n******************************************* \n${err} \n*******************************************`
-    );
+    switch (type) {
+      case K8sClientTypeApi.APPS:
+        return kc.makeApiClient(k8s.AppsV1Api);
+      case K8sClientTypeApi.CORE:
+        return kc.makeApiClient(k8s.CoreV1Api);
+      case K8sClientTypeApi.OBJECTS:
+        return k8s.KubernetesObjectApi.makeApiClient(kc);
+      case K8sClientTypeApi.METRICS:
+        return new k8s.Metrics(kc);
+      default:
+        throw new Error(
+          `Invalid Kubernetes API type provided. Expected one of ${Object.values(K8sClientTypeApi).join(', ')}`
+        );
+    }
   }
-};
+}
