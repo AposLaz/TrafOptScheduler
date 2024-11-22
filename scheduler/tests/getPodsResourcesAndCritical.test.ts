@@ -5,25 +5,43 @@
 // get the resources again
 // get the resources that the pods have reached the limit of 80% CPU
 
+import path from 'path';
 import { K8sManager } from '../src/services/k8s/K8sManager';
+import { logger } from '../src/config/logger';
+
+jest.setTimeout(120000);
 
 // connect to the client
 // deploy the app to the namespace
 beforeAll(async () => {
-  console.log('setUp the app');
-  // create namespace
+  logger.info('set up the environment');
   const k8sManager = new K8sManager();
 
+  // create namespace
   await k8sManager.createNamespace('online-boutique', {
     'istio-injection': 'enabled',
   });
-  // deploy the application
+
+  // deploy the application from the yaml files
+  const yamlPath = path.join(__dirname, 'data', 'online-boutique');
+  const res = await k8sManager.applyResourcesFromFile(yamlPath);
+
+  expect(res.length).toBe(0);
 });
 
 // disconnect from the client
 // delete the app from the namespace
 afterAll(() => {
+  // TODO delete the namespace
+  // TODO delete the application in this namespace
   console.log('tearDown the app');
+});
+
+describe('getPodsResourcesAndCritical', () => {
+  test('get pod metrics', () => {
+    // check if metrics reached the limit of 80%
+    // If pods not have request and limits, set up as the limit the 80% of the left space in Node
+  });
 });
 
 test('Calculator Tests', () => {

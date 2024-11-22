@@ -1,6 +1,5 @@
 import * as k8s from '@kubernetes/client-node';
 import { readYamlK8sFilesFromPath } from '../../../common/helpers';
-import path from 'path';
 import { K8sClientApiFactory } from '../../../config/k8sClient';
 import { K8sClientTypeApi } from '../../../enums';
 import { logger } from '../../../config/logger';
@@ -14,7 +13,9 @@ export class ResourceAdapter {
     ) as k8s.KubernetesObjectApi;
   }
 
-  async apply(resources: k8s.KubernetesObject[]) {
+  async apply(
+    resources: k8s.KubernetesObject[]
+  ): Promise<k8s.KubernetesObject[]> {
     const created: string[] = [];
     const notCreated: k8s.KubernetesObject[] = [];
 
@@ -53,13 +54,15 @@ export class ResourceAdapter {
 
         // Resource exists, patch it
         const response = await this.client.patch(resource);
-        created.push(response.body.metadata!.name!);
+        created.push(`${response.body.metadata!.name!}:${response.body.kind}`);
       } catch (error) {
         const err = error as k8s.HttpError;
         if (err.body.code === 404) {
           // If resource does not exist, create it
           const response = await this.client.create(resource);
-          created.push(response.body.metadata!.name!);
+          created.push(
+            `${response.body.metadata!.name!}:${response.body.kind}`
+          );
         } else {
           logger.error(`Error creating resource: ${resource} / ${err.message}`);
           notCreated.push(resource);
@@ -70,7 +73,7 @@ export class ResourceAdapter {
     logger.info(
       `All resources created/updated: ${created.join(', ')} / ${notCreated.length} not created because metadata name is undefined`
     );
-    return;
+    return notCreated;
   }
 
   /**
@@ -81,11 +84,12 @@ export class ResourceAdapter {
    * @return Array of resources created
    */
 
-  async applyFromFile(specPath: string) {
+  async applyFromFile(specPath: string): Promise<k8s.KubernetesObject[]> {
     const yamlFiles = readYamlK8sFilesFromPath(specPath);
 
     const flatYamlFiles = Object.values(yamlFiles).flat();
 
-    await this.apply(flatYamlFiles);
+    const resources = await this.apply(flatYamlFiles);
+    return resources;
   }
 }
