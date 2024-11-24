@@ -1,16 +1,14 @@
 import * as k8s from '@kubernetes/client-node';
-import { readYamlK8sFilesFromPath } from '../../../common/helpers';
-import { K8sClientApiFactory } from '../../../config/k8sClient';
-import { K8sClientTypeApi } from '../../../enums';
-import { logger } from '../../../config/logger';
+import { readYamlK8sFilesFromPath } from '../../common/helpers';
+import { K8sClientApiFactory } from '../../config/k8sClient';
+import { K8sClientTypeApi } from '../../enums';
+import { logger } from '../../config/logger';
 
-export class ResourceAdapter {
+export class ResourceService {
   private client: k8s.KubernetesObjectApi;
 
-  constructor() {
-    this.client = K8sClientApiFactory.getClient(
-      K8sClientTypeApi.OBJECTS
-    ) as k8s.KubernetesObjectApi;
+  constructor(client: k8s.KubernetesObjectApi) {
+    this.client = client;
   }
 
   async apply(

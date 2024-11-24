@@ -1,5 +1,5 @@
 import * as k8s from '@kubernetes/client-node';
-import { logger } from '../../../config/logger';
+import { logger } from '../../config/logger';
 
 export const getPodsByLabels = async (
   k8sClient: k8s.CoreV1Api,

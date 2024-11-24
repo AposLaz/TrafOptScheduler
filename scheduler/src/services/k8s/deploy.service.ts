@@ -1,7 +1,7 @@
 import * as k8s from '@kubernetes/client-node';
-import { ReplicasAction } from '../../../types';
-import { sleep } from '../../../common/helpers';
-import { logger } from '../../../config/logger';
+import { ReplicasAction } from '../../types';
+import { sleep } from '../../common/helpers';
+import { logger } from '../../config/logger';
 
 export const deploymentMatchLabels = async (
   k8sClient: k8s.AppsV1Api,

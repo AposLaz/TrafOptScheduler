@@ -1,15 +1,13 @@
 import * as k8s from '@kubernetes/client-node';
-import { K8sClientApiFactory } from '../../../config/k8sClient';
-import { K8sClientTypeApi } from '../../../enums';
-import { k8sMapper } from '../../../mapper/k8s.mapper';
-import { logger } from '../../../config/logger';
+import { K8sClientApiFactory } from '../../config/k8sClient';
+import { K8sClientTypeApi } from '../../enums';
+import { k8sMapper } from '../../mapper/k8s.mapper';
+import { logger } from '../../config/logger';
 
-export class NamespaceAdapter {
+export class NamespaceService {
   private client: k8s.CoreV1Api;
-  constructor() {
-    this.client = K8sClientApiFactory.getClient(
-      K8sClientTypeApi.CORE
-    ) as k8s.CoreV1Api;
+  constructor(client: k8s.CoreV1Api) {
+    this.client = client;
   }
 
   async createNamespaceIfNotExists(

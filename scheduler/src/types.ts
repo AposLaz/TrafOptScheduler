@@ -10,6 +10,14 @@ export type MapResourcesNode = {
   cpu: number;
   memory: number;
 };
+
+/************************** THRESHOLD EVALUATION */
+
+export type ThresholdEvaluationResult = {
+  aboveThreshold: PodMetrics[];
+  belowThreshold: PodMetrics[];
+};
+
 /************************* EXCHANGE PODS */
 
 export type CandidateAndCurrentNodes = {
@@ -65,7 +73,7 @@ export type Resources = {
   memory: number;
 };
 
-export type PodType = {
+export type PodMetrics = {
   namespace: string;
   node: string;
   podName: string;
@@ -74,7 +82,7 @@ export type PodType = {
   limits: Resources;
 };
 
-export type NodeType = {
+export type NodeMetrics = {
   name: string;
   capacity: Resources;
   allocatable: Resources;

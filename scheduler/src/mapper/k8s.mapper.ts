@@ -3,8 +3,8 @@ import * as k8s from '@kubernetes/client-node';
 import {
   DeploymentNotReadyFilesystem,
   DeploymentPlacementModel,
-  NodeType,
-  PodType,
+  NodeMetrics,
+  PodMetrics,
 } from '../types';
 import { convertResourcesStringToNumber } from '../common/helpers';
 
@@ -31,7 +31,7 @@ const k8sMapper = {
     namespace: deployment.namespace,
     deletePod: deployment.deletePod,
   }),
-  toPodResources: (pods: k8s.PodStatus[]): PodType[] => {
+  toPodResources: (pods: k8s.PodStatus[]): PodMetrics[] => {
     // CPU to milicores & RAM to MB
     return pods.map((pod) => {
       return {
@@ -53,7 +53,7 @@ const k8sMapper = {
       };
     });
   },
-  toNodeResources: (nodes: k8s.NodeStatus[]): NodeType[] => {
+  toNodeResources: (nodes: k8s.NodeStatus[]): NodeMetrics[] => {
     // CPU to milicores & RAM to MB
     return nodes.map((node) => {
       return {

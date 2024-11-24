@@ -6,16 +6,18 @@
 // get the resources that the pods have reached the limit of 80% CPU
 
 import path from 'path';
-import { K8sManager } from '../src/services/k8s/K8sManager';
+import { KubernetesManager } from '../src/services/k8s/manager';
 import { logger } from '../src/config/logger';
 
 jest.setTimeout(120000);
+
+let k8sManager: KubernetesManager; // Declare k8sManager in the outer scope
 
 // connect to the client
 // deploy the app to the namespace
 beforeAll(async () => {
   logger.info('set up the environment');
-  const k8sManager = new K8sManager();
+  k8sManager = new KubernetesManager();
 
   // create namespace
   await k8sManager.createNamespace('online-boutique', {
@@ -38,7 +40,15 @@ afterAll(() => {
 });
 
 describe('getPodsResourcesAndCritical', () => {
-  test('get pod metrics', () => {
+  let podMetrics = [];
+
+  test('get pod metrics', async () => {
+    const podMetrics =
+      await k8sManager.getPodsMetricsByNamespace('online-boutique');
+
+    logger.info(podMetrics);
+    //TODO compare the list request and limit resources with the json dummy data
+
     // check if metrics reached the limit of 80%
     // If pods not have request and limits, set up as the limit the 80% of the left space in Node
   });

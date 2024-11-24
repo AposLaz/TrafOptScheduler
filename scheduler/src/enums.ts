@@ -5,6 +5,15 @@ export enum K8sClientTypeApi {
   METRICS = 'metrics',
 }
 
+export enum MetricsThreshold {
+  CPU = 'cpu',
+  MEMORY = 'memory',
+  CPU_MEMORY = 'cpu-memory',
+  LATENCY = 'latency',
+}
+
+export enum ThresholdValues {}
+
 export enum TaintEffects {
   NO_SCHEDULE = 'NoSchedule',
   NO_EXECUTE = 'NoExecute',

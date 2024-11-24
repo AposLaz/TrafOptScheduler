@@ -4,8 +4,8 @@ import {
 } from './metrics/cpu.memory.resources.service';
 import * as k8s from '@kubernetes/client-node';
 import { logger } from '../config/logger';
-import { deploymentMatchLabels } from './k8s/adapters/k8s.deploy.service';
-import { getPodsByLabels } from './k8s/adapters/k8s.pod.service';
+import { deploymentMatchLabels } from './k8s/deploy.service';
+import { getPodsByLabels } from './k8s/pod.service';
 import {
   CandidateAndCurrentNodes,
   CandidateReschedulingPods,
@@ -13,7 +13,7 @@ import {
   DeploymentPlacementModel,
   DeploymentReplicasData,
   MapResourcesNode,
-  NodeType,
+  NodeMetrics,
   ObjectResources,
   ObjectStrings,
   PrometheusTransformResultsToIstioMetrics,
@@ -397,7 +397,7 @@ const sumCpuAndMemoryByNode = (
 
 const getNodesAvailableResources = (
   nodes: string[],
-  resources: NodeType[]
+  resources: NodeMetrics[]
 ): MapResourcesNode[] => {
   return nodes.map((node) => {
     const cNode = resources.find((n) => n.name === node);
