@@ -8,10 +8,7 @@
   "parserOptions": {
     "project": "./tsconfig.json"
   },
-  "plugins": [
-    "@typescript-eslint",
-    "import"
-  ],
+  "plugins": ["@typescript-eslint", "import"],
   "root": true,
   "env": {
     "jest": true,
@@ -28,11 +25,7 @@
           "external",
           "builtin",
           "internal",
-          [
-            "index",
-            "sibling",
-            "parent"
-          ],
+          ["index", "sibling", "parent"],
           "object",
           "type"
         ],

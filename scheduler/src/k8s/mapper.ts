@@ -3,9 +3,8 @@ import * as k8s from '@kubernetes/client-node';
 import {
   DeploymentNotReadyFilesystem,
   DeploymentPlacementModel,
-  NodeMetrics,
-  PodMetrics,
 } from '../types';
+import { NodeMetrics, PodMetrics } from './types';
 import { convertResourcesStringToNumber } from '../common/helpers';
 
 const k8sMapper = {

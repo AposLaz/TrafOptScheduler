@@ -1,18 +1,18 @@
-import { MetricsThreshold } from '../../enums';
-import { PodMetrics, ThresholdEvaluationResult } from '../../types';
+import { MetricsType } from '../enums';
+import { PodMetrics, ThresholdPodsEvaluationResult } from '../types';
 
 interface ThresholdStrategy {
   evaluateThreshold(
     podMetrics: PodMetrics[],
     threshold: number
-  ): Promise<ThresholdEvaluationResult>;
+  ): Promise<ThresholdPodsEvaluationResult>;
 }
 
 class CpuThresholdStrategy implements ThresholdStrategy {
   async evaluateThreshold(
     podMetrics: PodMetrics[],
     threshold: number
-  ): Promise<ThresholdEvaluationResult> {
+  ): Promise<ThresholdPodsEvaluationResult> {
     const abovePods = podMetrics.filter(
       (pod) => pod.usage.cpu >= threshold * pod.limits.cpu
     );
@@ -32,7 +32,7 @@ class MemoryThresholdStrategy implements ThresholdStrategy {
   async evaluateThreshold(
     podMetrics: PodMetrics[],
     threshold: number
-  ): Promise<ThresholdEvaluationResult> {
+  ): Promise<ThresholdPodsEvaluationResult> {
     const abovePods = podMetrics.filter(
       (pod) => pod.usage.memory >= threshold * pod.limits.memory
     );
@@ -52,7 +52,7 @@ class CpuAndMemoryThresholdStrategy implements ThresholdStrategy {
   async evaluateThreshold(
     podMetrics: PodMetrics[],
     threshold: number
-  ): Promise<ThresholdEvaluationResult> {
+  ): Promise<ThresholdPodsEvaluationResult> {
     const abovePods = podMetrics.filter(
       (pod) =>
         pod.usage.cpu / pod.limits.cpu + pod.usage.memory / pod.limits.memory >=
@@ -73,17 +73,17 @@ class CpuAndMemoryThresholdStrategy implements ThresholdStrategy {
 }
 
 export class ThresholdStrategyFactory {
-  static getStrategy(metric: MetricsThreshold): ThresholdStrategy {
+  static getStrategy(metric: MetricsType): ThresholdStrategy {
     switch (metric) {
-      case MetricsThreshold.CPU:
+      case MetricsType.CPU:
         return new CpuThresholdStrategy();
-      case MetricsThreshold.MEMORY:
+      case MetricsType.MEMORY:
         return new MemoryThresholdStrategy();
-      case MetricsThreshold.CPU_MEMORY:
+      case MetricsType.CPU_MEMORY:
         return new CpuAndMemoryThresholdStrategy();
       default:
         throw new Error(
-          `Invalid metric provided. Expected one of ${Object.values(MetricsThreshold).join(', ')}`
+          `Invalid metric provided. Expected one of ${Object.values(MetricsType).join(', ')}`
         );
     }
   }

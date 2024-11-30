@@ -1,17 +1,3 @@
-export enum K8sClientTypeApi {
-  APPS = 'apps',
-  CORE = 'core',
-  OBJECTS = 'objects',
-  METRICS = 'metrics',
-}
-
-export enum MetricsThreshold {
-  CPU = 'cpu',
-  MEMORY = 'memory',
-  CPU_MEMORY = 'cpu-memory',
-  LATENCY = 'latency',
-}
-
 export enum ThresholdValues {}
 
 export enum TaintEffects {

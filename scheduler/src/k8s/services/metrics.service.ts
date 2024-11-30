@@ -1,14 +1,27 @@
 import * as k8s from '@kubernetes/client-node';
-import { k8sMapper } from '../../mapper/k8s.mapper';
-import { NodeMetrics, PodMetrics } from '../../types';
+import { k8sMapper } from '../mapper';
+import {
+  NodeMetrics,
+  PodMetrics,
+  ThresholdPodsEvaluationResult,
+} from '../types';
+import { ThresholdStrategyFactory } from '../algorithms/threshold.strategy.service';
+import { ConfigMetrics } from '../types';
 
 export class MetricsService {
   private metricClient: k8s.Metrics;
   private coreClient: k8s.CoreV1Api;
+  private metrics: ConfigMetrics;
 
-  constructor(metricClient: k8s.Metrics, coreClient: k8s.CoreV1Api) {
+  constructor(
+    metricClient: k8s.Metrics,
+    coreClient: k8s.CoreV1Api,
+    metrics: ConfigMetrics
+  ) {
     this.metricClient = metricClient;
     this.coreClient = coreClient;
+
+    this.metrics = metrics;
   }
 
   async getNodesMetrics(): Promise<NodeMetrics[]> {
@@ -31,12 +44,14 @@ export class MetricsService {
   }
 
   async classifyPodsByThreshold(
-    namespace: string,
-    metrics: [],
-    threshold: number
-  ) {
+    namespace: string
+  ): Promise<ThresholdPodsEvaluationResult> {
     const pods = await this.getPodsMetrics(namespace);
 
-    console.log(pods);
+    const resourcePods = ThresholdStrategyFactory.getStrategy(
+      this.metrics.type
+    ).evaluateThreshold(pods, this.metrics.threshold);
+
+    return resourcePods;
   }
 }

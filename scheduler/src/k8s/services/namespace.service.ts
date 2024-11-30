@@ -1,7 +1,5 @@
 import * as k8s from '@kubernetes/client-node';
-import { K8sClientApiFactory } from '../../config/k8sClient';
-import { K8sClientTypeApi } from '../../enums';
-import { k8sMapper } from '../../mapper/k8s.mapper';
+import { k8sMapper } from '../mapper';
 import { logger } from '../../config/logger';
 
 export class NamespaceService {

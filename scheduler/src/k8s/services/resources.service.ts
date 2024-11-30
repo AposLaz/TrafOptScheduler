@@ -1,7 +1,5 @@
 import * as k8s from '@kubernetes/client-node';
 import { readYamlK8sFilesFromPath } from '../../common/helpers';
-import { K8sClientApiFactory } from '../../config/k8sClient';
-import { K8sClientTypeApi } from '../../enums';
 import { logger } from '../../config/logger';
 
 export class ResourceService {

@@ -4,8 +4,8 @@ import {
 } from './metrics/cpu.memory.resources.service';
 import * as k8s from '@kubernetes/client-node';
 import { logger } from '../config/logger';
-import { deploymentMatchLabels } from './k8s/deploy.service';
-import { getPodsByLabels } from './k8s/pod.service';
+import { deploymentMatchLabels } from '../k8s/services/deploy.service';
+import { getPodsByLabels } from '../k8s/services/pod.service';
 import {
   CandidateAndCurrentNodes,
   CandidateReschedulingPods,

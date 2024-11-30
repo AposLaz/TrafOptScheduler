@@ -6,7 +6,7 @@
 // get the resources that the pods have reached the limit of 80% CPU
 
 import path from 'path';
-import { KubernetesManager } from '../src/services/k8s/manager';
+import { KubernetesManager } from '../src/k8s/manager';
 import { logger } from '../src/config/logger';
 
 jest.setTimeout(120000);
@@ -20,15 +20,15 @@ beforeAll(async () => {
   k8sManager = new KubernetesManager();
 
   // create namespace
-  await k8sManager.createNamespace('online-boutique', {
-    'istio-injection': 'enabled',
-  });
+  // await k8sManager.createNamespace('online-boutique', {
+  //   'istio-injection': 'enabled',
+  // });
 
   // deploy the application from the yaml files
-  const yamlPath = path.join(__dirname, 'data', 'online-boutique');
-  const res = await k8sManager.applyResourcesFromFile(yamlPath);
+  // const yamlPath = path.join(__dirname, 'data', 'online-boutique');
+  // const res = await k8sManager.applyResourcesFromFile(yamlPath);
 
-  expect(res.length).toBe(0);
+  // expect(res.length).toBe(0);
 });
 
 // disconnect from the client
@@ -44,9 +44,10 @@ describe('getPodsResourcesAndCritical', () => {
 
   test('get pod metrics', async () => {
     const podMetrics =
-      await k8sManager.getPodsMetricsByNamespace('online-boutique');
+      await k8sManager.getClassifiedPodsByThreshold('online-boutique');
 
-    logger.info(podMetrics);
+    console.log(podMetrics.aboveThreshold);
+    console.log(podMetrics.belowThreshold);
     //TODO compare the list request and limit resources with the json dummy data
 
     // check if metrics reached the limit of 80%

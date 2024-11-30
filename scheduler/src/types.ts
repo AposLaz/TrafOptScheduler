@@ -11,13 +11,6 @@ export type MapResourcesNode = {
   memory: number;
 };
 
-/************************** THRESHOLD EVALUATION */
-
-export type ThresholdEvaluationResult = {
-  aboveThreshold: PodMetrics[];
-  belowThreshold: PodMetrics[];
-};
-
 /************************* EXCHANGE PODS */
 
 export type CandidateAndCurrentNodes = {
@@ -63,32 +56,6 @@ export type DeploymentNotReadyFilesystem = Omit<
   DeploymentPlacementModel,
   'nodes'
 >;
-
-/**
- * CPU to millicores
- * Memory to MB
- */
-export type Resources = {
-  cpu: number;
-  memory: number;
-};
-
-export type PodMetrics = {
-  namespace: string;
-  node: string;
-  podName: string;
-  usage: Resources;
-  requested: Resources;
-  limits: Resources;
-};
-
-export type NodeMetrics = {
-  name: string;
-  capacity: Resources;
-  allocatable: Resources;
-  requested: Resources;
-  limits: Resources;
-};
 
 /*********************************** PROMETHEUS TYPES */
 

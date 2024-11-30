@@ -1,6 +1,6 @@
 import * as k8s from '@kubernetes/client-node';
 //import { getMetricsClient } from '../k8s/adapters/k8s.client.service';
-import { k8sMapper } from '../../mapper/k8s.mapper';
+import { k8sMapper } from '../../k8s/mapper';
 
 export const getPodsCurrentResources = async (
   k8sClient: k8s.CoreV1Api,

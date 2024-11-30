@@ -1,10 +1,12 @@
 import * as k8s from '@kubernetes/client-node';
-import { ResourceService } from './resources.service';
-import { NamespaceService } from './namespace.service';
-import { MetricsService } from './metrics.service';
-import { NodeMetrics, PodMetrics } from '../../types';
-import { K8sClientTypeApi } from '../../enums';
-import { K8sClientApiFactory } from '../../config/k8sClient';
+import { ResourceService } from './services/resources.service';
+import { NamespaceService } from './services/namespace.service';
+import { MetricsService } from './services/metrics.service';
+import { NodeMetrics, PodMetrics } from './types';
+import { K8sClientTypeApi } from './enums';
+import { K8sClientApiFactory } from '../config/k8sClient';
+import { Config } from '../config/config';
+import { ConfigMetrics } from './types';
 
 export class KubernetesManager {
   private metrics: MetricsService;
@@ -24,7 +26,9 @@ export class KubernetesManager {
       K8sClientTypeApi.OBJECTS
     ) as k8s.KubernetesObjectApi;
 
-    this.metrics = new MetricsService(metricClient, coreClient);
+    const metrics: ConfigMetrics = Config.metrics;
+
+    this.metrics = new MetricsService(metricClient, coreClient, metrics);
     this.namespaceAdapter = new NamespaceService(coreClient);
     this.resource = new ResourceService(objectClient);
   }
@@ -59,6 +63,10 @@ export class KubernetesManager {
    */
   async applyResourcesFromFile(specPath: string) {
     return this.resource.applyFromFile(specPath);
+  }
+
+  async getClassifiedPodsByThreshold(ns: string) {
+    return this.metrics.classifyPodsByThreshold(ns);
   }
 
   /**
