@@ -1,4 +1,4 @@
-import * as k8s from '@kubernetes/client-node';
+import type * as k8s from '@kubernetes/client-node';
 
 export const getSvc = async (
   k8sClient: k8s.CoreV1Api,

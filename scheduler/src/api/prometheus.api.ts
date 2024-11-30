@@ -1,11 +1,13 @@
 import axios from 'axios';
+
+import { Config } from '../config/config';
 import { logger } from '../config/logger';
-import {
+import { prometheusMapper } from '../mapper/prometheus.mapper';
+
+import type {
   PrometheusFetchData_Istio_Metrics,
   PrometheusTransformResultsToIstioMetrics,
 } from '../types';
-import { Config } from '../config/config';
-import { prometheusMapper } from '../mapper/prometheus.mapper';
 
 const time = Config.CRONJOB_TIME;
 

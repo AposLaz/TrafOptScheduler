@@ -1,12 +1,15 @@
+
 import {
   getNodesResources,
   getPodsCurrentResources,
 } from './metrics/cpu.memory.resources.service';
-import * as k8s from '@kubernetes/client-node';
 import { logger } from '../config/logger';
+import { appsResponseTime } from './metrics/responseTime.service';
+import { Config } from '../config/config';
 import { deploymentMatchLabels } from '../k8s/services/deploy.service';
 import { getPodsByLabels } from '../k8s/services/pod.service';
-import {
+
+import type {
   CandidateAndCurrentNodes,
   CandidateReschedulingPods,
   DeploymentLabels,
@@ -18,8 +21,7 @@ import {
   ObjectStrings,
   PrometheusTransformResultsToIstioMetrics,
 } from '../types';
-import { appsResponseTime } from './metrics/responseTime.service';
-import { Config } from '../config/config';
+import type * as k8s from '@kubernetes/client-node';
 
 // return pods and the node for reschedule
 export const findReschedulePods = async (

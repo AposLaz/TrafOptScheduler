@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+
 import { SetupFolderFiles } from '../enums';
 import { logger } from './logger';
 

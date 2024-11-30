@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+
 import { SetupFolderFiles } from '../enums';
 
 const LOCK_FILE = `${SetupFolderFiles.DEFAULT_PATH}/${SetupFolderFiles.QUEUE_PATH}/.queue.lock`;

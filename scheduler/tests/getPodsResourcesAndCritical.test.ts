@@ -6,8 +6,9 @@
 // get the resources that the pods have reached the limit of 80% CPU
 
 import path from 'path';
-import { KubernetesManager } from '../src/k8s/manager';
+
 import { logger } from '../src/config/logger';
+import { KubernetesManager } from '../src/k8s/manager';
 
 jest.setTimeout(120000);
 

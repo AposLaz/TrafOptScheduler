@@ -1,4 +1,4 @@
-import { MetricsType } from './enums';
+import type { MetricsType } from './enums';
 
 /******************** METRICS TYPES **************** */
 

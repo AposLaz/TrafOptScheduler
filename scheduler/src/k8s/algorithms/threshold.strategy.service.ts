@@ -1,5 +1,6 @@
 import { MetricsType } from '../enums';
-import { PodMetrics, ThresholdPodsEvaluationResult } from '../types';
+
+import type { PodMetrics, ThresholdPodsEvaluationResult } from '../types';
 
 interface ThresholdStrategy {
   evaluateThreshold(

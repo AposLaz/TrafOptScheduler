@@ -1,5 +1,5 @@
-import http from 'k6/http';
 import { sleep } from 'k6';
+import http from 'k6/http';
 
 export const options = {
   // A number specifying the number of VUs to run concurrently.

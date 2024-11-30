@@ -1,11 +1,13 @@
+
+import { convertResourcesStringToNumber } from '../common/helpers';
 import { TaintEffects } from '../enums';
-import * as k8s from '@kubernetes/client-node';
-import {
+
+import type {
   DeploymentNotReadyFilesystem,
   DeploymentPlacementModel,
 } from '../types';
-import { NodeMetrics, PodMetrics } from './types';
-import { convertResourcesStringToNumber } from '../common/helpers';
+import type { NodeMetrics, PodMetrics } from './types';
+import type * as k8s from '@kubernetes/client-node';
 
 const k8sMapper = {
   toNamespace: (

@@ -1,7 +1,9 @@
 import fs from 'fs';
 import path from 'path';
+
 import yaml from 'js-yaml';
-import * as k8s from '@kubernetes/client-node';
+
+import type * as k8s from '@kubernetes/client-node';
 
 export const sleep = (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms));

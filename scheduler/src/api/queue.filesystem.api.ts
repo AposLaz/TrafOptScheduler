@@ -1,10 +1,12 @@
 // if a deployment is not in a ready state store it in a file system
 // store all of them in a filesystem under path /data/notReadyPods/deployQueue.json
 import fs from 'node:fs';
-import { SetupFolderFiles } from '../enums';
-import { DeploymentNotReadyFilesystem } from '../types';
+
 import { logger } from '../config/logger';
+import { SetupFolderFiles } from '../enums';
 import { raceConditions } from '../handler/conc.raceConditions';
+
+import type { DeploymentNotReadyFilesystem } from '../types';
 
 class QueueFileSystemHandlerApi {
   // store deploy to filesystem queue

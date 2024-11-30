@@ -1,6 +1,8 @@
-import * as k8s from '@kubernetes/client-node';
-import { k8sMapper } from '../mapper';
+
 import { logger } from '../../config/logger';
+import { k8sMapper } from '../mapper';
+
+import type * as k8s from '@kubernetes/client-node';
 
 export class NamespaceService {
   private client: k8s.CoreV1Api;

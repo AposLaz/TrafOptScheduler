@@ -1,8 +1,10 @@
+
 import prometheusApi from '../../api/prometheus.api';
 import { Config } from '../../config/config';
 import { logger } from '../../config/logger';
 import { getSvc } from '../../k8s/services/svc.service';
-import * as k8s from '@kubernetes/client-node';
+
+import type * as k8s from '@kubernetes/client-node';
 
 export const appsResponseTime = async (
   k8sClient: k8s.CoreV1Api,

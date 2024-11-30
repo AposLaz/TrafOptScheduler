@@ -1,12 +1,14 @@
 import * as k8s from '@kubernetes/client-node';
+
+import { ThresholdStrategyFactory } from '../algorithms/threshold.strategy.service';
 import { k8sMapper } from '../mapper';
-import {
+
+import type {
   NodeMetrics,
   PodMetrics,
   ThresholdPodsEvaluationResult,
 } from '../types';
-import { ThresholdStrategyFactory } from '../algorithms/threshold.strategy.service';
-import { ConfigMetrics } from '../types';
+import type { ConfigMetrics } from '../types';
 
 export class MetricsService {
   private metricClient: k8s.Metrics;

@@ -1,12 +1,14 @@
-import * as k8s from '@kubernetes/client-node';
-import { ResourceService } from './services/resources.service';
-import { NamespaceService } from './services/namespace.service';
-import { MetricsService } from './services/metrics.service';
-import { NodeMetrics, PodMetrics } from './types';
+
 import { K8sClientTypeApi } from './enums';
-import { K8sClientApiFactory } from '../config/k8sClient';
+import { MetricsService } from './services/metrics.service';
+import { NamespaceService } from './services/namespace.service';
+import { ResourceService } from './services/resources.service';
 import { Config } from '../config/config';
-import { ConfigMetrics } from './types';
+import { K8sClientApiFactory } from '../config/k8sClient';
+
+import type { NodeMetrics, PodMetrics } from './types';
+import type { ConfigMetrics } from './types';
+import type * as k8s from '@kubernetes/client-node';
 
 export class KubernetesManager {
   private metrics: MetricsService;

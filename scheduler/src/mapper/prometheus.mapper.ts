@@ -1,4 +1,4 @@
-import {
+import type {
   PrometheusFetchData_Istio_Metrics,
   PrometheusTransformResultsToIstioMetrics,
 } from '../types';

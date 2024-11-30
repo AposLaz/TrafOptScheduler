@@ -1,4 +1,4 @@
-import { DeploymentPlacementModel } from '../types';
+import type { DeploymentPlacementModel } from '../types';
 
 export const deployModels: DeploymentPlacementModel[] = [
   //   {
