@@ -1,3 +1,7 @@
+/**
+ * PROMETHEUS METRICS USED INSTEAD OF THIS FUNCTION
+ */
+
 import { MetricsType } from '../enums';
 
 import type { PodMetrics, ThresholdPodsEvaluationResult } from '../types';

@@ -1,3 +1,23 @@
+export type PodSingleMultipleRs = {
+  name: string;
+  node: string;
+  metric: number;
+};
+
+export type DeploymentSingleRs = {
+  deployment: string;
+  pods: PodSingleMultipleRs;
+};
+
+export type DeploymentMultipleRs = {
+  deployment: string;
+  pods: PodSingleMultipleRs[];
+};
+export type DeploymentsSingleMultipleRsType = {
+  singleRs: DeploymentSingleRs[];
+  multipleRs: DeploymentMultipleRs[];
+};
+
 /** DEFAULT TYPES */
 
 export type ObjectStrings = { [key: string]: string[] };

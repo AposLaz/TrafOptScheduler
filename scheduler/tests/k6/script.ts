@@ -1,11 +1,11 @@
-import { sleep } from 'k6';
+import { check, sleep } from 'k6';
 import http from 'k6/http';
 
 export const options = {
   // A number specifying the number of VUs to run concurrently.
-  vus: 10,
+  vus: 600,
   // A string specifying the total duration of the test run.
-  duration: '30s',
+  duration: '30m',
 
   summaryTrendStats: [
     'avg',
@@ -65,6 +65,7 @@ export const options = {
 // about authoring k6 scripts.
 //
 export default function () {
-  http.get('https://test.k6.io');
+  const res = http.get('http://34.154.57.135/');
+  check(res, { 'status was 200': (r) => r.status == 200 });
   sleep(1);
 }

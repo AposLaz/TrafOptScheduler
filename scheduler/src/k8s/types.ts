@@ -12,6 +12,11 @@ export type ThresholdPodsEvaluationResult = {
   belowThreshold: PodMetrics[];
 };
 
+export type DeploymentPodMapType = {
+  pod: string;
+  node: string;
+};
+
 // CPU to millicores, Memory to MB
 export type Resources = {
   cpu: number;

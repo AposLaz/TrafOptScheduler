@@ -45,6 +45,10 @@ export class MetricsService {
     return pods;
   }
 
+  /**
+   *
+   * TODO REMOVE THIS METHOD BECAUSE THE PROMETHEUS IS USED FOR THIS PROPOSED
+   */
   async classifyPodsByThreshold(
     namespace: string
   ): Promise<ThresholdPodsEvaluationResult> {

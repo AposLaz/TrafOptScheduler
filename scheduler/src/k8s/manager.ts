@@ -1,12 +1,13 @@
-
 import { K8sClientTypeApi } from './enums';
 import { MetricsService } from './services/metrics.service';
 import { NamespaceService } from './services/namespace.service';
 import { ResourceService } from './services/resources.service';
 import { Config } from '../config/config';
 import { K8sClientApiFactory } from '../config/k8sClient';
+import { DeploymentService } from './services/deploy.service';
+import { PodService } from './services/pod.service';
 
-import type { NodeMetrics, PodMetrics } from './types';
+import type { DeploymentPodMapType, NodeMetrics, PodMetrics } from './types';
 import type { ConfigMetrics } from './types';
 import type * as k8s from '@kubernetes/client-node';
 
@@ -14,6 +15,8 @@ export class KubernetesManager {
   private metrics: MetricsService;
   private namespaceAdapter: NamespaceService;
   private resource: ResourceService;
+  private deployment: DeploymentService;
+  private pod: PodService;
 
   constructor() {
     const metricClient = K8sClientApiFactory.getClient(
@@ -28,11 +31,17 @@ export class KubernetesManager {
       K8sClientTypeApi.OBJECTS
     ) as k8s.KubernetesObjectApi;
 
+    const appsClient = K8sClientApiFactory.getClient(
+      K8sClientTypeApi.APPS
+    ) as k8s.AppsV1Api;
+
     const metrics: ConfigMetrics = Config.metrics;
 
     this.metrics = new MetricsService(metricClient, coreClient, metrics);
     this.namespaceAdapter = new NamespaceService(coreClient);
     this.resource = new ResourceService(objectClient);
+    this.deployment = new DeploymentService(appsClient);
+    this.pod = new PodService(coreClient);
   }
 
   /**
@@ -79,6 +88,68 @@ export class KubernetesManager {
    */
   async createNamespace(ns: string, labels?: { [key: string]: string }) {
     return this.namespaceAdapter.createNamespaceIfNotExists(ns, labels);
+  }
+
+  async getPodsOfEachDeploymentByNs(
+    ns: string
+  ): Promise<Record<string, DeploymentPodMapType[]> | undefined> {
+    const [deployments, replicaSets, pods] = await Promise.all([
+      this.deployment.fetchDeploymentsByNamespace(ns),
+      this.deployment.fetchDeploymentReplicaSetsByNamespace(ns),
+      this.pod.fetchPodsByNamespace(ns),
+    ]);
+
+    if (!deployments || !replicaSets || !pods) {
+      return;
+    }
+
+    const podsByDeployment: Record<string, DeploymentPodMapType[]> = {};
+    for (const deployment of deployments) {
+      const deploymentName = deployment.metadata?.name || 'unknown';
+
+      // add new deployment
+      if (!podsByDeployment[deploymentName]) {
+        podsByDeployment[deploymentName] = [];
+      }
+
+      // Get ReplicaSets owned by this Deployment
+      const rs = replicaSets.filter((rs) =>
+        rs.metadata?.ownerReferences?.some(
+          (owner) =>
+            owner.kind === 'Deployment' && owner.name === deploymentName
+        )
+      );
+
+      // Add ReplicaSet names to the Deployment map
+      for (const r of rs) {
+        const replicaSetName = r.metadata?.name || 'unknown';
+
+        // Get Pods owned by this ReplicaSet
+        const podRs = pods.filter((pod) =>
+          pod.metadata?.ownerReferences?.some(
+            (owner) =>
+              owner.kind === 'ReplicaSet' && owner.name === replicaSetName
+          )
+        );
+
+        // Add Pod names to the Deployment map
+        podRs.forEach((pod) => {
+          const podName = pod.metadata?.name || 'unknown';
+          const node = pod.spec?.nodeName || 'unknown';
+          podsByDeployment[deploymentName].push({
+            pod: podName,
+            node: node,
+          });
+        });
+
+        // clear unknown pods
+        podsByDeployment[deploymentName].filter(
+          (p) => p.node !== 'unknown' && p.pod !== 'unknown'
+        );
+      }
+    }
+
+    return podsByDeployment;
   }
 
   /**

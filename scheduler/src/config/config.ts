@@ -26,4 +26,7 @@ export const Config = {
       : 0.8,
     type: (process.env.METRICS_TYPE as MetricsType) ?? MetricsType.CPU,
   },
+  prometheusUrl:
+    process.env.PROMETHEUS_URL ??
+    'http://prometheus.prometheus.svc.cluster.local:9090',
 };

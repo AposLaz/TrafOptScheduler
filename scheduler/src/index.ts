@@ -1,17 +1,11 @@
- 
-
-/*
 import { app } from './app';
 import { Config } from './config/config';
 import { logger } from './config/logger';
 import './config/setup';
-import { findReschedulePods } from './services/find.rescheduling.pods.service';
-import {
-  getAppsApiClient,
-  getCoreApiClient,
-} from './services/k8s/adapters/k8s.client.service';
-import { checkNotReadyPodsInQueue } from './services/queue.notReadyPods.service';
-import { scheduler } from './services/scheduler.service';
+import { MetricsType } from './k8s/enums';
+import { KubernetesManager } from './k8s/manager';
+import { PrometheusManager } from './prometheus/manager';
+import { singleAndMultipleRsPods } from './services/getSingleAndMultipleRsPods';
 
 const initRestApi = async () => {
   app.listen(Config.APP_PORT, () => {
@@ -27,29 +21,56 @@ initRestApi().catch((error: unknown) => {
 const initSetup = async () => {
   try {
     // check if all deploys are ready in background
-    Promise.all([checkNotReadyPodsInQueue()]).then(() => {
-      logger.info('All Deploys are ready');
-    });
-    const apiK8sClient = getCoreApiClient();
-    const appsApiK8sClient = getAppsApiClient();
+    // Promise.all([checkNotReadyPodsInQueue()]).then(() => {
+    //   logger.info('All Deploys are ready');
+    // });
+    const k8sManager = new KubernetesManager();
+    const promManager = new PrometheusManager();
+
     for (const namespace of Config.NAMESPACES) {
       try {
-        const res = await findReschedulePods(
-          apiK8sClient,
-          appsApiK8sClient,
-          namespace
-        );
+        // for each namespace
 
-        if (!res) {
-          logger.info(`No pods to reschedule in namespace: ${namespace}`);
+        // get the graph of deployments and pods
+        const deploymentPods =
+          await k8sManager.getPodsOfEachDeploymentByNs(namespace);
+
+        if (!deploymentPods) {
+          logger.warn(
+            `No Deployments/ReplicaSets/Pods found on Namespace: ${namespace}`
+          );
           continue;
         }
 
-        console.log(res);
-        //await scheduler(apiK8sClient, appsApiK8sClient, res);
-      } catch (error) {
-        logger.error(`Error reschedule pods in namespace: ${namespace}`);
-        logger.error(error);
+        const podMetrics = await promManager.getPodThresholds(
+          MetricsType.MEMORY,
+          namespace
+        );
+
+        if (!podMetrics) {
+          logger.warn(`No Pod Metrics found on Namespace: ${namespace}`);
+          continue;
+        }
+
+        const criticalPods = singleAndMultipleRsPods(
+          deploymentPods,
+          podMetrics.aboveThreshold
+        );
+
+        console.log(JSON.stringify(criticalPods, null, 2));
+
+        const nonCriticalPods = singleAndMultipleRsPods(
+          deploymentPods,
+          podMetrics.belowThreshold
+        );
+
+        console.log(JSON.stringify(nonCriticalPods, null, 2));
+
+        // get the metrics of the pods
+      } catch (err: unknown) {
+        const error = err as Error;
+        logger.error(`Error: ${error.message}`);
+        continue;
       }
     }
   } catch (error: unknown) {
@@ -58,5 +79,5 @@ const initSetup = async () => {
     throw new Error(err.message);
   }
 };
-*/
-//initSetup();
+
+initSetup();
