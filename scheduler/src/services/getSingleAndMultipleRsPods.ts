@@ -1,5 +1,4 @@
-import type { DeploymentPodMapType } from '../k8s/types';
-import type { PodResourceUsageType } from '../prometheus/types';
+import type { DeploymentPodMapType, PodMetrics } from '../k8s/types';
 import type {
   DeploymentsSingleMultipleRsType,
   PodSingleMultipleRs,
@@ -7,7 +6,7 @@ import type {
 
 export const singleAndMultipleRsPods = (
   deploymentPods: Record<string, DeploymentPodMapType[]>,
-  podMetrics: PodResourceUsageType[]
+  podMetrics: PodMetrics[]
 ) => {
   const singleMultipleRsDeploys: DeploymentsSingleMultipleRsType = {
     singleRs: [],
@@ -34,8 +33,11 @@ export const singleAndMultipleRsPods = (
         deployment: matchDeployment,
         pods: {
           name: crit.podName,
-          metric: crit.metric,
           node: node,
+          usage: crit.usage,
+          percentUsage: crit.percentUsage,
+          requested: crit.requested,
+          limits: crit.limits,
         },
       });
       continue;
@@ -49,8 +51,11 @@ export const singleAndMultipleRsPods = (
 
         structureMultipleDeplRs[matchDeployment].push({
           name: pod.pod,
-          metric: crit.metric,
           node: pod.node,
+          usage: crit.usage,
+          percentUsage: crit.percentUsage,
+          requested: crit.requested,
+          limits: crit.limits,
         });
       }
     });

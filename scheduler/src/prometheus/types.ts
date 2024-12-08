@@ -3,7 +3,7 @@ export type Pod = {
   namespace: string;
   instance?: string;
   node?: string;
-};
+} & Partial<Omit<DeploymentGraph, 'pod' | 'node'>>;
 
 export type PrometheusResults = {
   metric: Pod;
@@ -14,7 +14,7 @@ export interface PrometheusData {
   result: PrometheusResults[];
 }
 
-export type PrometheusResourcesMetricType = {
+export type PrometheusResponseType = {
   status: string;
   data: PrometheusData;
 };
@@ -23,4 +23,16 @@ export type PodResourceUsageType = {
   namespace: string;
   podName: string;
   metric: number;
+};
+
+export type DeploymentGraph = {
+  node: string;
+  pod: string;
+  source_workload: string;
+  source_version: string;
+  source_workload_namespace: string;
+  destination_service_name: string;
+  destination_service_namespace: string;
+  destination_version: string;
+  destination_workload: string;
 };

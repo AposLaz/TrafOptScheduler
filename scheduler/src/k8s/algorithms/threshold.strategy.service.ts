@@ -1,29 +1,25 @@
-/**
- * PROMETHEUS METRICS USED INSTEAD OF THIS FUNCTION
- */
-
 import { MetricsType } from '../enums';
 
-import type { PodMetrics, ThresholdPodsEvaluationResult } from '../types';
+import type { PodMetrics, PodResourceUsageType } from '../types';
 
 interface ThresholdStrategy {
   evaluateThreshold(
     podMetrics: PodMetrics[],
     threshold: number
-  ): Promise<ThresholdPodsEvaluationResult>;
+  ): Promise<PodResourceUsageType>;
 }
 
 class CpuThresholdStrategy implements ThresholdStrategy {
   async evaluateThreshold(
     podMetrics: PodMetrics[],
     threshold: number
-  ): Promise<ThresholdPodsEvaluationResult> {
+  ): Promise<PodResourceUsageType> {
     const abovePods = podMetrics.filter(
-      (pod) => pod.usage.cpu >= threshold * pod.limits.cpu
+      (pod) => pod.percentUsage.cpu >= threshold
     );
 
     const belowPods = podMetrics.filter(
-      (pod) => pod.usage.cpu < threshold * pod.limits.cpu
+      (pod) => pod.percentUsage.cpu < threshold
     );
 
     return {
@@ -37,13 +33,13 @@ class MemoryThresholdStrategy implements ThresholdStrategy {
   async evaluateThreshold(
     podMetrics: PodMetrics[],
     threshold: number
-  ): Promise<ThresholdPodsEvaluationResult> {
+  ): Promise<PodResourceUsageType> {
     const abovePods = podMetrics.filter(
-      (pod) => pod.usage.memory >= threshold * pod.limits.memory
+      (pod) => pod.percentUsage.memory >= threshold
     );
 
     const belowPods = podMetrics.filter(
-      (pod) => pod.usage.memory < threshold * pod.limits.memory
+      (pod) => pod.percentUsage.memory < threshold
     );
 
     return {
@@ -57,17 +53,13 @@ class CpuAndMemoryThresholdStrategy implements ThresholdStrategy {
   async evaluateThreshold(
     podMetrics: PodMetrics[],
     threshold: number
-  ): Promise<ThresholdPodsEvaluationResult> {
+  ): Promise<PodResourceUsageType> {
     const abovePods = podMetrics.filter(
-      (pod) =>
-        pod.usage.cpu / pod.limits.cpu + pod.usage.memory / pod.limits.memory >=
-        threshold
+      (pod) => pod.percentUsage.cpuAndMemory >= threshold
     );
 
     const belowPods = podMetrics.filter(
-      (pod) =>
-        pod.usage.cpu / pod.limits.cpu + pod.usage.memory / pod.limits.memory <
-        threshold
+      (pod) => pod.percentUsage.cpuAndMemory < threshold
     );
 
     return {

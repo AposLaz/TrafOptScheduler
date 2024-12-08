@@ -7,7 +7,7 @@ export type ConfigMetrics = {
   type: MetricsType;
 };
 
-export type ThresholdPodsEvaluationResult = {
+export type PodResourceUsageType = {
   aboveThreshold: PodMetrics[];
   belowThreshold: PodMetrics[];
 };
@@ -24,10 +24,12 @@ export type Resources = {
 };
 
 export type PodMetrics = {
-  namespace: string;
   node: string;
   podName: string;
   usage: Resources;
+  percentUsage: Resources & {
+    cpuAndMemory: number;
+  };
   requested: Resources;
   limits: Resources;
 };
@@ -38,4 +40,5 @@ export type NodeMetrics = {
   allocatable: Resources;
   requested: Resources;
   limits: Resources;
+  freeToUse: Resources;
 };

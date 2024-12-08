@@ -1,7 +1,17 @@
+export type Resources = {
+  cpu: number;
+  memory: number;
+};
+
 export type PodSingleMultipleRs = {
-  name: string;
   node: string;
-  metric: number;
+  name: string;
+  usage: Resources;
+  percentUsage: Resources & {
+    cpuAndMemory: number;
+  };
+  requested: Resources;
+  limits: Resources;
 };
 
 export type DeploymentSingleRs = {

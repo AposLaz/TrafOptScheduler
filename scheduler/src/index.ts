@@ -1,11 +1,14 @@
+import { noRootCriticalPods } from '../tests/data/schedulerDummyData';
 import { app } from './app';
 import { Config } from './config/config';
 import { logger } from './config/logger';
 import './config/setup';
+import { IstioManager } from './istio/manager';
 import { MetricsType } from './k8s/enums';
 import { KubernetesManager } from './k8s/manager';
 import { PrometheusManager } from './prometheus/manager';
 import { singleAndMultipleRsPods } from './services/getSingleAndMultipleRsPods';
+import { schedulerSingleRs } from './services/scheduler';
 
 const initRestApi = async () => {
   app.listen(Config.APP_PORT, () => {
@@ -25,15 +28,17 @@ const initSetup = async () => {
     //   logger.info('All Deploys are ready');
     // });
     const k8sManager = new KubernetesManager();
-    const promManager = new PrometheusManager();
+    const istioManager = new IstioManager();
 
     for (const namespace of Config.NAMESPACES) {
       try {
         // for each namespace
 
         // get the graph of deployments and pods
-        const deploymentPods =
-          await k8sManager.getPodsOfEachDeploymentByNs(namespace);
+        const [deploymentPods, podMetrics] = await Promise.all([
+          await k8sManager.getPodsOfEachDeploymentByNs(namespace),
+          await k8sManager.getClassifiedPodsByThreshold(namespace),
+        ]);
 
         if (!deploymentPods) {
           logger.warn(
@@ -42,16 +47,12 @@ const initSetup = async () => {
           continue;
         }
 
-        const podMetrics = await promManager.getPodThresholds(
-          MetricsType.MEMORY,
-          namespace
-        );
-
         if (!podMetrics) {
           logger.warn(`No Pod Metrics found on Namespace: ${namespace}`);
           continue;
         }
 
+        // get single and multiple replica pods that reached the threshold
         const criticalPods = singleAndMultipleRsPods(
           deploymentPods,
           podMetrics.aboveThreshold
@@ -59,12 +60,19 @@ const initSetup = async () => {
 
         console.log(JSON.stringify(criticalPods, null, 2));
 
+        // get single and multiple replica pods that did not reach the threshold
         const nonCriticalPods = singleAndMultipleRsPods(
           deploymentPods,
           podMetrics.belowThreshold
         );
 
-        console.log(JSON.stringify(nonCriticalPods, null, 2));
+        // console.log(JSON.stringify(nonCriticalPods, null, 2));
+        const dummyCriticalPods = noRootCriticalPods;
+
+        // if (criticalPods.singleRs.length > 0) {
+        if (dummyCriticalPods.singleRs.length > 0) {
+          await schedulerSingleRs(dummyCriticalPods.singleRs, k8sManager);
+        }
 
         // get the metrics of the pods
       } catch (err: unknown) {

@@ -14,7 +14,7 @@ export class ResourcesMetricsService {
     time: string
   ): Promise<PodResourceUsageType[] | undefined> {
     try {
-      const query = `sum(rate(container_cpu_usage_seconds_total{container!="",namespace="${namespace}"}[${time}m])) by (pod,namespace) / sum(kube_pod_container_resource_limits{resource="cpu",namespace="${namespace}"}) by (pod,namespace)`;
+      const query = `sum(rate(container_cpu_usage_seconds_total{container!="", pod !="" ,namespace="${namespace}"}[${time}m])) by (pod,namespace) / sum(kube_pod_container_resource_limits{resource="cpu",namespace="${namespace}", container !="", pod !=""}) by (pod,namespace)`;
 
       const result = await executePrometheusQuery(this.prometheusUrl, query);
 
@@ -36,7 +36,7 @@ export class ResourcesMetricsService {
   ): Promise<PodResourceUsageType[] | undefined> {
     try {
       // memory usage 100%
-      const query = `sum(container_memory_working_set_bytes{namespace="${namespace}", pod!=""}) by (pod,namespace) / sum(kube_pod_container_resource_limits{resource="memory",namespace="${namespace}"}) by (pod,namespace)`;
+      const query = `sum(container_memory_working_set_bytes{namespace="${namespace}", pod!="", container != ""}) by (pod,namespace) / sum(kube_pod_container_resource_limits{resource="memory",namespace="${namespace}", container != "", pod !=""}) by (pod,namespace)`;
 
       const result = await executePrometheusQuery(this.prometheusUrl, query);
 

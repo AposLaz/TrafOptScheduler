@@ -2,14 +2,14 @@ import axios from 'axios';
 
 import { logger } from '../config/logger';
 
-import type { PrometheusResourcesMetricType } from './types';
+import type { PrometheusResponseType } from './types';
 
 export const executePrometheusQuery = async (
   prometheusUrl: string,
   query: string
-): Promise<PrometheusResourcesMetricType | undefined> => {
+): Promise<PrometheusResponseType | undefined> => {
   try {
-    const result = await axios.get<PrometheusResourcesMetricType>(
+    const result = await axios.get<PrometheusResponseType>(
       `${prometheusUrl}/api/v1/query?query=${query}`
     );
     return result.data;

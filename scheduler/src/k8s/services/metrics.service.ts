@@ -3,11 +3,7 @@ import * as k8s from '@kubernetes/client-node';
 import { ThresholdStrategyFactory } from '../algorithms/threshold.strategy.service';
 import { k8sMapper } from '../mapper';
 
-import type {
-  NodeMetrics,
-  PodMetrics,
-  ThresholdPodsEvaluationResult,
-} from '../types';
+import type { NodeMetrics, PodMetrics, PodResourceUsageType } from '../types';
 import type { ConfigMetrics } from '../types';
 
 export class MetricsService {
@@ -45,13 +41,9 @@ export class MetricsService {
     return pods;
   }
 
-  /**
-   *
-   * TODO REMOVE THIS METHOD BECAUSE THE PROMETHEUS IS USED FOR THIS PROPOSED
-   */
   async classifyPodsByThreshold(
     namespace: string
-  ): Promise<ThresholdPodsEvaluationResult> {
+  ): Promise<PodResourceUsageType> {
     const pods = await this.getPodsMetrics(namespace);
 
     const resourcePods = ThresholdStrategyFactory.getStrategy(

@@ -51,6 +51,9 @@ ExScheduler collects metrics from Prometheus to determine if a replica Pod needs
 ## 1. ReScheduling using istio
 
 -
+## 2. From the kiali graph read more namespaces than one
+
+An application could connect with many microservices in different namespaces. THis feature should be TODO
 
 ## 2. Rescheduling using only k8s server metrics
 
