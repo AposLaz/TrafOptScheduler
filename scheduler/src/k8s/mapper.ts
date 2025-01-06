@@ -5,8 +5,9 @@ import { TaintEffects } from '../enums';
 import type {
   DeploymentNotReadyFilesystem,
   DeploymentPlacementModel,
-} from '../types';
-import type { NodeMetrics, PodMetrics } from './types';
+  NodeMetrics,
+  PodMetrics,
+} from './types';
 import type * as k8s from '@kubernetes/client-node';
 
 const k8sMapper = {
@@ -21,8 +22,8 @@ const k8sMapper = {
       },
     },
   }),
-  toNodeTaints: (taintDeploy: DeploymentPlacementModel): k8s.V1Taint => ({
-    key: taintDeploy.deploymentName, // key is the pod name
+  toNodeTaints: (deploymentName: string): k8s.V1Taint => ({
+    key: deploymentName, // key is the deployment name
     effect: TaintEffects.NO_SCHEDULE,
   }),
   toDeployStore: (

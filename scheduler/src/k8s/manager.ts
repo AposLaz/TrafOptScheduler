@@ -10,6 +10,8 @@ import { PodService } from './services/pod.service';
 import type { DeploymentPodMapType, NodeMetrics, PodMetrics } from './types';
 import type { ConfigMetrics } from './types';
 import type * as k8s from '@kubernetes/client-node';
+import { NodeService } from './services/node.service';
+import { k8sMapper } from './mapper';
 
 export class KubernetesManager {
   private metrics: MetricsService;
@@ -17,6 +19,7 @@ export class KubernetesManager {
   private resource: ResourceService;
   private deployment: DeploymentService;
   private pod: PodService;
+  private node: NodeService;
 
   constructor() {
     const metricClient = K8sClientApiFactory.getClient(
@@ -42,6 +45,7 @@ export class KubernetesManager {
     this.resource = new ResourceService(objectClient);
     this.deployment = new DeploymentService(appsClient);
     this.pod = new PodService(coreClient);
+    this.node = new NodeService(coreClient);
   }
 
   /**
@@ -88,6 +92,35 @@ export class KubernetesManager {
    */
   async createNamespace(ns: string, labels?: { [key: string]: string }) {
     return this.namespaceAdapter.createNamespaceIfNotExists(ns, labels);
+  }
+
+  /**
+   * This function creates a new replica pod of a deployment on a specific set of nodes.
+   * It does this by:
+   * 1. Tainting the nodes so that the deployment will not schedule a pod on it.
+   * 2. Increasing the number of replicas of the deployment.
+   * 3. Removing the taint so that the deployment can schedule a pod on it.
+   *
+   * This is used to manually control the scheduling of pods to specific nodes.
+   * @param deploymentName - The name of the deployment to create a replica pod for.
+   * @param ns - The namespace of the deployment.
+   * @param nodes - The nodes to schedule the pod on.
+   */
+  async createReplicaPodToSpecificNode(
+    deploymentName: string,
+    ns: string,
+    nodes: string[]
+  ) {
+    // Taint the nodes so that the deployment will not schedule a pod on it.
+    const taint = k8sMapper.toNodeTaints(deploymentName);
+    await this.node.addTaint(nodes, taint);
+
+    // Increase the number of replicas of the deployment.
+    await this.deployment.handleDeployReplicas(deploymentName, ns, 'add');
+
+    // Remove the taint from the nodes so that the deployment can schedule a pod on it.
+    const taintKey = taint.key;
+    await this.node.removeTaint(nodes, taintKey);
   }
 
   async getPodsOfEachDeploymentByNs(

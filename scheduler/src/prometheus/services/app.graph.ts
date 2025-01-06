@@ -16,7 +16,7 @@ export class Graph {
     time: string
   ) {
     try {
-      const query = `sum(rate(istio_requests_total{source_workload="${deployment}", source_workload_namespace="${namespace}", destination_workload!="unknown", reporter="destination", job="kubernetes-pods"}[${time}])) by (pod, node, destination_workload, destination_service_namespace, destination_service_name, destination_version, source_version, source_workload, source_workload_namespace)`;
+      const query = `sum(rate(istio_requests_total{source_workload="${deployment}", source_workload_namespace="${namespace}", destination_workload!="unknown", reporter="destination", job="kubernetes-pods", response_code!="404"}[${time}])) by (pod, node, destination_workload, destination_service_namespace, destination_service_name, destination_version, source_version, source_workload, source_workload_namespace)`;
       const result = await executePrometheusQuery(this.prometheusUrl, query);
 
       if (!result || result.data.result.length === 0) {
@@ -41,8 +41,18 @@ export class Graph {
     time: string
   ) {
     try {
-      const query = `sum(rate(istio_requests_total{source_workload!="unknown",destination_workload="frontend", destination_service_namespace="online-boutique",job="kubernetes-pods"}[1m])) by (pod, node, destination_workload, destination_service_namespace, destination_service_name, destination_version, source_version, source_workload, source_workload_namespace)`;
+      const query = `sum(rate(istio_requests_total{source_workload!="unknown",destination_workload="${deployment}", destination_service_namespace="${namespace}", reporter="source", job="kubernetes-pods", response_code!="404"}[${time}])) by (pod, node, destination_workload, destination_service_namespace, destination_service_name, destination_version, source_version, source_workload, source_workload_namespace)`;
       const result = await executePrometheusQuery(this.prometheusUrl, query);
+
+      if (!result || result.data.result.length === 0) {
+        logger.warn(`No data returned for query: ${query}`);
+        return;
+      }
+
+      return PrometheusMapper.toDownstreamDeploymentGraphData(
+        result.data.result,
+        namespace
+      );
     } catch (e: unknown) {
       const error = e as Error;
       logger.error(error);

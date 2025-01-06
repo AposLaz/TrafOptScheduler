@@ -1,3 +1,5 @@
+import { DeploymentPlacementModel } from './k8s/types';
+
 export type Resources = {
   cpu: number;
   memory: number;
@@ -70,22 +72,6 @@ export type CandidateReschedulingPods = DeploymentPlacementModel & {
   maxPodCpu: number;
   maxPodMemory: number;
 };
-
-/*********************************** TAINT TYPES */
-
-export type ReplicasAction = 'add' | 'delete';
-
-export type DeploymentPlacementModel = {
-  deploymentName: string;
-  nodes: string[]; // taint these nodes
-  namespace: string;
-  deletePod: string;
-};
-
-export type DeploymentNotReadyFilesystem = Omit<
-  DeploymentPlacementModel,
-  'nodes'
->;
 
 /*********************************** PROMETHEUS TYPES */
 

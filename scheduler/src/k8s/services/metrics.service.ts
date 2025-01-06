@@ -24,7 +24,6 @@ export class MetricsService {
 
   async getNodesMetrics(): Promise<NodeMetrics[]> {
     const topNodes = await k8s.topNodes(this.coreClient);
-
     const nodeResources = k8sMapper.toNodeResources(topNodes);
 
     return nodeResources;

@@ -26,6 +26,7 @@ export type PodResourceUsageType = {
 };
 
 export type DeploymentGraph = {
+  rps: number;
   node: string;
   pod: string;
   source_workload: string;

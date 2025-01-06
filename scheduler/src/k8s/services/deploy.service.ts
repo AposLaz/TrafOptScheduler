@@ -1,11 +1,9 @@
 import { logger } from '../../config/logger';
 
-import type * as k8s from '@kubernetes/client-node';
+import * as k8s from '@kubernetes/client-node';
+import { ReplicasAction } from '../types';
 
 // import { sleep } from '../../common/helpers';
-// import { logger } from '../../config/logger';
-
-// import type { ReplicasAction } from '../../types';
 
 export class DeploymentService {
   private client: k8s.AppsV1Api;
@@ -41,6 +39,40 @@ export class DeploymentService {
     }
 
     return replicaSets;
+  }
+
+  async handleDeployReplicas(
+    deployName: string,
+    ns: string,
+    action: ReplicasAction
+  ) {
+    const deploy = await this.client.readNamespacedDeployment(deployName, ns);
+
+    if (action === 'add') {
+      logger.info(`Adding 1 replicas to deployment ${deployName}`);
+      deploy.body.spec!.replicas!++;
+    }
+    if (action === 'delete') {
+      logger.info(`Deleting 1 replicas to deployment ${deployName}`);
+      deploy.body.spec!.replicas!--;
+    }
+
+    // update replicas
+    await this.client.patchNamespacedDeployment(
+      deployName,
+      ns,
+      deploy.body,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      {
+        headers: {
+          'Content-Type': k8s.PatchUtils.PATCH_FORMAT_STRATEGIC_MERGE_PATCH,
+        },
+      }
+    );
   }
 }
 

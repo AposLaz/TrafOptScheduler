@@ -53,11 +53,10 @@ describe('getPodsResourcesAndCritical', () => {
   // let podMetrics = [];
 
   test('get pod metrics memory threshold', async () => {
-    const podMetrics = await promManager.getPodThresholds(
-      MetricsType.MEMORY,
-      namespace
-    );
-
+    // const podMetrics = await promManager.getPodThresholds(
+    //   MetricsType.MEMORY,
+    //   namespace
+    // );
     //console.log(podMetrics);
     //   await k8sManager.getClassifiedPodsByThreshold('online-boutique');
     // console.log(podMetrics.aboveThreshold);

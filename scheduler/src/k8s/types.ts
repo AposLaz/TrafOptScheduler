@@ -1,5 +1,21 @@
 import type { MetricsType } from './enums';
 
+/*********************************** TAINT TYPES */
+
+export type ReplicasAction = 'add' | 'delete';
+
+export type DeploymentPlacementModel = {
+  deploymentName: string;
+  nodes: string[]; // taint these nodes
+  namespace: string;
+  deletePod: string;
+};
+
+export type DeploymentNotReadyFilesystem = Omit<
+  DeploymentPlacementModel,
+  'nodes'
+>;
+
 /******************** METRICS TYPES **************** */
 
 export type ConfigMetrics = {

@@ -28,7 +28,7 @@ const initSetup = async () => {
     //   logger.info('All Deploys are ready');
     // });
     const k8sManager = new KubernetesManager();
-    const istioManager = new IstioManager();
+    const prometheusManager = new PrometheusManager();
 
     for (const namespace of Config.NAMESPACES) {
       try {
@@ -71,7 +71,12 @@ const initSetup = async () => {
 
         // if (criticalPods.singleRs.length > 0) {
         if (dummyCriticalPods.singleRs.length > 0) {
-          await schedulerSingleRs(dummyCriticalPods.singleRs, k8sManager);
+          await schedulerSingleRs(
+            dummyCriticalPods.singleRs,
+            namespace,
+            k8sManager,
+            prometheusManager
+          );
         }
 
         // get the metrics of the pods

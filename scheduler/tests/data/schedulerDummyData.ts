@@ -3,8 +3,8 @@ export const noRootCriticalPods = {
     {
       deployment: 'frontend',
       pods: {
-        name: 'frontend-7b7c5f56d9-t2clt',
-        node: 'gke-cluster-0-pool-1-3a18501a-6hsz',
+        name: 'frontend-7b7c5f56d9-55zj8',
+        node: 'gke-cluster-0-pool-1-88f8baf7-qblr',
         usage: {
           cpu: 137.753234,
           memory: 160.15234375,
