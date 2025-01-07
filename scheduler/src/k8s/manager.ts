@@ -12,6 +12,10 @@ import type { ConfigMetrics } from './types';
 import type * as k8s from '@kubernetes/client-node';
 import { NodeService } from './services/node.service';
 import { k8sMapper } from './mapper';
+import { readDataFromFile } from '../common/helpers';
+import { SetupFolderFiles } from '../enums';
+import { logger } from '../config/logger';
+import { LatencyProviderType } from './types';
 
 export class KubernetesManager {
   private metrics: MetricsService;
@@ -208,5 +212,25 @@ export class KubernetesManager {
    */
   async getPodsMetricsByNamespace(ns: string): Promise<PodMetrics[]> {
     return this.metrics.getPodsMetrics(ns);
+  }
+
+  async getNodesRegionZoneAndLatency() {
+    const file = `${SetupFolderFiles.DEFAULT_PATH}/${SetupFolderFiles.NETWORK_LATENCY_PATH}/${SetupFolderFiles.LATENCY_FILE}`;
+    const latencyProvider = readDataFromFile(file);
+
+    if (!latencyProvider) {
+      logger.warning(`No latency provider found in ${file}`);
+      return;
+    }
+
+    const latencyObject = latencyProvider as LatencyProviderType[];
+
+    const nodes = await this.node.getNodes();
+
+    const nodesTopology = k8sMapper.toClusterTopology(nodes);
+
+    const nodesLatency = k8sMapper.toNodeLatency(nodesTopology, latencyObject);
+
+    return nodesLatency;
   }
 }

@@ -24,7 +24,7 @@ export class Graph {
         return;
       }
 
-      return PrometheusMapper.toDownstreamDeploymentGraphData(
+      return PrometheusMapper.toDeploymentGraphDataRpsPerNode(
         result.data.result,
         namespace
       );
@@ -49,7 +49,7 @@ export class Graph {
         return;
       }
 
-      return PrometheusMapper.toDownstreamDeploymentGraphData(
+      return PrometheusMapper.toDeploymentGraphDataRpsPerNode(
         result.data.result,
         namespace
       );

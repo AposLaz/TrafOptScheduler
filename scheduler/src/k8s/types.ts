@@ -1,5 +1,25 @@
 import type { MetricsType } from './enums';
 
+/************************************ LATENCY BETWEEN THE NODES */
+
+export type NodeLatency = {
+  from: string;
+  to: string;
+  latency: number;
+};
+
+export type ZoneLatency = NodeLatency;
+
+export type ClusterTopology = {
+  region: string;
+  zone: string;
+  node: string;
+};
+
+export type LatencyProviderType = {
+  [key: string]: NodeLatency[];
+};
+
 /*********************************** TAINT TYPES */
 
 export type ReplicasAction = 'add' | 'delete';

@@ -1,0 +1,46 @@
+[
+    {
+        "europe-west8": [
+            {
+                "from": "europe-west8-a",
+                "to": "europe-west8-a",
+                "latency": 0.1
+            },{
+                "from": "europe-west8-a",
+                "to": "europe-west8-b",
+                "latency": 0.6
+            },
+            {
+                "from": "europe-west8-a",
+                "to": "europe-west8-c",
+                "latency": 0.5
+            },        {
+                "from": "europe-west8-b",
+                "to": "europe-west8-a",
+                "latency": 0.6
+            },{
+                "from": "europe-west8-b",
+                "to": "europe-west8-b",
+                "latency": 0.2
+            },
+            {
+                "from": "europe-west8-b",
+                "to": "europe-west8-c",
+                "latency": 0.7
+            },        {
+                "from": "europe-west8-c",
+                "to": "europe-west8-a",
+                "latency": 0.5
+            },{
+                "from": "europe-west8-c",
+                "to": "europe-west8-b",
+                "latency": 0.7
+            },
+            {
+                "from": "europe-west8-c",
+                "to": "europe-west8-c",
+                "latency": 0.2
+            }
+        ]    
+    }
+]

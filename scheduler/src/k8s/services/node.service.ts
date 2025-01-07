@@ -7,6 +7,12 @@ export class NodeService {
     this.client = client;
   }
 
+  // get Nodes
+  async getNodes() {
+    const res = await this.client.listNode();
+    return res.body.items;
+  }
+
   // apply taints to nodes
   async addTaint(nodeNames: string[], newTaint: k8s.V1Taint) {
     for (const nodeName of nodeNames) {

@@ -1,12 +1,6 @@
-export type Pod = {
-  pod: string;
-  namespace: string;
-  instance?: string;
-  node?: string;
-} & Partial<Omit<DeploymentGraph, 'pod' | 'node'>>;
-
+/************************************************* PROMETHEUS TYPES */
 export type PrometheusResults = {
-  metric: Pod;
+  metric: PodRps;
   value: [number, string];
 };
 export interface PrometheusData {
@@ -25,7 +19,15 @@ export type PodResourceUsageType = {
   metric: number;
 };
 
-export type DeploymentGraph = {
+/******************************************** PROMETHEUS RPS */
+export type PodRps = {
+  pod: string;
+  namespace: string;
+  instance?: string;
+  node?: string;
+} & Partial<Omit<DeploymentGraphRps, 'pod' | 'node'>>;
+
+export type DeploymentGraphRps = {
   rps: number;
   node: string;
   pod: string;
@@ -36,4 +38,9 @@ export type DeploymentGraph = {
   destination_service_namespace: string;
   destination_version: string;
   destination_workload: string;
+};
+
+export type GraphDataRps = {
+  node: string;
+  destinations: DeploymentGraphRps[];
 };

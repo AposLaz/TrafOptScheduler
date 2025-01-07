@@ -5,7 +5,7 @@ import { logger } from './logger';
 
 // on app startup create the path data/notReadyPods and the empty file deployQueue.json in the file system
 const createMountPath = () => {
-  const queuePath = `${SetupFolderFiles.DEFAULT_PATH}/${SetupFolderFiles.QUEUE_PATH}`;
+  const queuePath = `${SetupFolderFiles.DEFAULT_PATH}/${SetupFolderFiles.NETWORK_LATENCY_PATH}`;
   // create mount path
   try {
     if (!fs.existsSync(queuePath)) {
@@ -22,7 +22,7 @@ const createMountPath = () => {
 };
 
 const createQueueFile = () => {
-  const queueFile = `${SetupFolderFiles.DEFAULT_PATH}/${SetupFolderFiles.QUEUE_PATH}/${SetupFolderFiles.QUEUE_FILE}`;
+  const queueFile = `${SetupFolderFiles.DEFAULT_PATH}/${SetupFolderFiles.NETWORK_LATENCY_PATH}/${SetupFolderFiles.LATENCY_FILE}`;
   try {
     if (!fs.existsSync(queueFile)) {
       fs.writeFileSync(queueFile, '[]', { flag: 'w' });

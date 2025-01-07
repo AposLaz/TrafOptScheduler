@@ -27,8 +27,12 @@ const initSetup = async () => {
     // Promise.all([checkNotReadyPodsInQueue()]).then(() => {
     //   logger.info('All Deploys are ready');
     // });
+    // get all cluster nodes and create a mapping for get the latency
     const k8sManager = new KubernetesManager();
     const prometheusManager = new PrometheusManager();
+
+    // map latency with cluster nodes
+    const nodesLatency = await k8sManager.getNodesRegionZoneAndLatency();
 
     for (const namespace of Config.NAMESPACES) {
       try {
@@ -74,6 +78,7 @@ const initSetup = async () => {
           await schedulerSingleRs(
             dummyCriticalPods.singleRs,
             namespace,
+            nodesLatency,
             k8sManager,
             prometheusManager
           );

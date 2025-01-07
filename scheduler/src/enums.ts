@@ -13,8 +13,8 @@ export enum Operators {
 
 export enum SetupFolderFiles {
   DEFAULT_PATH = '/tmp/data', // TODO add the app path
-  QUEUE_PATH = 'notReadyPods',
-  QUEUE_FILE = 'deployQueue.json',
+  NETWORK_LATENCY_PATH = 'network_latency',
+  LATENCY_FILE = 'latency.json',
 }
 
 export enum SemaphoreConcLimits {
