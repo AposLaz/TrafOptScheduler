@@ -20,7 +20,7 @@ export class Graph {
       const result = await executePrometheusQuery(this.prometheusUrl, query);
 
       if (!result || result.data.result.length === 0) {
-        logger.warn(`No data returned for query: ${query}`);
+        logger.warn(`No downstream pods exists for deployment: ${deployment}`);
         return;
       }
 
@@ -45,7 +45,7 @@ export class Graph {
       const result = await executePrometheusQuery(this.prometheusUrl, query);
 
       if (!result || result.data.result.length === 0) {
-        logger.warn(`No data returned for query: ${query}`);
+        logger.warn(`No upstream pods exists for deployment: ${deployment}`);
         return;
       }
 

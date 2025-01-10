@@ -1,4 +1,4 @@
-import { noRootCriticalPods } from '../tests/data/schedulerDummyData';
+import { DUMMY_DATA } from '../tests/data/schedulerDummyData';
 import { app } from './app';
 import { Config } from './config/config';
 import { logger } from './config/logger';
@@ -8,7 +8,7 @@ import { MetricsType } from './k8s/enums';
 import { KubernetesManager } from './k8s/manager';
 import { PrometheusManager } from './prometheus/manager';
 import { singleAndMultipleRsPods } from './services/getSingleAndMultipleRsPods';
-import { schedulerSingleRs } from './services/scheduler';
+import { autoScalerSingleRs } from './services/autoScalerSingleRs';
 
 const initRestApi = async () => {
   app.listen(Config.APP_PORT, () => {
@@ -57,10 +57,8 @@ const initSetup = async () => {
         }
 
         // get single and multiple replica pods that reached the threshold
-        const criticalPods = singleAndMultipleRsPods(
-          deploymentPods,
-          podMetrics.aboveThreshold
-        );
+        const criticalPods = DUMMY_DATA.criticalPods;
+        //singleAndMultipleRsPods(deploymentPods,podMetrics.aboveThreshold);
 
         console.log(JSON.stringify(criticalPods, null, 2));
 
@@ -70,13 +68,10 @@ const initSetup = async () => {
           podMetrics.belowThreshold
         );
 
-        // console.log(JSON.stringify(nonCriticalPods, null, 2));
-        const dummyCriticalPods = noRootCriticalPods;
-
         // if (criticalPods.singleRs.length > 0) {
-        if (dummyCriticalPods.singleRs.length > 0) {
-          await schedulerSingleRs(
-            dummyCriticalPods.singleRs,
+        if (criticalPods.singleRs.length > 0) {
+          await autoScalerSingleRs(
+            criticalPods.singleRs,
             namespace,
             nodesLatency,
             k8sManager,

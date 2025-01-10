@@ -5,6 +5,7 @@
 // get the resources again
 // get the resources that the pods have reached the limit of 80% CPU
 
+import path from 'node:path';
 import { logger } from '../src/config/logger';
 import { MetricsType } from '../src/k8s/enums';
 import { KubernetesManager } from '../src/k8s/manager';
@@ -45,9 +46,8 @@ afterAll(() => {
 
 describe('getPodsResourcesAndCritical', () => {
   test('get pods by deployments', async () => {
-    const deploy = await k8sManager.getPodsOfEachDeploymentByNs(namespace);
-
-    console.log(deploy);
+    // const deploy = await k8sManager.getPodsOfEachDeploymentByNs(namespace);
+    // console.log(deploy);
   });
 
   // let podMetrics = [];

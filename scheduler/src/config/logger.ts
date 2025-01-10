@@ -7,7 +7,10 @@ export const logger: winston.Logger = winston.createLogger({
     winston.format.timestamp({
       format: 'YYYY-MM-DD hh:mm:ss.SSS A', // 2022-01-25 03:23:10.350 PM
     }),
-    winston.format.json(),
+    winston.format.align(),
+    winston.format.printf(
+      (info) => `[${info.timestamp}] ${info.level}: ${info.message}`
+    ),
     winston.format.colorize({
       all: true,
       colors: {
@@ -18,3 +21,13 @@ export const logger: winston.Logger = winston.createLogger({
     })
   ),
 });
+
+export const loggerOperationInfo = (info: string) => {
+  logger.info(
+    `##############################################################################################################`
+  );
+  logger.info(info);
+  logger.info(
+    `##############################################################################################################`
+  );
+};

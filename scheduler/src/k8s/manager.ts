@@ -7,7 +7,12 @@ import { K8sClientApiFactory } from '../config/k8sClient';
 import { DeploymentService } from './services/deploy.service';
 import { PodService } from './services/pod.service';
 
-import type { DeploymentPodMapType, NodeMetrics, PodMetrics } from './types';
+import type {
+  DeploymentPodMapType,
+  NodeMetrics,
+  PodMetrics,
+  Resources,
+} from './types';
 import type { ConfigMetrics } from './types';
 import type * as k8s from '@kubernetes/client-node';
 import { NodeService } from './services/node.service';
@@ -198,6 +203,37 @@ export class KubernetesManager {
    */
   async getNodesMetrics(): Promise<NodeMetrics[]> {
     return this.metrics.getNodesMetrics();
+  }
+
+  /**
+   * Finds all nodes in the Kubernetes cluster that have sufficient resources to create a new replica pod for the given
+   * deployment.
+   *
+   * @param pod - The resource requirements of the pod to be created. This is an object with two properties: `cpu` and
+   *              `memory`, each of which is a number representing the amount of CPU or memory required by the pod.
+   *
+   * @returns A promise that resolves to an array of NodeMetrics objects. Each object contains information about a node in
+   *          the Kubernetes cluster, including its name, and the amount of CPU and memory that is currently available on
+   *          the node. Nodes that do not have sufficient resources to create a new replica pod are excluded from the
+   *          returned array.
+   */
+  async getNodesWithSufficientResources(
+    pod: Resources
+  ): Promise<NodeMetrics[]> {
+    // Get the current metrics for all nodes in the cluster
+    const nodes = await this.metrics.getNodesMetrics();
+
+    // Filter the list of nodes to only include those that have sufficient resources to create a new replica pod
+    const sufficientResources = nodes.filter(
+      (node) =>
+        // Check that the node has enough CPU to create a new replica pod
+        pod.cpu <= node.freeToUse.cpu &&
+        // Check that the node has enough memory to create a new replica pod
+        pod.memory <= node.freeToUse.memory
+    );
+
+    // Return the list of nodes with sufficient resources
+    return sufficientResources;
   }
 
   /**

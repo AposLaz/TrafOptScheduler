@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   preset: 'ts-jest', // Use ts-jest to transform TypeScript files
   testEnvironment: 'node', // Set the test environment to Node.js
   transform: {

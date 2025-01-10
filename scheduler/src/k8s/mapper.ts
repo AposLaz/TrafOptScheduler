@@ -73,7 +73,7 @@ const k8sMapper = {
       });
     });
 
-    return allLatencies;
+    return allLatencies.filter((latency) => latency.latency > 0);
   },
   toNodeResources: (nodes: k8s.NodeStatus[]): NodeMetrics[] => {
     // CPU to millicores & RAM to MB
