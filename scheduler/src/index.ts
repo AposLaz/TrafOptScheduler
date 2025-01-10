@@ -1,14 +1,12 @@
-import { DUMMY_DATA } from '../tests/data/schedulerDummyData';
 import { app } from './app';
 import { Config } from './config/config';
 import { logger } from './config/logger';
 import './config/setup';
-import { IstioManager } from './istio/manager';
-import { MetricsType } from './k8s/enums';
 import { KubernetesManager } from './k8s/manager';
 import { PrometheusManager } from './prometheus/manager';
-import { singleAndMultipleRsPods } from './services/getSingleAndMultipleRsPods';
 import { autoScalerSingleRs } from './services/autoScalerSingleRs';
+// import { singleAndMultipleRsPods } from './services/getSingleAndMultipleRsPods';
+import { DUMMY_DATA } from '../tests/data/schedulerDummyData';
 
 const initRestApi = async () => {
   app.listen(Config.APP_PORT, () => {
@@ -63,10 +61,10 @@ const initSetup = async () => {
         console.log(JSON.stringify(criticalPods, null, 2));
 
         // get single and multiple replica pods that did not reach the threshold
-        const nonCriticalPods = singleAndMultipleRsPods(
-          deploymentPods,
-          podMetrics.belowThreshold
-        );
+        // const nonCriticalPods = singleAndMultipleRsPods(
+        //   deploymentPods,
+        //   podMetrics.belowThreshold
+        // );
 
         // if (criticalPods.singleRs.length > 0) {
         if (criticalPods.singleRs.length > 0) {

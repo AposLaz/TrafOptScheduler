@@ -14,6 +14,7 @@ class K8sClientConfig {
       K8sClientConfig.instance = new k8s.KubeConfig();
 
       // choose client based on the environment
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       Config.ENV === 'production'
         ? K8sClientConfig.instance.loadFromCluster() // runs in the Cluster
         : K8sClientConfig.instance.loadFromDefault(); // runs in development mode

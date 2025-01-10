@@ -1,7 +1,8 @@
 import { logger } from '../config/logger';
-import { NodeLatency, NodeMetrics } from '../k8s/types';
-import { GraphDataRps } from '../prometheus/types';
-import { DeploymentSingleRs } from '../types';
+
+import type { NodeLatency, NodeMetrics } from '../k8s/types';
+import type { GraphDataRps } from '../prometheus/types';
+import type { DeploymentSingleRs } from '../types';
 
 export const CN = {
   // Least Frequently used by Memory and CPU
@@ -70,6 +71,7 @@ export const CN = {
     podNode: string,
     nodesLatency: NodeLatency[] | undefined
   ) {
+    console.log(nodesLatency, podNode);
     return 'node';
   },
   getCandidateNodeUpstream(

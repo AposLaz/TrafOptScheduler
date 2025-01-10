@@ -1,7 +1,8 @@
+import * as k8s from '@kubernetes/client-node';
+
 import { logger } from '../../config/logger';
 
-import * as k8s from '@kubernetes/client-node';
-import { ReplicasAction } from '../types';
+import type { ReplicasAction } from '../types';
 
 // import { sleep } from '../../common/helpers';
 

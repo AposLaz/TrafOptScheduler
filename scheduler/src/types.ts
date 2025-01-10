@@ -1,4 +1,4 @@
-import { DeploymentPlacementModel } from './k8s/types';
+import type { DeploymentPlacementModel } from './k8s/types';
 
 export type Resources = {
   cpu: number;

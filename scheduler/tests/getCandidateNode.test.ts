@@ -1,5 +1,5 @@
-import { CN } from '../src/services/getCandidateNode';
 import { DUMMY_DATA } from './data/schedulerDummyData';
+import { CN } from '../src/services/getCandidateNode';
 
 describe('Get Candidate Node', () => {
   describe('[UPSTREAM]', () => {

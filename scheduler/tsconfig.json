@@ -3,10 +3,9 @@
     "outDir": "./dist",
     "target": "ES2022",
     "module": "commonjs",
-    "lib": [
-      "es2022",
-      "dom"
-    ],
+    "lib": ["es2022", "dom"],
+    "typeRoots": ["node_modules/@types"],
+    "moduleResolution": "node",
     "declaration": true,
     "strict": true,
     "noImplicitAny": true,
@@ -23,16 +22,14 @@
     "strictPropertyInitialization": false,
     "esModuleInterop": true,
     "noPropertyAccessFromIndexSignature": false,
+    "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true
   },
   "include": [
     "src/**/*.ts",
     "tests/**/*.ts",
-    "eslint.config.js",
-    "jest.config.js"
+    "eslint.config.mjss",
+    "jest.config.cjs"
   ],
-  "exclude": [
-    "dist",
-    "node_modules"
-  ]
+  "exclude": ["dist", "node_modules"]
 }

@@ -1,9 +1,10 @@
-import { logger, loggerOperationInfo } from '../config/logger';
-import { KubernetesManager } from '../k8s/manager';
-import { NodeLatency, NodeMetrics } from '../k8s/types';
-import { PrometheusManager } from '../prometheus/manager';
-import { DeploymentSingleRs, Resources } from '../types';
 import { CN } from './getCandidateNode';
+import { logger, loggerOperationInfo } from '../config/logger';
+
+import type { KubernetesManager } from '../k8s/manager';
+import type { NodeLatency } from '../k8s/types';
+import type { PrometheusManager } from '../prometheus/manager';
+import type { DeploymentSingleRs, Resources } from '../types';
 
 export const autoScalerSingleRs = async (
   criticalPods: DeploymentSingleRs[],

@@ -1,7 +1,4 @@
-import { PrometheusMapper } from './mapper';
 import { Config } from '../config/config';
-import { MetricsType } from '../k8s/enums';
-import { ResourcesMetricsService } from './services/resources.metrics.service';
 import { Graph } from './services/app.graph';
 
 export class PrometheusManager {

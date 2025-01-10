@@ -1,11 +1,16 @@
 import { K8sClientTypeApi } from './enums';
+import { k8sMapper } from './mapper';
+import { SetupFolderFiles } from '../enums';
 import { MetricsService } from './services/metrics.service';
 import { NamespaceService } from './services/namespace.service';
+import { NodeService } from './services/node.service';
 import { ResourceService } from './services/resources.service';
 import { Config } from '../config/config';
 import { K8sClientApiFactory } from '../config/k8sClient';
 import { DeploymentService } from './services/deploy.service';
 import { PodService } from './services/pod.service';
+import { readDataFromFile } from '../common/helpers';
+import { logger } from '../config/logger';
 
 import type {
   DeploymentPodMapType,
@@ -14,13 +19,8 @@ import type {
   Resources,
 } from './types';
 import type { ConfigMetrics } from './types';
+import type { LatencyProviderType } from './types';
 import type * as k8s from '@kubernetes/client-node';
-import { NodeService } from './services/node.service';
-import { k8sMapper } from './mapper';
-import { readDataFromFile } from '../common/helpers';
-import { SetupFolderFiles } from '../enums';
-import { logger } from '../config/logger';
-import { LatencyProviderType } from './types';
 
 export class KubernetesManager {
   private metrics: MetricsService;

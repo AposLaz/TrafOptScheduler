@@ -1,8 +1,8 @@
 import { convertResourcesStringToNumber } from '../common/helpers';
 import { Config } from '../config/config';
 import { TaintEffects } from '../enums';
-import { LatencyProviderType } from './types';
 
+import type { LatencyProviderType } from './types';
 import type {
   ClusterTopology,
   DeploymentNotReadyFilesystem,

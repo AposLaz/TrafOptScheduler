@@ -1,6 +1,6 @@
-import { NodeLatency, NodeMetrics } from '../../src/k8s/types';
-import { GraphDataRps } from '../../src/prometheus/types';
-import { DeploymentMultipleRs, DeploymentSingleRs } from '../../src/types';
+import type { NodeLatency, NodeMetrics } from '../../src/k8s/types';
+import type { GraphDataRps } from '../../src/prometheus/types';
+import type { DeploymentMultipleRs, DeploymentSingleRs } from '../../src/types';
 
 export const DUMMY_DATA: {
   metricNodes: NodeMetrics[];
@@ -373,7 +373,7 @@ export const DUMMY_DATA: {
   ],
 };
 
-const productCatalogService = {
+export const productCatalogService = {
   deployment: 'productcatalogservice',
   pods: {
     name: 'productcatalogservice-648bf7bdd-ljqjq',
