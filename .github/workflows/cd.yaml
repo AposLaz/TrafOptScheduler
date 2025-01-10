@@ -14,5 +14,5 @@ jobs:
               with:
                   docker-username: ${{ secrets.DOCKER_USERNAME }}
                   docker-password: ${{ secrets.DOCKER_PASSWORD }}
-                  docker-repository: 'lpa-controller'
-                  version-label: 0.0.3
+                  docker-repository: 'opt-scheduler'
+                  version-label: 0.0.1

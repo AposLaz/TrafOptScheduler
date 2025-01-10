@@ -21,16 +21,20 @@ jobs:
         uses: actions/setup-node@v3.6.0
         with:
           node-version: lts/Hydrogen
-          cache: 'npm'
+          cache: 'yarn'
 
       - name: Install dependencies
-        working-directory: placement
-        run: npm install
+        working-directory: scheduler
+        run: yarn install
 
       - name: TS check
-        working-directory: placement
-        run: npm run ts-check
+        working-directory: scheduler
+        run: yarn ts-check
 
       - name: Linting
-        working-directory: placement
-        run: npm run lint
+        working-directory: scheduler
+        run: yarn lint
+
+      - name: Unit tests
+        working-directory: scheduler
+        run: yarn test
