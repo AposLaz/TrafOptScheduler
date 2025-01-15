@@ -69,9 +69,49 @@ export const CN = {
   },
   getCandidateNodeWithLowestLatency(
     podNode: string,
-    nodesLatency: NodeLatency[] | undefined
+    nodes: NodeMetrics[],
+    nodesLatency: NodeLatency[]
   ) {
-    console.log(nodesLatency, podNode);
+    // get the pair of nodes with the lowest latency
+
+    // get the node names that the pod can not be scheduled because of insufficient resources
+
+    const notValidNodes = nodesLatency
+      .map((pair) => {
+        const data = [];
+
+        const from = nodes.find((node) => node.name === pair.from);
+        if (!from) data.push(pair.from);
+
+        const to = nodes.find((node) => node.name === pair.to);
+        if (!to) data.push(pair.to);
+
+        return data;
+      })
+      .filter((node) => node.length > 0);
+
+    const notCandidateNodes = [...new Set(notValidNodes.flat())];
+
+    nodesLatency = nodesLatency.sort((a, b) => a.latency - b.latency);
+
+    const candidateNodes = nodesLatency.filter(
+      (node) =>
+        !notCandidateNodes.includes(node.from) ||
+        !notCandidateNodes.includes(node.to)
+    );
+
+    if (candidateNodes.length > 1) {
+      const cNode = candidateNodes.filter(
+        (node) => node.from !== podNode || node.to !== podNode
+      );
+
+      console.log(cNode);
+      console.log(podNode);
+    }
+
+    // console.log(candidateNode);
+    // get the nodes from the latency graph
+
     return 'node';
   },
   getCandidateNodeUpstream(
@@ -98,6 +138,7 @@ export const CN = {
       );
       return this.getCandidateNodeWithLowestLatency(
         pod.pods.node,
+        nodes,
         nodesLatency
       );
     }

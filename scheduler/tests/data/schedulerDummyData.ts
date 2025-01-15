@@ -318,7 +318,7 @@ export const DUMMY_DATA: {
     {
       from: 'gke-cluster-1-pool-1-6fddd32a-bbq2',
       to: 'gke-cluster-1-pool-1-6fddd32a-bbq2',
-      latency: 0.1,
+      latency: 0.0006,
     },
     {
       from: 'gke-cluster-1-pool-1-6fddd32a-bbq2',
@@ -369,6 +369,21 @@ export const DUMMY_DATA: {
       from: 'gke-cluster-1-pool-2-ab998653-3hbq',
       to: 'gke-cluster-1-pool-2-ab998653-3hbq',
       latency: 0.2,
+    },
+    {
+      from: 'test-no-resources-1',
+      to: 'gke-cluster-1-pool-2-44c1f3ef-75vm',
+      latency: 0.002,
+    },
+    {
+      from: 'gke-cluster-1-pool-2-ab998653-3hbq',
+      to: 'test-no-resources-2',
+      latency: 0.02,
+    },
+    {
+      from: 'test-no-resources-1',
+      to: 'test-no-resources-2',
+      latency: 0,
     },
   ],
 };
