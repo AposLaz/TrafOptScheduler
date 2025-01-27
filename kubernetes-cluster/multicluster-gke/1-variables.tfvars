@@ -1,5 +1,0 @@
-credentials_gcp = "/home/apostolos/Desktop/k8s-traffic-split/kubernetes-cluster/credentials"
-project-id      = "lively-shelter-294615"
-region          = "europe-west3"
-zone            = "europe-west3-c"
-vpc-name        = "vpc-multicluster"
