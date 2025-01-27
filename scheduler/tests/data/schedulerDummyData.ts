@@ -318,7 +318,7 @@ export const DUMMY_DATA: {
     {
       from: 'gke-cluster-1-pool-1-6fddd32a-bbq2',
       to: 'gke-cluster-1-pool-1-6fddd32a-bbq2',
-      latency: 0.0006,
+      latency: 0.06,
     },
     {
       from: 'gke-cluster-1-pool-1-6fddd32a-bbq2',
@@ -373,7 +373,12 @@ export const DUMMY_DATA: {
     {
       from: 'test-no-resources-1',
       to: 'gke-cluster-1-pool-2-44c1f3ef-75vm',
-      latency: 0.002,
+      latency: 0.02,
+    },
+    {
+      from: 'test-no-resources-3', // node with no resources available
+      to: 'gke-cluster-1-pool-1-6fddd32a-bbq2', // node that the pod is located. Need to create a new replica to another Node if it is possible
+      latency: 0.02,
     },
     {
       from: 'gke-cluster-1-pool-2-ab998653-3hbq',
@@ -383,7 +388,7 @@ export const DUMMY_DATA: {
     {
       from: 'test-no-resources-1',
       to: 'test-no-resources-2',
-      latency: 0,
+      latency: 0.02,
     },
   ],
 };

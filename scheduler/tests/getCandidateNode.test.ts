@@ -23,18 +23,18 @@ describe('Get Candidate Node', () => {
 
       expect(same_node).toEqual('gke-cluster-1-pool-1-6fddd32a-bbq2');
     });
-  });
 
-  test('By Lowest Latency - ', () => {
-    DUMMY_DATA.criticalPods.singleRs[0].pods.node =
-      'gke-cluster-1-pool-1-6fddd32a-bbq2';
+    test('By Lowest Latency - ', () => {
+      DUMMY_DATA.criticalPods.singleRs[0].pods.node =
+        'gke-cluster-1-pool-1-6fddd32a-bbq2';
 
-    const node = CN.getCandidateNodeWithLowestLatency(
-      DUMMY_DATA.criticalPods.singleRs[0].pods.node,
-      DUMMY_DATA.metricNodes,
-      DUMMY_DATA.nodeLatency
-    );
+      const node = CN.getCandidateNodeWithLowestLatency(
+        DUMMY_DATA.criticalPods.singleRs[0].pods.node,
+        DUMMY_DATA.metricNodes,
+        DUMMY_DATA.nodeLatency
+      );
 
-    console.log(node);
+      console.log(node);
+    });
   });
 });

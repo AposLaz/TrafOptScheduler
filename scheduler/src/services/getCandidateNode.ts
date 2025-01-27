@@ -75,7 +75,6 @@ export const CN = {
     // get the pair of nodes with the lowest latency
 
     // get the node names that the pod can not be scheduled because of insufficient resources
-
     const notValidNodes = nodesLatency
       .map((pair) => {
         const data = [];
@@ -92,6 +91,7 @@ export const CN = {
 
     const notCandidateNodes = [...new Set(notValidNodes.flat())];
 
+    // sort nodes by latency
     nodesLatency = nodesLatency.sort((a, b) => a.latency - b.latency);
 
     const candidateNodes = nodesLatency.filter(
@@ -101,10 +101,12 @@ export const CN = {
     );
 
     if (candidateNodes.length > 1) {
+      // if possible remove the node that the pod is already located.
       const cNode = candidateNodes.filter(
         (node) => node.from !== podNode || node.to !== podNode
       );
 
+      console.log('111');
       console.log(cNode);
       console.log(podNode);
     }
