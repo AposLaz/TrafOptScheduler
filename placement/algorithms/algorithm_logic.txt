@@ -1,6 +1,0 @@
-Thanasis Algorithm
-
-The algorithm is to gather recources usage of each deployed microservice along with
-their limits and after apply algorithm weight
-if deployments reach in 70% of utilization apply traffic split for 10%
-and continue
