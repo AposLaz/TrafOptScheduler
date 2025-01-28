@@ -1,8 +1,9 @@
+import figlet from 'figlet';
 import winston from 'winston';
 
 export const logger: winston.Logger = winston.createLogger({
   transports: [new winston.transports.Console()],
-  level: process.env.LOG_LEVEL || 'info',
+  level: process.env.LOG_LEVEL ?? 'info',
   format: winston.format.combine(
     winston.format.timestamp({
       format: 'YYYY-MM-DD hh:mm:ss.SSS A', // 2022-01-25 03:23:10.350 PM
@@ -30,4 +31,20 @@ export const loggerOperationInfo = (info: string) => {
   logger.info(
     `##############################################################################################################`
   );
+};
+
+export const loggerStartApp = () => {
+  console.log(
+    figlet.textSync('TrafOptScheduler', {
+      font: 'Standard',
+      whitespaceBreak: true,
+    })
+  );
+
+  console.log(`
+============================================
+ Environment: ${process.env.NODE_ENV ?? 'development'}
+ Start Time  : ${new Date().toLocaleString()}
+============================================
+  `);
 };

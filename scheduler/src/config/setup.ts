@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 
 import { SetupFolderFiles } from '../enums';
-import { logger } from './logger';
+import { logger, loggerStartApp } from './logger';
 
 // on app startup create the path data/notReadyPods and the empty file deployQueue.json in the file system
 const createMountPath = () => {
@@ -38,6 +38,8 @@ const createQueueFile = () => {
 };
 
 const setup = () => {
+  // start the app logger
+  loggerStartApp();
   // create the base folder path
   createMountPath();
   createQueueFile();

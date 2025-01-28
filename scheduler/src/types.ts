@@ -30,6 +30,16 @@ export type DeploymentsSingleMultipleRsType = {
   multipleRs: DeploymentMultipleRs[];
 };
 
+export type NodeRps = {
+  node: string;
+  rps: number;
+};
+
+export type NodeWeight = {
+  name: string;
+  score: number;
+};
+
 /** DEFAULT TYPES */
 
 export type ObjectStrings = { [key: string]: string[] };

@@ -28,6 +28,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
+    "figlet": "^1.8.0",
     "js-yaml": "^4.1.0",
     "winston": "^3.17.0"
   },
@@ -36,6 +37,7 @@
     "@jest/globals": "^29.7.0",
     "@types/cors": "^2.8.17",
     "@types/express": "5.0.0",
+    "@types/figlet": "^1.7.0",
     "@types/jest": "^29.5.14",
     "@types/js-yaml": "^4.0.9",
     "@types/k6": "^0.54.2",

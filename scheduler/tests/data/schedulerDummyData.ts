@@ -15,7 +15,7 @@ export const DUMMY_DATA: {
 } = {
   metricNodes: [
     {
-      name: 'gke-cluster-1-pool-1-64bf1f88-trdd',
+      name: 'node-1',
       capacity: { cpu: 1930, memory: 6030.9609375 },
       allocatable: { cpu: 1930, memory: 6030.9609375 },
       requested: { cpu: 1563.0000000000007, memory: 1614.5367431640625 },
@@ -23,7 +23,7 @@ export const DUMMY_DATA: {
       freeToUse: { cpu: 366.9999999999993, memory: 4416.4241943359375 },
     },
     {
-      name: 'gke-cluster-1-pool-1-6fddd32a-bbq2',
+      name: 'node-2',
       capacity: { cpu: 1930, memory: 6030.9609375 },
       allocatable: { cpu: 1930, memory: 6030.9609375 },
       requested: { cpu: 1150.0000000000002, memory: 1376 },
@@ -31,7 +31,7 @@ export const DUMMY_DATA: {
       freeToUse: { cpu: 779.9999999999998, memory: 4654.9609375 },
     },
     {
-      name: 'gke-cluster-1-pool-2-44c1f3ef-75vm',
+      name: 'node-3',
       capacity: { cpu: 940, memory: 2804.953125 },
       allocatable: { cpu: 940, memory: 2804.953125 },
       requested: { cpu: 225.00000000000003, memory: 180 },
@@ -39,7 +39,7 @@ export const DUMMY_DATA: {
       freeToUse: { cpu: 715, memory: 2624.953125 },
     },
     {
-      name: 'gke-cluster-1-pool-2-ab998653-3hbq',
+      name: 'node-4',
       capacity: { cpu: 940, memory: 2804.9609375 },
       allocatable: { cpu: 940, memory: 2804.9609375 },
       requested: { cpu: 335, memory: 440 },
@@ -53,7 +53,7 @@ export const DUMMY_DATA: {
         deployment: 'frontend',
         pods: {
           name: 'frontend-57df484f56-xz2hg',
-          node: 'gke-cluster-1-pool-1-6fddd32a-bbq2',
+          node: 'node-2',
           usage: {
             cpu: 137.753234,
             memory: 160.15234375,
@@ -78,11 +78,11 @@ export const DUMMY_DATA: {
   },
   downstreamPods: [
     {
-      node: 'gke-cluster-1-pool-1-6fddd32a-bbq2',
+      node: 'node-2',
       destinations: [
         {
           rps: 44.666666666666664,
-          node: 'gke-cluster-1-pool-1-6fddd32a-bbq2',
+          node: 'node-2',
           pod: 'currencyservice-546f88db95-cklzz',
           source_workload: 'frontend',
           source_version: 'unknown',
@@ -94,7 +94,7 @@ export const DUMMY_DATA: {
         },
         {
           rps: 5.51111111111111,
-          node: 'gke-cluster-1-pool-1-6fddd32a-bbq2',
+          node: 'node-2',
           pod: 'recommendationservice-955d6cc9-q8fhw',
           source_workload: 'frontend',
           source_version: 'unknown',
@@ -106,7 +106,7 @@ export const DUMMY_DATA: {
         },
         {
           rps: 4.355555555555555,
-          node: 'gke-cluster-1-pool-1-6fddd32a-bbq2',
+          node: 'node-2',
           pod: 'adservice-9d8749b9f-8mzx6',
           source_workload: 'frontend',
           source_version: 'unknown',
@@ -119,11 +119,11 @@ export const DUMMY_DATA: {
       ],
     },
     {
-      node: 'gke-cluster-1-pool-1-64bf1f88-trdd',
+      node: 'node-1',
       destinations: [
         {
           rps: 70.28888888888888,
-          node: 'gke-cluster-1-pool-1-64bf1f88-trdd',
+          node: 'node-1',
           pod: 'productcatalogservice-648bf7bdd-ljqjq',
           source_workload: 'frontend',
           source_version: 'unknown',
@@ -135,7 +135,7 @@ export const DUMMY_DATA: {
         },
         {
           rps: 13.599999999999998,
-          node: 'gke-cluster-1-pool-1-64bf1f88-trdd',
+          node: 'node-1',
           pod: 'cartservice-5cd4c99758-6knct',
           source_workload: 'frontend',
           source_version: 'unknown',
@@ -147,7 +147,7 @@ export const DUMMY_DATA: {
         },
         {
           rps: 4.422222222222222,
-          node: 'gke-cluster-1-pool-1-64bf1f88-trdd',
+          node: 'node-1',
           pod: 'adservice-9d8749b9f-m2rlz',
           source_workload: 'frontend',
           source_version: 'unknown',
@@ -159,7 +159,7 @@ export const DUMMY_DATA: {
         },
         {
           rps: 3.266666666666666,
-          node: 'gke-cluster-1-pool-1-64bf1f88-trdd',
+          node: 'node-1',
           pod: 'shippingservice-56548ddfbd-jrzps',
           source_workload: 'frontend',
           source_version: 'unknown',
@@ -171,7 +171,7 @@ export const DUMMY_DATA: {
         },
         {
           rps: 0.5111111111111111,
-          node: 'gke-cluster-1-pool-1-64bf1f88-trdd',
+          node: 'node-1',
           pod: 'checkoutservice-5496fbbb8f-rxrwv',
           source_workload: 'frontend',
           source_version: 'unknown',
@@ -184,11 +184,11 @@ export const DUMMY_DATA: {
       ],
     },
     {
-      node: 'gke-cluster-1-pool-2-ab998653-3hbq',
+      node: 'node-4',
       destinations: [
         {
           rps: 5.333333333333333,
-          node: 'gke-cluster-1-pool-2-ab998653-3hbq',
+          node: 'node-4',
           pod: 'recommendationservice-955d6cc9-cstz8',
           source_workload: 'frontend',
           source_version: 'unknown',
@@ -202,16 +202,16 @@ export const DUMMY_DATA: {
     },
   ],
   upstreamSumRpsByNode: {
-    'gke-cluster-1-pool-1-64bf1f88-trdd': 12.622222222,
-    'gke-cluster-1-pool-1-6fddd32a-bbq2': 7.311111111,
+    'node-1': 120,
+    'node-2': 75,
   },
   upstreamPods: [
     {
-      node: 'gke-cluster-1-pool-1-64bf1f88-trdd',
+      node: 'node-1',
       destinations: [
         {
-          rps: 4.4,
-          node: 'gke-cluster-1-pool-1-64bf1f88-trdd',
+          rps: 40,
+          node: 'node-1',
           pod: 'loadgenerator-8c56d9448-f92qc',
           source_workload: 'loadgenerator',
           source_version: 'unknown',
@@ -222,8 +222,8 @@ export const DUMMY_DATA: {
           destination_workload: 'frontend',
         },
         {
-          rps: 5.6888888888888887,
-          node: 'gke-cluster-1-pool-1-64bf1f88-trdd',
+          rps: 40,
+          node: 'node-1',
           pod: 'loadgenerator-8c56d9448-5f4nk',
           source_workload: 'loadgenerator',
           source_version: 'unknown',
@@ -234,8 +234,8 @@ export const DUMMY_DATA: {
           destination_workload: 'frontend',
         },
         {
-          rps: 2.5333333333333328,
-          node: 'gke-cluster-1-pool-1-64bf1f88-trdd',
+          rps: 40,
+          node: 'node-1',
           pod: 'loadgenerator-8c56d9448-54vh9',
           source_workload: 'loadgenerator',
           source_version: 'unknown',
@@ -248,11 +248,11 @@ export const DUMMY_DATA: {
       ],
     },
     {
-      node: 'gke-cluster-1-pool-1-6fddd32a-bbq2',
+      node: 'node-2',
       destinations: [
         {
-          rps: 2.733333333333333,
-          node: 'gke-cluster-1-pool-1-6fddd32a-bbq2',
+          rps: 25,
+          node: 'node-2',
           pod: 'loadgenerator-8c56d9448-v5ksp',
           source_workload: 'loadgenerator',
           source_version: 'unknown',
@@ -263,8 +263,8 @@ export const DUMMY_DATA: {
           destination_workload: 'frontend',
         },
         {
-          rps: 2.222222222222222,
-          node: 'gke-cluster-1-pool-1-6fddd32a-bbq2',
+          rps: 25,
+          node: 'node-2',
           pod: 'loadgenerator-8c56d9448-5km9s',
           source_workload: 'loadgenerator',
           source_version: 'unknown',
@@ -275,8 +275,8 @@ export const DUMMY_DATA: {
           destination_workload: 'frontend',
         },
         {
-          rps: 2.355555555555555,
-          node: 'gke-cluster-1-pool-1-6fddd32a-bbq2',
+          rps: 25,
+          node: 'node-2',
           pod: 'loadgenerator-8c56d9448-2fmwv',
           source_workload: 'loadgenerator',
           source_version: 'unknown',
@@ -291,104 +291,115 @@ export const DUMMY_DATA: {
   ],
   nodeLatency: [
     {
-      from: 'gke-cluster-1-pool-1-64bf1f88-trdd',
-      to: 'gke-cluster-1-pool-1-64bf1f88-trdd',
-      latency: 0.2,
+      from: 'node-1',
+      to: 'node-1',
+      latency: 2,
     },
     {
-      from: 'gke-cluster-1-pool-1-64bf1f88-trdd',
-      to: 'gke-cluster-1-pool-1-6fddd32a-bbq2',
-      latency: 0.6,
+      from: 'node-1',
+      to: 'node-2',
+      latency: 6,
     },
     {
-      from: 'gke-cluster-1-pool-1-64bf1f88-trdd',
-      to: 'gke-cluster-1-pool-2-44c1f3ef-75vm',
-      latency: 0.6,
+      from: 'node-1',
+      to: 'node-3',
+      latency: 6,
     },
     {
-      from: 'gke-cluster-1-pool-1-64bf1f88-trdd',
-      to: 'gke-cluster-1-pool-2-ab998653-3hbq',
-      latency: 0.2,
+      from: 'node-1',
+      to: 'node-4',
+      latency: 2,
     },
     {
-      from: 'gke-cluster-1-pool-1-6fddd32a-bbq2',
-      to: 'gke-cluster-1-pool-1-64bf1f88-trdd',
-      latency: 0.6,
+      from: 'node-2',
+      to: 'node-1',
+      latency: 6,
     },
     {
-      from: 'gke-cluster-1-pool-1-6fddd32a-bbq2',
-      to: 'gke-cluster-1-pool-1-6fddd32a-bbq2',
-      latency: 0.06,
+      from: 'node-2',
+      to: 'node-2',
+      latency: 1,
     },
     {
-      from: 'gke-cluster-1-pool-1-6fddd32a-bbq2',
-      to: 'gke-cluster-1-pool-2-44c1f3ef-75vm',
-      latency: 0.1,
+      from: 'node-2',
+      to: 'node-3',
+      latency: 4,
     },
     {
-      from: 'gke-cluster-1-pool-1-6fddd32a-bbq2',
-      to: 'gke-cluster-1-pool-2-ab998653-3hbq',
-      latency: 0.6,
+      from: 'node-2',
+      to: 'node-4',
+      latency: 12,
     },
     {
-      from: 'gke-cluster-1-pool-2-44c1f3ef-75vm',
-      to: 'gke-cluster-1-pool-1-64bf1f88-trdd',
-      latency: 0.6,
+      from: 'node-3',
+      to: 'node-1',
+      latency: 6,
     },
     {
-      from: 'gke-cluster-1-pool-2-44c1f3ef-75vm',
-      to: 'gke-cluster-1-pool-1-6fddd32a-bbq2',
-      latency: 0.1,
+      from: 'node-3',
+      to: 'node-2',
+      latency: 4,
     },
     {
-      from: 'gke-cluster-1-pool-2-44c1f3ef-75vm',
-      to: 'gke-cluster-1-pool-2-44c1f3ef-75vm',
-      latency: 0.1,
+      from: 'node-3',
+      to: 'node-3',
+      latency: 1,
     },
     {
-      from: 'gke-cluster-1-pool-2-44c1f3ef-75vm',
-      to: 'gke-cluster-1-pool-2-ab998653-3hbq',
-      latency: 0.6,
+      from: 'node-3',
+      to: 'node-4',
+      latency: 6,
     },
     {
-      from: 'gke-cluster-1-pool-2-ab998653-3hbq',
-      to: 'gke-cluster-1-pool-1-64bf1f88-trdd',
-      latency: 0.2,
+      from: 'node-4',
+      to: 'node-1',
+      latency: 2,
     },
     {
-      from: 'gke-cluster-1-pool-2-ab998653-3hbq',
-      to: 'gke-cluster-1-pool-1-6fddd32a-bbq2',
-      latency: 0.6,
+      from: 'node-4',
+      to: 'node-2',
+      latency: 12,
     },
     {
-      from: 'gke-cluster-1-pool-2-ab998653-3hbq',
-      to: 'gke-cluster-1-pool-2-44c1f3ef-75vm',
-      latency: 0.6,
+      from: 'node-4',
+      to: 'node-3',
+      latency: 6,
     },
     {
-      from: 'gke-cluster-1-pool-2-ab998653-3hbq',
-      to: 'gke-cluster-1-pool-2-ab998653-3hbq',
-      latency: 0.2,
+      from: 'node-4',
+      to: 'node-4',
+      latency: 2,
+    },
+    // test data that should not be returned all
+    {
+      from: 'node-1',
+      to: 'test-no-resources-1',
+      latency: 1,
+    },
+    {
+      from: 'node-2',
+      to: 'node-no-resources',
+      latency: 1,
     },
     {
       from: 'test-no-resources-1',
-      to: 'gke-cluster-1-pool-2-44c1f3ef-75vm',
-      latency: 0.02,
+      to: 'node-3',
+      latency: 1,
     },
     {
       from: 'test-no-resources-3', // node with no resources available
-      to: 'gke-cluster-1-pool-1-6fddd32a-bbq2', // node that the pod is located. Need to create a new replica to another Node if it is possible
-      latency: 0.02,
+      to: 'node-2', // node that the pod is located. Need to create a new replica to another Node if it is possible
+      latency: 1,
     },
     {
-      from: 'gke-cluster-1-pool-2-ab998653-3hbq',
+      from: 'node-4',
       to: 'test-no-resources-2',
-      latency: 0.02,
+      latency: 1,
     },
     {
       from: 'test-no-resources-1',
       to: 'test-no-resources-2',
-      latency: 0.02,
+      latency: 1,
     },
   ],
 };

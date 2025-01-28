@@ -1,121 +1,19 @@
+import * as cnf from './candidateNodes/exports';
 import { logger } from '../config/logger';
 
 import type { NodeLatency, NodeMetrics } from '../k8s/types';
 import type { GraphDataRps } from '../prometheus/types';
 import type { DeploymentSingleRs } from '../types';
 
+// TODO: learn how it works
+const loggerOperation = logger.child({ operation: 'getCandidateNode' });
+
 export const CN = {
+  utils: cnf.cnUtils,
   // Least Frequently used by Memory and CPU
-  getCandidateNodeByLFU(pod: DeploymentSingleRs, nodes: NodeMetrics[]): string {
-    const sortNodesWeight = nodes
-      .map((node) => {
-        const normalizedCPU = node.requested.cpu / node.allocatable.cpu;
-        const normalizedMemory =
-          node.requested.memory / node.allocatable.memory;
-
-        return {
-          name: node.name,
-          score: normalizedCPU * 0.5 + normalizedMemory * 0.5,
-        };
-      })
-      .sort((a, b) => a.score - b.score); // select the node with the lowest score
-
-    // if possible remove the node that the pod is already located.
-    if (sortNodesWeight.length > 1) {
-      const candidateNode = sortNodesWeight.filter(
-        (node) => node.name !== pod.pods.node
-      );
-
-      return candidateNode[0].name;
-    }
-    // return the first node
-    return sortNodesWeight[0].name;
-  },
-  getCandidateNodeWithHighestRps(
-    pod: DeploymentSingleRs,
-    graph: GraphDataRps[]
-  ) {
-    const perNodeRps = graph.map((node) => ({
-      node: node.node,
-      rps: node.destinations.reduce((nodeRps, pod) => nodeRps + pod.rps, 0),
-    }));
-
-    const allNodesRps = perNodeRps.reduce(
-      (nodeRps, node) => nodeRps + node.rps,
-      0
-    );
-
-    const sortNodesWeight = perNodeRps
-      .map((node) => {
-        const normalizedRps = allNodesRps === 0 ? 0 : node.rps / allNodesRps;
-
-        return {
-          name: node.node,
-          score: normalizedRps * 0.5,
-        };
-      })
-      .sort((a, b) => b.score - a.score); // select the node with the lowest score
-
-    // if possible remove the node that the pod is already located.
-    if (sortNodesWeight.length > 1) {
-      const candidateNode = sortNodesWeight.filter(
-        (node) => node.name !== pod.pods.node
-      );
-
-      return candidateNode[0].name;
-    }
-    // return the first node
-    return sortNodesWeight[0].name;
-  },
-  getCandidateNodeWithLowestLatency(
-    podNode: string,
-    nodes: NodeMetrics[],
-    nodesLatency: NodeLatency[]
-  ) {
-    // get the pair of nodes with the lowest latency
-
-    // get the node names that the pod can not be scheduled because of insufficient resources
-    const notValidNodes = nodesLatency
-      .map((pair) => {
-        const data = [];
-
-        const from = nodes.find((node) => node.name === pair.from);
-        if (!from) data.push(pair.from);
-
-        const to = nodes.find((node) => node.name === pair.to);
-        if (!to) data.push(pair.to);
-
-        return data;
-      })
-      .filter((node) => node.length > 0);
-
-    const notCandidateNodes = [...new Set(notValidNodes.flat())];
-
-    // sort nodes by latency
-    nodesLatency = nodesLatency.sort((a, b) => a.latency - b.latency);
-
-    const candidateNodes = nodesLatency.filter(
-      (node) =>
-        !notCandidateNodes.includes(node.from) ||
-        !notCandidateNodes.includes(node.to)
-    );
-
-    if (candidateNodes.length > 1) {
-      // if possible remove the node that the pod is already located.
-      const cNode = candidateNodes.filter(
-        (node) => node.from !== podNode || node.to !== podNode
-      );
-
-      console.log('111');
-      console.log(cNode);
-      console.log(podNode);
-    }
-
-    // console.log(candidateNode);
-    // get the nodes from the latency graph
-
-    return 'node';
-  },
+  candidateNodeByLFU: cnf.getCandidateNodeByLFU,
+  candidateNodeByLatency: cnf.getCandidateNodeByLatency,
+  candidateNodeByRps: cnf.getCandidateNodeByRps,
   getCandidateNodeUpstream(
     pod: DeploymentSingleRs,
     graph: GraphDataRps[],
@@ -131,15 +29,16 @@ export const CN = {
     // if does not found any nodes with sufficient resources and the latency graph not exists then find the best Node with the LFU
     if (graphNodesWithSufficientResources.length === 0) {
       if (!nodesLatency || nodesLatency.length === 0) {
-        logger.info(`[CANDIDATE NODE FUNCTION] => LFU`);
-        return this.getCandidateNodeByLFU(pod, nodes);
+        loggerOperation.info(`node by LFU`);
+        return this.candidateNodeByLFU(pod, nodes);
       }
 
-      logger.info(
-        `[CANDIDATE NODE FUNCTION] => Lowest Latency Among pod Node and other Nodes`
+      loggerOperation.info(
+        `node by Lowest Latency Among node with highest rps Node and other Nodes`
       );
-      return this.getCandidateNodeWithLowestLatency(
+      return this.candidateNodeByLatency(
         pod.pods.node,
+        graph,
         nodes,
         nodesLatency
       );
@@ -147,11 +46,8 @@ export const CN = {
 
     // if exists nodes with sufficient resources but no latency exists between the nodes
     if (!nodesLatency || nodesLatency.length === 0) {
-      logger.info(`[CANDIDATE NODE FUNCTION] => Node with Highest Rps`);
-      return this.getCandidateNodeWithHighestRps(
-        pod,
-        graphNodesWithSufficientResources
-      );
+      loggerOperation.info(`Node with Highest Rps`);
+      return this.candidateNodeByRps(pod, graphNodesWithSufficientResources);
     }
 
     const perNodeRps = graphNodesWithSufficientResources.map((node) => ({

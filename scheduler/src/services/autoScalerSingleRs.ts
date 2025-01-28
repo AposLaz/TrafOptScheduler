@@ -33,9 +33,8 @@ export const autoScalerSingleRs = async (
     };
 
     // get all nodes with sufficient resources
-    const nodes = await k8sManager.getNodesWithSufficientResources(
-      podRequestedMetrics
-    );
+    const nodes =
+      await k8sManager.getNodesWithSufficientResources(podRequestedMetrics);
 
     if (nodes.length === 0) {
       logger.warn(
@@ -90,7 +89,7 @@ export const autoScalerSingleRs = async (
           nodesLatency
         );
       } else {
-        candidateNode = CN.getCandidateNodeByLFU(single, nodes);
+        candidateNode = CN.candidateNodeByLFU(single, nodes);
       }
     }
 
