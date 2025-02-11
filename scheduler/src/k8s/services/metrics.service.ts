@@ -47,7 +47,7 @@ export class MetricsService {
 
     const resourcePods = ThresholdStrategyFactory.getStrategy(
       this.metrics.type
-    ).evaluateThreshold(pods, this.metrics.threshold);
+    ).evaluateThreshold(pods, this.metrics.upperThreshold);
 
     return resourcePods;
   }

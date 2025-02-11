@@ -95,11 +95,11 @@ export const PrometheusMapper = {
   },
   toUpperLowerLimitPods: (pods: PodResourceUsageType[]) => {
     const aboveThreshold = pods.filter(
-      (pod) => pod.metric >= Config.metrics.threshold
+      (pod) => pod.metric >= Config.metrics.upperThreshold
     );
 
     const belowThreshold = pods.filter(
-      (pod) => pod.metric < Config.metrics.threshold
+      (pod) => pod.metric < Config.metrics.upperThreshold
     );
 
     return {

@@ -39,7 +39,8 @@ export type DeploymentNotReadyFilesystem = Omit<
 /******************** METRICS TYPES **************** */
 
 export type ConfigMetrics = {
-  threshold: number;
+  upperThreshold: number;
+  lowerThreshold: number;
   type: MetricsType;
 };
 
@@ -53,6 +54,8 @@ export type DeploymentPodMapType = {
   node: string;
 };
 
+export type DeploymentReplicaPods = Record<string, DeploymentPodMapType[]>;
+
 // CPU to millicores, Memory to MB
 export type Resources = {
   cpu: number;
@@ -61,7 +64,7 @@ export type Resources = {
 
 export type PodMetrics = {
   node: string;
-  podName: string;
+  pod: string;
   usage: Resources;
   percentUsage: Resources & {
     cpuAndMemory: number;

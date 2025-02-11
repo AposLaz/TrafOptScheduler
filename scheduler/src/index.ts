@@ -37,45 +37,41 @@ const initSetup = async () => {
         // for each namespace
 
         // get the graph of deployments and pods
-        const [deploymentPods, podMetrics] = await Promise.all([
-          await k8sManager.getPodsOfEachDeploymentByNs(namespace),
-          await k8sManager.getClassifiedPodsByThreshold(namespace),
-        ]);
+        const deployments = await k8sManager.getDeploymentsMetrics(namespace);
 
-        if (!deploymentPods) {
-          logger.warn(
-            `No Deployments/ReplicaSets/Pods found on Namespace: ${namespace}`
-          );
+        if (!deployments) {
           continue;
         }
 
-        if (!podMetrics) {
-          logger.warn(`No Pod Metrics found on Namespace: ${namespace}`);
-          continue;
-        }
+        console.log(JSON.stringify(deployments, null, 2));
+
+        // if (!podMetrics) {
+        //   logger.warn(`No Pod Metrics found on Namespace: ${namespace}`);
+        //   continue;
+        // }
 
         // get single and multiple replica pods that reached the threshold
-        const criticalPods = DUMMY_DATA.criticalPods;
-        //singleAndMultipleRsPods(deploymentPods,podMetrics.aboveThreshold);
+        // const criticalPods = DUMMY_DATA.criticalPods;
+        // //singleAndMultipleRsPods(deploymentPods,podMetrics.aboveThreshold);
 
-        console.log(JSON.stringify(criticalPods, null, 2));
+        // console.log(JSON.stringify(criticalPods, null, 2));
 
-        // get single and multiple replica pods that did not reach the threshold
-        // const nonCriticalPods = singleAndMultipleRsPods(
-        //   deploymentPods,
-        //   podMetrics.belowThreshold
-        // );
+        // // get single and multiple replica pods that did not reach the threshold
+        // // const nonCriticalPods = singleAndMultipleRsPods(
+        // //   deploymentPods,
+        // //   podMetrics.belowThreshold
+        // // );
 
+        // // if (criticalPods.singleRs.length > 0) {
         // if (criticalPods.singleRs.length > 0) {
-        if (criticalPods.singleRs.length > 0) {
-          await autoScalerSingleRs(
-            criticalPods.singleRs,
-            namespace,
-            nodesLatency,
-            k8sManager,
-            prometheusManager
-          );
-        }
+        //   await autoScalerSingleRs(
+        //     criticalPods.singleRs,
+        //     namespace,
+        //     nodesLatency,
+        //     k8sManager,
+        //     prometheusManager
+        //   );
+        // }
 
         // get the metrics of the pods
       } catch (err: unknown) {

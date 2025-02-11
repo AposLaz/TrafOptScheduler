@@ -5,33 +5,35 @@
 // get the resources again
 // get the resources that the pods have reached the limit of 80% CPU
 
+import path from 'path';
+
 import { logger } from '../src/config/logger';
-// import { KubernetesManager } from '../src/k8s/manager';
+import { KubernetesManager } from '../src/k8s/manager';
 // import { PrometheusManager } from '../src/prometheus/manager';
 
 jest.setTimeout(120000);
 
-// let k8sManager: KubernetesManager; // Declare k8sManager in the outer scope
+let k8sManager: KubernetesManager; // Declare k8sManager in the outer scope
 // let promManager: PrometheusManager;
 
-// let namespace = 'online-boutique';
+let namespace = 'online-boutique';
 // connect to the client
 // deploy the app to the namespace
 beforeAll(async () => {
   logger.info('set up the environment');
-  // k8sManager = new KubernetesManager();
+  k8sManager = new KubernetesManager();
   // promManager = new PrometheusManager();
 
   // create namespace
-  // await k8sManager.createNamespace(namespace, {
-  //   'istio-injection': 'enabled',
-  // });
+  await k8sManager.createNamespace(namespace, {
+    'istio-injection': 'enabled',
+  });
 
   // deploy the application from the yaml files
-  // const yamlPath = path.join(__dirname, 'data', namespace);
-  // const res = await k8sManager.applyResourcesFromFile(yamlPath);
+  const yamlPath = path.join(__dirname, 'data', namespace);
+  const res = await k8sManager.applyResourcesFromFile(yamlPath);
 
-  // expect(res.length).toBe(0);
+  expect(res.length).toBe(0);
 });
 
 // disconnect from the client

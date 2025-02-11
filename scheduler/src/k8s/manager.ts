@@ -12,6 +12,7 @@ import { PodService } from './services/pod.service';
 import { readDataFromFile } from '../common/helpers';
 import { logger } from '../config/logger';
 
+import type { DeploymentReplicaPodsMetrics } from '../types';
 import type {
   DeploymentPodMapType,
   NodeMetrics,
@@ -89,10 +90,6 @@ export class KubernetesManager {
     return this.resource.applyFromFile(specPath);
   }
 
-  async getClassifiedPodsByThreshold(ns: string) {
-    return this.metrics.classifyPodsByThreshold(ns);
-  }
-
   /**
    * Create a Kubernetes namespace if it does not already exist.
    *
@@ -132,24 +129,68 @@ export class KubernetesManager {
     await this.node.removeTaint(nodes, taintKey);
   }
 
-  async getPodsOfEachDeploymentByNs(
+  /**
+   * This function fetches the metrics for all deployments replica pods in the given namespace.
+   *
+   * @param ns - The namespace to fetch the deployments from.
+   *
+   * @returns A promise that resolves to a map of deployment names to a list of pods that are part of that deployment,
+   *          along with the metrics for each pod. If there is an error during the fetch, the promise will reject with the error.
+   */
+  async getDeploymentsMetrics(
+    ns: string
+  ): Promise<DeploymentReplicaPodsMetrics | undefined> {
+    // Fetch all deployments, replica sets, and pods in the namespace
+    const deploys = await this.getPodsPerDeploymentByNs(ns);
+
+    // If there are no deployments in the namespace, log a warning and exit
+    if (!deploys) {
+      logger.warn(`No Deployments/ReplicaSets/Pods found on Namespace: ${ns}`);
+      return;
+    }
+
+    // Get the metrics for all pods in the namespace
+    const podMetrics = await this.metrics.getPodsMetrics(ns);
+
+    // Map the deployments to their respective pods and metrics
+    return k8sMapper.toDeploymentMetrics(deploys, podMetrics);
+  }
+
+  /**
+   * Finds all pods in the given namespace that are part of the same deployment.
+   * The result is a map of deployment names to a list of pods that are part of that deployment.
+   *
+   * @param ns - The namespace to fetch the pods from.
+   *
+   * @returns A promise that resolves to a map of deployment names to a list of pods that are part of that deployment.
+   *          If there is an error during the fetch, the promise will reject with the error.
+   */
+  async getPodsPerDeploymentByNs(
     ns: string
   ): Promise<Record<string, DeploymentPodMapType[]> | undefined> {
+    // Fetch all deployments, replica sets, and pods in the namespace
     const [deployments, replicaSets, pods] = await Promise.all([
+      // Get all deployments in the namespace
       this.deployment.fetchDeploymentsByNamespace(ns),
+      // Get all replica sets in the namespace
       this.deployment.fetchDeploymentReplicaSetsByNamespace(ns),
+      // Get all pods in the namespace
       this.pod.fetchPodsByNamespace(ns),
     ]);
 
+    // If there is an error during the fetch, return undefined
     if (!deployments || !replicaSets || !pods) {
       return;
     }
 
+    // Initialize the return map
     const podsByDeployment: Record<string, DeploymentPodMapType[]> = {};
+
+    // Iterate over each deployment
     for (const deployment of deployments) {
       const deploymentName = deployment.metadata?.name || 'unknown';
 
-      // add new deployment
+      // Add new deployment
       if (!podsByDeployment[deploymentName]) {
         podsByDeployment[deploymentName] = [];
       }

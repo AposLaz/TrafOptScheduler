@@ -1,33 +1,12 @@
-import type { DeploymentPlacementModel } from './k8s/types';
+import type { DeploymentPlacementModel, PodMetrics } from './k8s/types';
 
 export type Resources = {
   cpu: number;
   memory: number;
 };
 
-export type PodSingleMultipleRs = {
-  node: string;
-  name: string;
-  usage: Resources;
-  percentUsage: Resources & {
-    cpuAndMemory: number;
-  };
-  requested: Resources;
-  limits: Resources;
-};
-
-export type DeploymentSingleRs = {
-  deployment: string;
-  pods: PodSingleMultipleRs;
-};
-
-export type DeploymentMultipleRs = {
-  deployment: string;
-  pods: PodSingleMultipleRs[];
-};
-export type DeploymentsSingleMultipleRsType = {
-  singleRs: DeploymentSingleRs[];
-  multipleRs: DeploymentMultipleRs[];
+export type DeploymentReplicaPodsMetrics = {
+  [key: string]: PodMetrics[];
 };
 
 export type NodeRps = {

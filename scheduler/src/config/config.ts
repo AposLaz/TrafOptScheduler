@@ -19,10 +19,13 @@ export const Config = {
   CRONJOB_TIME: process.env.CRONJOB_TIME ?? '1m',
   RESPONSE_TIME_THRESHOLD: Number(process.env.RESPONSE_TIME_THRESHOLD) ?? 100,
   metrics: {
-    threshold: process.env.METRICS_THRESHOLD
-      ? Number(process.env.METRICS_THRESHOLD) / 100
+    upperThreshold: process.env.METRICS_UPPER_THRESHOLD
+      ? Number(process.env.METRICS_UPPER_THRESHOLD) / 100
       : 0.8,
-    type: (process.env.METRICS_TYPE as MetricsType) ?? MetricsType.CPU,
+    lowerThreshold: process.env.METRICS_LOWER_THRESHOLD
+      ? Number(process.env.METRICS_LOWER_THRESHOLD) / 100
+      : 0.2,
+    type: (process.env.METRICS_TYPE as MetricsType) ?? MetricsType.MEMORY,
     weights: {
       CPU: process.env.CPU_WEIGHT ? Number(process.env.CPU_WEIGHT) : 0.5,
       Memory: process.env.MEMORY_WEIGHT

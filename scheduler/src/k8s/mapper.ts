@@ -2,7 +2,8 @@ import { convertResourcesStringToNumber } from '../common/helpers';
 import { Config } from '../config/config';
 import { TaintEffects } from '../enums';
 
-import type { LatencyProviderType } from './types';
+import type { DeploymentReplicaPodsMetrics } from '../types';
+import type { DeploymentReplicaPods, LatencyProviderType } from './types';
 import type {
   ClusterTopology,
   DeploymentNotReadyFilesystem,
@@ -23,6 +24,60 @@ const k8sMapper = {
         node: node.metadata!.labels!['kubernetes.io/hostname'],
       };
     });
+  },
+  /**
+   * Map Deployments to its replica pod's metrics
+   *
+   *  Given a mapping of deployments to their respective replica pods and a list of pod metrics,
+   *  this function will return a new mapping where the values are the pod metrics for each replica pod.
+   *
+   *  For example, given the following input:
+   *
+   *    deployments = {
+   *      'deployment-1': [
+   *        { pod: 'pod-1', node: 'node-1' },
+   *        { pod: 'pod-2', node: 'node-2' },
+   *      ],
+   *      'deployment-2': [
+   *       { pod: 'pod-3', node: 'node-3' },
+   *        { pod: 'pod-4', node: 'node-4' },
+   *      ],
+   *    }
+   *
+   *    podMetrics = [
+   *      { pod: 'pod-1', cpu: 100, memory: 100 },
+   *      { pod: 'pod-2', cpu: 200, memory: 200 },
+   *      { pod: 'pod-3', cpu: 300, memory: 300 },
+   *      { pod: 'pod-4', cpu: 400, memory: 400 },
+   *    ]
+   *
+   *  The function will return the following output:
+   *
+   *    {
+   *      'deployment-1': [
+   *        { pod: 'pod-1', node: 'node-1', cpu: 100, memory: 100 },
+   *        { pod: 'pod-2', node: 'node-2', cpu: 200, memory: 200 },
+   *      ],
+   *      'deployment-2': [
+   *        { pod: 'pod-3', node: 'node-3', cpu: 300, memory: 300 },
+   *        { pod: 'pod-4', node: 'node-4', cpu: 400, memory: 400 },
+   *      ],
+   *    }
+   */
+  toDeploymentMetrics: (
+    deployments: DeploymentReplicaPods,
+    podMetrics: PodMetrics[]
+  ): DeploymentReplicaPodsMetrics => {
+    const podMetricsMap = new Map(podMetrics.map((m) => [m.pod, m]));
+
+    return Object.fromEntries(
+      Object.entries(deployments).map(([deployment, pods]) => [
+        deployment,
+        pods
+          .map((pod) => podMetricsMap.get(pod.pod))
+          .filter(Boolean) as PodMetrics[],
+      ])
+    );
   },
   toDeployStore: (
     deployment: DeploymentPlacementModel
@@ -128,7 +183,7 @@ const k8sMapper = {
 
       return {
         node: pod.Pod.spec!.nodeName as string,
-        podName: pod.Pod.metadata!.name as string,
+        pod: pod.Pod.metadata!.name as string,
         usage: {
           cpu: usageCpu,
           memory: usageMem,
