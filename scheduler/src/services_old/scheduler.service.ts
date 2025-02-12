@@ -60,7 +60,7 @@ export const scheduler = async (
 
       if (!ready) {
         logger.error(`Pods for deployment ${deploymentName} are not ready`);
-        const deployParser = k8sMapper.toDeployStore(deploy);
+        const deployParser = k8sMapper.toDeploymentStore(deploy);
 
         // Fire-and-forget with concurrency control
         (async () => {

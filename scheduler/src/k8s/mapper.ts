@@ -79,7 +79,7 @@ const k8sMapper = {
       ])
     );
   },
-  toDeployStore: (
+  toDeploymentStore: (
     deployment: DeploymentPlacementModel
   ): DeploymentNotReadyFilesystem => ({
     deploymentName: deployment.deploymentName, // key is the pod name

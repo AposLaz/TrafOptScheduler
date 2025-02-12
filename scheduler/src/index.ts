@@ -39,12 +39,12 @@ const initSetup = async () => {
         // get the graph of deployments and pods
         const deployments = await k8sManager.getDeploymentsMetrics(namespace);
 
-        if (!deployments) {
+        if (!deployments || Object.keys(deployments).length === 0) {
           continue;
         }
 
-        console.log(JSON.stringify(deployments, null, 2));
-
+        const loadDeployment = k8sManager.getCriticalDeployments(deployments);
+        console.log(loadDeployment);
         // if (!podMetrics) {
         //   logger.warn(`No Pod Metrics found on Namespace: ${namespace}`);
         //   continue;

@@ -9,5 +9,4 @@ export enum MetricsType {
   CPU = 'cpu',
   MEMORY = 'memory',
   CPU_MEMORY = 'cpu-memory',
-  LATENCY = 'latency',
 }

@@ -11,6 +11,7 @@ import { DeploymentService } from './services/deploy.service';
 import { PodService } from './services/pod.service';
 import { readDataFromFile } from '../common/helpers';
 import { logger } from '../config/logger';
+import { ThresholdStrategyFactory } from './algorithms/threshold.strategy.service';
 
 import type { DeploymentReplicaPodsMetrics } from '../types';
 import type {
@@ -18,6 +19,7 @@ import type {
   NodeMetrics,
   PodMetrics,
   Resources,
+  ThresholdType,
 } from './types';
 import type { ConfigMetrics } from './types';
 import type { LatencyProviderType } from './types';
@@ -30,6 +32,7 @@ export class KubernetesManager {
   private deployment: DeploymentService;
   private pod: PodService;
   private node: NodeService;
+  private metricsType: ConfigMetrics = Config.metrics;
 
   constructor() {
     const metricClient = K8sClientApiFactory.getClient(
@@ -48,9 +51,7 @@ export class KubernetesManager {
       K8sClientTypeApi.APPS
     ) as k8s.AppsV1Api;
 
-    const metrics: ConfigMetrics = Config.metrics;
-
-    this.metrics = new MetricsService(metricClient, coreClient, metrics);
+    this.metrics = new MetricsService(metricClient, coreClient);
     this.namespaceAdapter = new NamespaceService(coreClient);
     this.resource = new ResourceService(objectClient);
     this.deployment = new DeploymentService(appsClient);
@@ -129,6 +130,18 @@ export class KubernetesManager {
     await this.node.removeTaint(nodes, taintKey);
   }
 
+  getCriticalDeployments(deploy: DeploymentReplicaPodsMetrics) {
+    const threshold: ThresholdType = {
+      upper: this.metricsType.upperThreshold,
+      lower: this.metricsType.lowerThreshold,
+    };
+    const resourcePods = ThresholdStrategyFactory.getStrategy(
+      this.metricsType.type
+    ).evaluateThreshold(deploy, threshold);
+
+    return resourcePods;
+  }
+
   /**
    * This function fetches the metrics for all deployments replica pods in the given namespace.
    *
@@ -154,6 +167,82 @@ export class KubernetesManager {
 
     // Map the deployments to their respective pods and metrics
     return k8sMapper.toDeploymentMetrics(deploys, podMetrics);
+  }
+
+  /**
+   * Gets the current metrics of all nodes in the Kubernetes cluster.
+   *
+   * @returns A promise that resolves to an array of objects, each of which contains the name of a node in the
+   *          Kubernetes cluster, and the current CPU and memory usage of the node. If there is an error during the
+   *          fetch, the promise will reject with the error.
+   */
+  async getNodesMetrics(): Promise<NodeMetrics[]> {
+    return this.metrics.getNodesMetrics();
+  }
+
+  /**
+   * Finds all nodes in the Kubernetes cluster that have sufficient resources to create a new replica pod for the given
+   * deployment.
+   *
+   * @param pod - The resource requirements of the pod to be created. This is an object with two properties: `cpu` and
+   *              `memory`, each of which is a number representing the amount of CPU or memory required by the pod.
+   *
+   * @returns A promise that resolves to an array of NodeMetrics objects. Each object contains information about a node in
+   *          the Kubernetes cluster, including its name, and the amount of CPU and memory that is currently available on
+   *          the node. Nodes that do not have sufficient resources to create a new replica pod are excluded from the
+   *          returned array.
+   */
+  async getNodesWithSufficientResources(
+    pod: Resources
+  ): Promise<NodeMetrics[]> {
+    // Get the current metrics for all nodes in the cluster
+    const nodes = await this.metrics.getNodesMetrics();
+
+    // Filter the list of nodes to only include those that have sufficient resources to create a new replica pod
+    const sufficientResources = nodes.filter(
+      (node) =>
+        // Check that the node has enough CPU to create a new replica pod
+        pod.cpu <= node.freeToUse.cpu &&
+        // Check that the node has enough memory to create a new replica pod
+        pod.memory <= node.freeToUse.memory
+    );
+
+    // Return the list of nodes with sufficient resources
+    return sufficientResources;
+  }
+
+  async getNodesRegionZoneAndLatency() {
+    const file = `${SetupFolderFiles.DEFAULT_PATH}/${SetupFolderFiles.NETWORK_LATENCY_PATH}/${SetupFolderFiles.LATENCY_FILE}`;
+    const latencyProvider = readDataFromFile(file);
+
+    if (!latencyProvider) {
+      logger.warning(`No latency provider found in ${file}`);
+      return;
+    }
+
+    const latencyObject = latencyProvider as LatencyProviderType[];
+
+    const nodes = await this.node.getNodes();
+
+    const nodesTopology = k8sMapper.toClusterTopology(nodes);
+
+    const nodesLatency = k8sMapper.toNodeLatency(nodesTopology, latencyObject);
+
+    return nodesLatency;
+  }
+
+  /**
+   * Gets the current metrics of all pods in the specified namespace.
+   *
+   * @param ns - The name of the namespace containing the pods for which to fetch metrics.
+   *
+   * @returns A promise that resolves to an array of PodMetrics objects. Each object contains
+   *          detailed information about a pod's resource usage, such as CPU and memory metrics.
+   *          If the function encounters any errors during the fetch process, the promise will be
+   *          rejected with the corresponding error.
+   */
+  async getPodsMetricsByNamespace(ns: string): Promise<PodMetrics[]> {
+    return this.metrics.getPodsMetrics(ns);
   }
 
   /**
@@ -233,81 +322,5 @@ export class KubernetesManager {
     }
 
     return podsByDeployment;
-  }
-
-  /**
-   * Gets the current metrics of all nodes in the Kubernetes cluster.
-   *
-   * @returns A promise that resolves to an array of objects, each of which contains the name of a node in the
-   *          Kubernetes cluster, and the current CPU and memory usage of the node. If there is an error during the
-   *          fetch, the promise will reject with the error.
-   */
-  async getNodesMetrics(): Promise<NodeMetrics[]> {
-    return this.metrics.getNodesMetrics();
-  }
-
-  /**
-   * Finds all nodes in the Kubernetes cluster that have sufficient resources to create a new replica pod for the given
-   * deployment.
-   *
-   * @param pod - The resource requirements of the pod to be created. This is an object with two properties: `cpu` and
-   *              `memory`, each of which is a number representing the amount of CPU or memory required by the pod.
-   *
-   * @returns A promise that resolves to an array of NodeMetrics objects. Each object contains information about a node in
-   *          the Kubernetes cluster, including its name, and the amount of CPU and memory that is currently available on
-   *          the node. Nodes that do not have sufficient resources to create a new replica pod are excluded from the
-   *          returned array.
-   */
-  async getNodesWithSufficientResources(
-    pod: Resources
-  ): Promise<NodeMetrics[]> {
-    // Get the current metrics for all nodes in the cluster
-    const nodes = await this.metrics.getNodesMetrics();
-
-    // Filter the list of nodes to only include those that have sufficient resources to create a new replica pod
-    const sufficientResources = nodes.filter(
-      (node) =>
-        // Check that the node has enough CPU to create a new replica pod
-        pod.cpu <= node.freeToUse.cpu &&
-        // Check that the node has enough memory to create a new replica pod
-        pod.memory <= node.freeToUse.memory
-    );
-
-    // Return the list of nodes with sufficient resources
-    return sufficientResources;
-  }
-
-  /**
-   * Gets the current metrics of all pods in the specified namespace.
-   *
-   * @param ns - The name of the namespace containing the pods for which to fetch metrics.
-   *
-   * @returns A promise that resolves to an array of PodMetrics objects. Each object contains
-   *          detailed information about a pod's resource usage, such as CPU and memory metrics.
-   *          If the function encounters any errors during the fetch process, the promise will be
-   *          rejected with the corresponding error.
-   */
-  async getPodsMetricsByNamespace(ns: string): Promise<PodMetrics[]> {
-    return this.metrics.getPodsMetrics(ns);
-  }
-
-  async getNodesRegionZoneAndLatency() {
-    const file = `${SetupFolderFiles.DEFAULT_PATH}/${SetupFolderFiles.NETWORK_LATENCY_PATH}/${SetupFolderFiles.LATENCY_FILE}`;
-    const latencyProvider = readDataFromFile(file);
-
-    if (!latencyProvider) {
-      logger.warning(`No latency provider found in ${file}`);
-      return;
-    }
-
-    const latencyObject = latencyProvider as LatencyProviderType[];
-
-    const nodes = await this.node.getNodes();
-
-    const nodesTopology = k8sMapper.toClusterTopology(nodes);
-
-    const nodesLatency = k8sMapper.toNodeLatency(nodesTopology, latencyObject);
-
-    return nodesLatency;
   }
 }

@@ -1,71 +1,55 @@
 import { MetricsType } from '../enums';
+import { avgDeploymentMetricByNode, classifyDeploymentsByLoad } from './utils';
 
-import type { PodMetrics, PodResourceUsageType } from '../types';
+import type { DeploymentReplicaPodsMetrics } from '../../types';
+import type { CriticalDeploymentsNodeUsage, ThresholdType } from '../types';
 
 interface ThresholdStrategy {
   evaluateThreshold(
-    podMetrics: PodMetrics[],
-    threshold: number
-  ): Promise<PodResourceUsageType>;
+    deployments: DeploymentReplicaPodsMetrics,
+    threshold: ThresholdType
+  ): CriticalDeploymentsNodeUsage;
 }
 
 class CpuThresholdStrategy implements ThresholdStrategy {
-  async evaluateThreshold(
-    podMetrics: PodMetrics[],
-    threshold: number
-  ): Promise<PodResourceUsageType> {
-    const abovePods = podMetrics.filter(
-      (pod) => pod.percentUsage.cpu >= threshold
+  evaluateThreshold(
+    deployments: DeploymentReplicaPodsMetrics,
+    threshold: ThresholdType
+  ): CriticalDeploymentsNodeUsage {
+    const deployNodeUsage = avgDeploymentMetricByNode(
+      deployments,
+      MetricsType.CPU
     );
 
-    const belowPods = podMetrics.filter(
-      (pod) => pod.percentUsage.cpu < threshold
-    );
-
-    return {
-      aboveThreshold: abovePods,
-      belowThreshold: belowPods,
-    };
+    return classifyDeploymentsByLoad(deployNodeUsage, threshold);
   }
 }
 
 class MemoryThresholdStrategy implements ThresholdStrategy {
-  async evaluateThreshold(
-    podMetrics: PodMetrics[],
-    threshold: number
-  ): Promise<PodResourceUsageType> {
-    const abovePods = podMetrics.filter(
-      (pod) => pod.percentUsage.memory >= threshold
+  evaluateThreshold(
+    deployments: DeploymentReplicaPodsMetrics,
+    threshold: ThresholdType
+  ): CriticalDeploymentsNodeUsage {
+    const deployNodeUsage = avgDeploymentMetricByNode(
+      deployments,
+      MetricsType.MEMORY
     );
 
-    const belowPods = podMetrics.filter(
-      (pod) => pod.percentUsage.memory < threshold
-    );
-
-    return {
-      aboveThreshold: abovePods,
-      belowThreshold: belowPods,
-    };
+    return classifyDeploymentsByLoad(deployNodeUsage, threshold);
   }
 }
 
 class CpuAndMemoryThresholdStrategy implements ThresholdStrategy {
-  async evaluateThreshold(
-    podMetrics: PodMetrics[],
-    threshold: number
-  ): Promise<PodResourceUsageType> {
-    const abovePods = podMetrics.filter(
-      (pod) => pod.percentUsage.cpuAndMemory >= threshold
+  evaluateThreshold(
+    deployments: DeploymentReplicaPodsMetrics,
+    threshold: ThresholdType
+  ): CriticalDeploymentsNodeUsage {
+    const deployNodeUsage = avgDeploymentMetricByNode(
+      deployments,
+      MetricsType.CPU_MEMORY
     );
 
-    const belowPods = podMetrics.filter(
-      (pod) => pod.percentUsage.cpuAndMemory < threshold
-    );
-
-    return {
-      aboveThreshold: abovePods,
-      belowThreshold: belowPods,
-    };
+    return classifyDeploymentsByLoad(deployNodeUsage, threshold);
   }
 }
 

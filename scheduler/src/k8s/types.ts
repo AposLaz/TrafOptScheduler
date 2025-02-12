@@ -1,5 +1,12 @@
 import type { MetricsType } from './enums';
 
+/************************************ THRESHOLD */
+
+export type ThresholdType = {
+  upper: number;
+  lower: number;
+};
+
 /************************************ LATENCY BETWEEN THE NODES */
 
 export type NodeLatency = {
@@ -44,9 +51,16 @@ export type ConfigMetrics = {
   type: MetricsType;
 };
 
-export type PodResourceUsageType = {
-  aboveThreshold: PodMetrics[];
-  belowThreshold: PodMetrics[];
+export type NodeUsage = {
+  node: string;
+  avgMetric: number;
+};
+
+export type DeploymentNodeUsage = Record<string, NodeUsage[]>;
+
+export type CriticalDeploymentsNodeUsage = {
+  highLoadedNodes: DeploymentNodeUsage;
+  lowLoadedNodes: DeploymentNodeUsage;
 };
 
 export type DeploymentPodMapType = {
