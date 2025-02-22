@@ -2,15 +2,21 @@ import * as k8s from '@kubernetes/client-node';
 
 import { k8sMapper } from '../mapper';
 
-import type { NodeMetrics, PodMetrics } from '../types';
+import type { MetricWeights, NodeMetrics, PodMetrics } from '../types';
 
 export class MetricsService {
   private metricClient: k8s.Metrics;
   private coreClient: k8s.CoreV1Api;
+  private weights: MetricWeights;
 
-  constructor(metricClient: k8s.Metrics, coreClient: k8s.CoreV1Api) {
+  constructor(
+    metricClient: k8s.Metrics,
+    coreClient: k8s.CoreV1Api,
+    weights: MetricWeights
+  ) {
     this.metricClient = metricClient;
     this.coreClient = coreClient;
+    this.weights = weights;
   }
 
   async getNodesMetrics(): Promise<NodeMetrics[]> {
@@ -27,7 +33,7 @@ export class MetricsService {
       namespace
     );
 
-    const pods = k8sMapper.toPodResources(topPods);
+    const pods = k8sMapper.toPodResources(topPods, this.weights);
     return pods;
   }
 }

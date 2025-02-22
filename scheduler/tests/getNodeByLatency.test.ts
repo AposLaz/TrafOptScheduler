@@ -1,4 +1,4 @@
-import { DUMMY_DATA } from './data/schedulerDummyData';
+import { DUMMY_DATA } from './data/dummy/schedulerDummyData';
 import { CN } from '../src/services/getCandidateNode';
 
 describe('[UPSTREAM] - Get Candidate Node with the lowest latency', () => {

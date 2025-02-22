@@ -15,6 +15,7 @@ import { ThresholdStrategyFactory } from './algorithms/threshold.strategy.servic
 
 import type { DeploymentReplicaPodsMetrics } from '../types';
 import type {
+  ClusterAzTopology,
   DeploymentPodMapType,
   NodeMetrics,
   PodMetrics,
@@ -51,7 +52,11 @@ export class KubernetesManager {
       K8sClientTypeApi.APPS
     ) as k8s.AppsV1Api;
 
-    this.metrics = new MetricsService(metricClient, coreClient);
+    this.metrics = new MetricsService(
+      metricClient,
+      coreClient,
+      this.metricsType.weights
+    );
     this.namespaceAdapter = new NamespaceService(coreClient);
     this.resource = new ResourceService(objectClient);
     this.deployment = new DeploymentService(appsClient);
@@ -167,6 +172,30 @@ export class KubernetesManager {
 
     // Map the deployments to their respective pods and metrics
     return k8sMapper.toDeploymentMetrics(deploys, podMetrics);
+  }
+
+  async getClusterAzTopology() {
+    const nodes = await this.node.getNodes();
+
+    const nodesTopology = k8sMapper.toClusterTopology(nodes);
+
+    const assignNodesToZones: ClusterAzTopology = {};
+
+    nodesTopology.forEach((node) => {
+      assignNodesToZones[node.zone] = assignNodesToZones[node.zone] || {
+        nodes: [],
+      };
+      assignNodesToZones[node.zone].nodes.push(node.node);
+    });
+
+    return assignNodesToZones;
+  }
+
+  async getMostHighLoadedNodes() {
+    const nodes = await this.metrics.getNodesMetrics();
+    const weights = this.metricsType.weights;
+    const metricType = this.metricsType.type;
+    return k8sMapper.toMostHighLoadedNodes(nodes, metricType, weights);
   }
 
   /**

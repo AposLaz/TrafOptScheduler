@@ -1,6 +1,9 @@
-import type { NodeLatency, NodeMetrics } from '../../src/k8s/types';
-import type { GraphDataRps } from '../../src/prometheus/types';
-import type { DeploymentMultipleRs, DeploymentSingleRs } from '../../src/types';
+import type { NodeLatency, NodeMetrics } from '../../../src/k8s/types';
+import type { GraphDataRps } from '../../../src/prometheus/types';
+import type {
+  DeploymentMultipleRs,
+  DeploymentSingleRs,
+} from '../../../src/types';
 
 export const DUMMY_DATA: {
   metricNodes: NodeMetrics[];

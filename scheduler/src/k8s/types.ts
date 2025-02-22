@@ -23,6 +23,8 @@ export type ClusterTopology = {
   node: string;
 };
 
+export type ClusterAzTopology = Record<string, { nodes: string[] }>;
+
 export type LatencyProviderType = {
   [key: string]: NodeLatency[];
 };
@@ -45,10 +47,15 @@ export type DeploymentNotReadyFilesystem = Omit<
 
 /******************** METRICS TYPES **************** */
 
+export type MetricWeights = {
+  CPU: number;
+  Memory: number;
+};
 export type ConfigMetrics = {
   upperThreshold: number;
   lowerThreshold: number;
   type: MetricsType;
+  weights: MetricWeights;
 };
 
 export type NodeUsage = {
@@ -59,8 +66,8 @@ export type NodeUsage = {
 export type DeploymentNodeUsage = Record<string, NodeUsage[]>;
 
 export type CriticalDeploymentsNodeUsage = {
-  highLoadedNodes: DeploymentNodeUsage;
-  lowLoadedNodes: DeploymentNodeUsage;
+  highLoadedDeployments: DeploymentNodeUsage;
+  lowLoadedDeployments: DeploymentNodeUsage;
 };
 
 export type DeploymentPodMapType = {
@@ -89,6 +96,7 @@ export type PodMetrics = {
 
 export type NodeMetrics = {
   name: string;
+  zone: string;
   capacity: Resources;
   allocatable: Resources;
   requested: Resources;

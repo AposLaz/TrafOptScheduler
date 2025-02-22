@@ -1,5 +1,5 @@
 import { getFaultToleranceZone } from '../src/services/faultTolerance';
-import { DUMMY_DATA } from './data/schedulerDummyData';
+import { DUMMY_DATA } from './data/dummy/schedulerDummyData';
 
 describe('[FAULT TOLERANCE] - Get Fault Tolerant Zone', () => {
   test('Get Fault Tolerant Zone', () => {
