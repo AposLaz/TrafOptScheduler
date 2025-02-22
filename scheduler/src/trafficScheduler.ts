@@ -41,13 +41,13 @@ export const TrafficScheduler = async () => {
     // Get the latency of all nodes in the cluster
     const nodesLatency = await k8sManager.getNodesRegionZoneAndLatency();
 
-    const zonesNodes = DummyAzTopology; //await k8sManager.getClusterAzTopology();
+    const zonesNodes = await k8sManager.getClusterAzTopology();
 
     // For each namespace in the config
     for (const namespace of Config.NAMESPACES) {
       try {
         // Get the deployments in the namespace
-        const deployments = DummyDeployments; //await k8sManager.getDeploymentsMetrics(namespace);
+        const deployments = await k8sManager.getDeploymentsMetrics(namespace);
 
         // If no deployments are found
         if (!deployments || Object.keys(deployments).length === 0) {
@@ -58,10 +58,49 @@ export const TrafficScheduler = async () => {
         // Get the critical deployments (deployments that are above the threshold)
         const loadDeployment = k8sManager.getCriticalDeployments(deployments);
 
+        console.log(loadDeployment.lowLoadedDeployments);
         // If there are deployments that are below the threshold
         if (Object.keys(loadDeployment.lowLoadedDeployments).length > 0) {
-          // Scale down
-          const mostLoadedNodes = await k8sManager.getMostHighLoadedNodes();
+          const loggerOperation = logger.child({
+            operation: 'LowLoadDeployments',
+          });
+
+          for (const [deployment, node] of Object.entries(
+            loadDeployment.lowLoadedDeployments
+          )) {
+            const replicaPods = deployments[deployment];
+
+            if (replicaPods.length === 1) {
+              loggerOperation.info(
+                `Deployment "${deployment}" has a single replica. Scaling down is not possible`
+              );
+              continue;
+            }
+            // Get the average usage of all nodes in the deployment
+            const sumDeploymentClusterUsage = node.reduce(
+              (preUsage, currentUsage) => {
+                return preUsage + currentUsage.avgMetric;
+              },
+              0
+            );
+
+            // Calculate the average usage of the deployment
+            const avgDeploymentClusterUsage =
+              sumDeploymentClusterUsage / node.length;
+
+            // If the average usage is above the threshold
+            if (avgDeploymentClusterUsage < Config.metrics.lowerThreshold) {
+              // Get the replica pods of the deployment
+
+              // Scale down
+              const mostLoadedNodes = await k8sManager.getMostHighLoadedNodes();
+              const cnNode = new FaultToleranceScheduler(
+                replicaPods,
+                mostLoadedNodes,
+                zonesNodes
+              ).getCandidateNodeToRemove();
+            }
+          }
         }
 
         // If there are deployments that are above the threshold

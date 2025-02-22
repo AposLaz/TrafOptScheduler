@@ -9,13 +9,13 @@ export const DummyAzTopology = {
 
 export const DummyNodes: NodeMetrics[] = [
   {
-    name: 'node1',
-    zone: 'zone-1',
-    capacity: { cpu: 940, memory: 2802.3984375 },
-    allocatable: { cpu: 940, memory: 2802.3984375 },
-    requested: { cpu: 850, memory: 872 },
-    limits: { cpu: 3225, memory: 2247 },
-    freeToUse: { cpu: 300, memory: 1930.3984375 },
+    name: 'node3',
+    zone: 'zone-3',
+    capacity: { cpu: 940, memory: 2802.40625 },
+    allocatable: { cpu: 940, memory: 2802.40625 },
+    requested: { cpu: 935, memory: 1256 },
+    limits: { cpu: 6899.999999999999, memory: 5829 },
+    freeToUse: { cpu: 5, memory: 1546.40625 },
   },
   {
     name: 'node2',
@@ -27,12 +27,12 @@ export const DummyNodes: NodeMetrics[] = [
     freeToUse: { cpu: 46.999999999999886, memory: 2179.8616943359375 },
   },
   {
-    name: 'node3',
-    zone: 'zone-3',
-    capacity: { cpu: 940, memory: 2802.40625 },
-    allocatable: { cpu: 940, memory: 2802.40625 },
-    requested: { cpu: 935, memory: 1256 },
-    limits: { cpu: 6899.999999999999, memory: 5829 },
-    freeToUse: { cpu: 5, memory: 1546.40625 },
+    name: 'node1',
+    zone: 'zone-1',
+    capacity: { cpu: 940, memory: 2802.3984375 },
+    allocatable: { cpu: 940, memory: 2802.3984375 },
+    requested: { cpu: 850, memory: 872 },
+    limits: { cpu: 3225, memory: 2247 },
+    freeToUse: { cpu: 300, memory: 1930.3984375 },
   },
 ];
