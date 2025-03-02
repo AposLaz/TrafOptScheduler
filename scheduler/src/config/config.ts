@@ -1,6 +1,6 @@
 import * as dotenv from 'dotenv';
 
-import { MetricsType } from '../k8s/enums';
+import { MetricsType } from '../adapters/k8s/enums';
 dotenv.config();
 
 // required environment variables

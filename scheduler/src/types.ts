@@ -1,4 +1,7 @@
-import type { DeploymentPlacementModel, PodMetrics } from './k8s/types';
+import type {
+  DeploymentPlacementModel,
+  PodMetrics,
+} from './adapters/k8s/types';
 
 export type Resources = {
   cpu: number;

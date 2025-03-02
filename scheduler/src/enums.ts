@@ -13,8 +13,9 @@ export enum Operators {
 
 export enum SetupFolderFiles {
   DEFAULT_PATH = '/tmp/data', // TODO add the app path
-  NETWORK_LATENCY_PATH = 'network_latency',
-  LATENCY_FILE = 'latency.json',
+  DEPLOYS_PATH = 'deploys',
+  QUEUE_PATH = 'queue',
+  DEPLOYS_FILE = 'deploys.json',
 }
 
 export enum SemaphoreConcLimits {

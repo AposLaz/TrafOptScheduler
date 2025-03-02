@@ -14,47 +14,47 @@
  *  and potentially causing performance issues.
  */
 
-// export class Semaphore {
-//   private static instance: Semaphore | null = null;
+export class Semaphore {
+  private static instance: Semaphore | null = null;
 
-//   private max: number;
-//   private current: number;
-//   private queue: (() => void)[];
+  private max: number;
+  private current: number;
+  private queue: (() => void)[];
 
-//   // Private constructor prevents direct instantiation
-//   private constructor(max: number) {
-//     this.max = max;
-//     this.current = 0;
-//     this.queue = [];
-//   }
+  // Private constructor prevents direct instantiation
+  private constructor(max: number) {
+    this.max = max;
+    this.current = 0;
+    this.queue = [];
+  }
 
-//   // Static method to get the single instance of the class
-//   public static getInstance(max: number): Semaphore {
-//     if (this.instance === null) {
-//       this.instance = new Semaphore(max);
-//     }
-//     return this.instance;
-//   }
+  // Static method to get the single instance of the class
+  public static getInstance(max: number): Semaphore {
+    if (this.instance === null) {
+      this.instance = new Semaphore(max);
+    }
+    return this.instance;
+  }
 
-//   async acquire(): Promise<void> {
-//     if (this.current < this.max) {
-//       this.current++;
-//       return Promise.resolve();
-//     } else {
-//       return new Promise<void>((resolve) => {
-//         this.queue.push(resolve);
-//       });
-//     }
-//   }
+  async acquire(): Promise<void> {
+    if (this.current < this.max) {
+      this.current++;
+      return Promise.resolve();
+    } else {
+      return new Promise<void>((resolve) => {
+        this.queue.push(resolve);
+      });
+    }
+  }
 
-//   release(): void {
-//     this.current--;
-//     if (this.queue.length > 0) {
-//       const nextResolve = this.queue.shift();
-//       this.current++;
-//       if (nextResolve) {
-//         nextResolve();
-//       }
-//     }
-//   }
-// }
+  release(): void {
+    this.current--;
+    if (this.queue.length > 0) {
+      const nextResolve = this.queue.shift();
+      this.current++;
+      if (nextResolve) {
+        nextResolve();
+      }
+    }
+  }
+}

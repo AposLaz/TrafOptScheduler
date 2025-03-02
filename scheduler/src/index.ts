@@ -2,7 +2,7 @@ import { app } from './app';
 import { Config } from './config/config';
 import { logger } from './config/logger';
 import './config/setup';
-import { TrafficScheduler } from './trafficScheduler';
+import { TrafficScheduler } from './core';
 
 const initRestApi = async () => {
   app.listen(Config.APP_PORT, () => {

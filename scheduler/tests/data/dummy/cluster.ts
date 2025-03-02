@@ -1,5 +1,5 @@
 import type { NodeMetrics } from '../../../src/k8s/types';
-import type { NodesLatency } from '../../../src/prometheus/types';
+import type { NodesLatency } from '../../../src/adapters/prometheus/types';
 
 export const DummyCluster = {
   AzTopology: {
