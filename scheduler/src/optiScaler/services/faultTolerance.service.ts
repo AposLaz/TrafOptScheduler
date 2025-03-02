@@ -9,28 +9,28 @@ import type {
 import type {
   FaultNodesReplicas,
   FaultNodesSumReplicas,
+  FaultToleranceType,
   FaultZonesNodes,
 } from '../types';
 
-export class FaultToleranceScheduler {
+export class FaultTolerance {
   private deployRs: PodMetrics[];
   private nodesWithResources: NodeMetrics[];
   private zonesNodes: ClusterAzTopology;
   private loggerOperation = logger.child({ operation: 'FaultTolerance' });
+  private deploymentName: string;
 
-  constructor(
-    deployRs: PodMetrics[], // The list of deployments with replicas.
-    nodesWithResources: NodeMetrics[], // The list of nodes with available resources.
-    zonesNodes: ClusterAzTopology // The topology of the nodes and zones.
-  ) {
-    this.deployRs = deployRs;
-    this.nodesWithResources = nodesWithResources;
-    this.zonesNodes = zonesNodes;
+  constructor(data: FaultToleranceType) {
+    this.deploymentName = data.deployment;
+    this.deployRs = data.replicaPods;
+    this.nodesWithResources = data.nodeMetrics;
+    this.zonesNodes = data.zonesNodes;
 
     this.loggerOperation.info(`Initialized FaultToleranceScheduler`, {
-      deployRsCount: deployRs.length,
-      nodesWithResourcesCount: nodesWithResources.length,
-      zonesCount: Object.keys(zonesNodes).length,
+      deploymentName: this.deploymentName,
+      deployRsCount: this.deployRs.length,
+      nodesWithResourcesCount: this.nodesWithResources.length,
+      zonesCount: Object.keys(this.zonesNodes).length,
     });
   }
 
@@ -54,6 +54,7 @@ export class FaultToleranceScheduler {
      */
     const currentNodeAssignments = this.rsPodsByNode(this.deployRs);
     this.loggerOperation.debug({
+      deploymentName: this.deploymentName,
       message: 'Current node assignments',
       currentNodeAssignments,
     });
@@ -163,6 +164,7 @@ export class FaultToleranceScheduler {
     // Return the unique candidate nodes.
     const uniqueCandidateNodes = [...new Set(candidateNodes)];
     this.loggerOperation.info({
+      deploymentName: this.deploymentName,
       message: 'Candidate nodes computed',
       uniqueCandidateNodes,
     });
@@ -183,9 +185,13 @@ export class FaultToleranceScheduler {
    * @returns The name of the node that is most loaded and suitable for pod removal.
    */
 
-  public getCandidateNodeToRemove(): string {
+  public getCandidateNodeToRemove(): string[] {
     // Create an array of loaded nodes with their names and zones
-    const loadedNodes = this.nodesWithResources.map(({ name, zone }) => ({
+    const sortNodesByLoad = FaultMapper.toMostHighLoadedNodes(
+      this.nodesWithResources
+    );
+
+    const loadedNodes = sortNodesByLoad.map(({ name, zone }) => ({
       node: name,
       zone,
     }));
@@ -230,7 +236,7 @@ export class FaultToleranceScheduler {
         loadedNodes
       );
 
-      return mostLoaded.node; // Return the node name of the most loaded node
+      return [mostLoaded.node]; // Return the node name of the most loaded node
     }
 
     // Find the maximum replica count present in any zone
@@ -250,7 +256,7 @@ export class FaultToleranceScheduler {
     );
 
     // Return the node name of the most loaded node
-    return mostLoaded.node;
+    return [mostLoaded.node];
   }
 
   /**

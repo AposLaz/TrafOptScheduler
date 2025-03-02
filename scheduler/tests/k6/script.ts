@@ -65,7 +65,7 @@ export const options = {
 // about authoring k6 scripts.
 //
 export default function () {
-  const res = http.get('http://localhost:41743/');
+  const res = http.get('http://localhost:8888/');
   check(res, { 'status was 200': (r) => r.status == 200 });
   sleep(1);
 }

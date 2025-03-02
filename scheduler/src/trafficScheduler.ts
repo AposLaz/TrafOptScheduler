@@ -1,10 +1,11 @@
 import { Config } from './config/config';
 import { logger } from './config/logger';
 import { KubernetesManager } from './k8s/manager';
-import { FaultToleranceScheduler } from './optiScaler/services/faultTolerance.service';
+import { OptiScaler } from './optiScaler';
+import { ScaleAction } from './optiScaler/enums';
 import { PrometheusManager } from './prometheus/manager';
 import { getPodNodeResources } from './services/getPodNodeResources';
-import { DummyNodes, DummyAzTopology } from '../tests/data/dummy/cluster';
+import { DummyCluster } from '../tests/data/dummy/cluster';
 import { DummyDeployments } from '../tests/data/dummy/deployments';
 
 /**
@@ -38,16 +39,21 @@ export const TrafficScheduler = async () => {
     // Get the prometheus manager
     const prometheusManager = new PrometheusManager();
 
-    // Get the latency of all nodes in the cluster
-    const nodesLatency = await k8sManager.getNodesRegionZoneAndLatency();
-
     const zonesNodes = await k8sManager.getClusterAzTopology();
+
+    // Get the latency of all nodes in the cluster
+    const nodesLatency = await prometheusManager.getNodesLatency();
+
+    if (!nodesLatency) {
+      logger.error('No nodes latency found');
+      return;
+    }
 
     // For each namespace in the config
     for (const namespace of Config.NAMESPACES) {
       try {
         // Get the deployments in the namespace
-        const deployments = await k8sManager.getDeploymentsMetrics(namespace);
+        const deployments = DummyDeployments; // await k8sManager.getDeploymentsMetrics(namespace);
 
         // If no deployments are found
         if (!deployments || Object.keys(deployments).length === 0) {
@@ -92,13 +98,27 @@ export const TrafficScheduler = async () => {
             if (avgDeploymentClusterUsage < Config.metrics.lowerThreshold) {
               // Get the replica pods of the deployment
 
+              loggerOperation.info(
+                `\n#############################################################################
+                \nDeployment "${deployment}" is below the threshold. Scaling down
+                \n##############################################################################`
+              );
+              // get all nodes metrics
+              const nodeMetrics = await k8sManager.getNodesMetrics();
+
               // Scale down
-              const mostLoadedNodes = await k8sManager.getMostHighLoadedNodes();
-              const cnNode = new FaultToleranceScheduler(
-                replicaPods,
-                mostLoadedNodes,
-                zonesNodes
-              ).getCandidateNodeToRemove();
+              // new OptiScaler(
+              //   ScaleAction.DOWN,
+              //   {
+              //     deployment,
+              //     namespace,
+              //     replicaPods,
+              //     nodeMetrics,
+              //     zonesNodes,
+              //     nodesLatency,
+              //   },
+              //   prometheusManager
+              // ).Execute();
             }
           }
         }
@@ -108,6 +128,10 @@ export const TrafficScheduler = async () => {
           for (const [deployment, node] of Object.entries(
             loadDeployment.highLoadedDeployments
           )) {
+            const loggerOperation = logger.child({
+              operation: 'HighLoadDeployments',
+            });
+
             // Get the average usage of all nodes in the deployment
             const sumDeploymentClusterUsage = node.reduce(
               (preUsage, currentUsage) => {
@@ -129,7 +153,8 @@ export const TrafficScheduler = async () => {
               const podResources = getPodNodeResources(replicaPods[0]);
 
               // get all nodes with sufficient resources
-              const nodeMetrics = DummyNodes; //await k8sManager.getNodesWithSufficientResources(podResources);
+              const nodeMetrics =
+                await k8sManager.getNodesWithSufficientResources(podResources);
 
               if (nodeMetrics.length === 0) {
                 continue;
@@ -143,13 +168,26 @@ export const TrafficScheduler = async () => {
               console.log(podResources);
               console.log(nodeMetrics);
 
+              loggerOperation.info(
+                `\n#############################################################################
+                \nDeployment "${deployment}" is above the threshold. Scaling up
+                \n##############################################################################`
+              );
+
               // fault tolerance
-              const cnNodes = new FaultToleranceScheduler(
-                replicaPods,
-                nodeMetrics,
-                zonesNodes
-              ).getCandidateNodesToAdd();
-              console.log(cnNodes);
+              new OptiScaler(
+                ScaleAction.UP,
+                {
+                  deployment,
+                  namespace,
+                  replicaPods,
+                  nodeMetrics,
+                  zonesNodes,
+                  nodesLatency,
+                },
+                prometheusManager
+              ).Execute();
+
               continue;
             }
 

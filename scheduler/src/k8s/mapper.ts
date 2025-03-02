@@ -1,7 +1,6 @@
 import { convertResourcesStringToNumber } from '../common/helpers';
 import { TaintEffects } from '../enums';
 
-import type { MetricsType } from './enums';
 import type { DeploymentReplicaPodsMetrics } from '../types';
 import type {
   DeploymentReplicaPods,
@@ -90,32 +89,6 @@ const k8sMapper = {
     namespace: deployment.namespace,
     deletePod: deployment.deletePod,
   }),
-  toMostHighLoadedNodes: (
-    nodes: NodeMetrics[],
-    type: MetricsType,
-    weights: MetricWeights
-  ): NodeMetrics[] => {
-    return nodes.sort((a, b) => {
-      if (type === 'cpu') {
-        return b.requested.cpu - a.requested.cpu;
-      } else if (type === 'memory') {
-        return b.requested.memory - a.requested.memory;
-      } else {
-        const aCpuUtil = a.requested.cpu / a.allocatable.cpu || 0;
-        const bCpuUtil = b.requested.cpu / b.allocatable.cpu || 0;
-
-        const aMemUtil = a.requested.memory / a.allocatable.memory || 0;
-        const bMemUtil = b.requested.memory / b.allocatable.memory || 0;
-
-        const aWeightedUtil = aCpuUtil * weights.CPU + aMemUtil * weights.CPU;
-        const bWeightedUtil =
-          bCpuUtil * weights.Memory + bMemUtil * weights.Memory;
-
-        // Sort descending (highest load first)
-        return bWeightedUtil - aWeightedUtil;
-      }
-    });
-  },
   toNamespace: (
     ns: string,
     labels?: { [key: string]: string }

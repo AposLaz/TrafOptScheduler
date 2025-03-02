@@ -9,6 +9,25 @@ export class ResourcesMetricsService {
     this.prometheusUrl = prometheusUrl;
   }
 
+  async fetchNodesLatency(time: string) {
+    try {
+      const query = `avg_over_time(node_avg_latency_ms[${time}])`;
+      console.log(query);
+      const result = await executePrometheusQuery(this.prometheusUrl, query);
+
+      if (!result || result.data.result.length === 0) {
+        logger.warn(`No data returned for query: ${query}`);
+        return;
+      }
+
+      return result.data.result;
+    } catch (e: unknown) {
+      const error = e as Error;
+      logger.error(error);
+      return;
+    }
+  }
+
   async fetchPodCpuUsageRelativeToLimit(
     namespace: string,
     time: string

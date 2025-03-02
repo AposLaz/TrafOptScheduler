@@ -191,13 +191,6 @@ export class KubernetesManager {
     return assignNodesToZones;
   }
 
-  async getMostHighLoadedNodes() {
-    const nodes = await this.metrics.getNodesMetrics();
-    const weights = this.metricsType.weights;
-    const metricType = this.metricsType.type;
-    return k8sMapper.toMostHighLoadedNodes(nodes, metricType, weights);
-  }
-
   /**
    * Gets the current metrics of all nodes in the Kubernetes cluster.
    *

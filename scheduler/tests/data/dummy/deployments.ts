@@ -160,8 +160,8 @@ export const DummyDeployments: DeploymentReplicaPodsMetrics = {
   ],
   frontend: [
     {
-      node: 'node2',
-      pod: 'frontend-69c899f5f9-jg86b',
+      node: 'gke-cluster-2-pool-1-65f94896-zhc4',
+      pod: 'frontend-54848df4db-nrw9s',
       usage: {
         cpu: 209.725584,
         memory: 253.30078125,

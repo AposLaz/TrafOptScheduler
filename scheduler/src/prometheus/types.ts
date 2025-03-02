@@ -1,12 +1,13 @@
 /************************************************* PROMETHEUS TYPES */
 export type PrometheusResults = {
-  metric: PodRps;
+  metric: PodRps | PromNodesLatency;
   value: [number, string];
 };
-export interface PrometheusData {
+
+export type PrometheusData = {
   resultType: string;
   result: PrometheusResults[];
-}
+};
 
 export type PrometheusResponseType = {
   status: string;
@@ -17,6 +18,19 @@ export type PodResourceUsageType = {
   namespace: string;
   podName: string;
   metric: number;
+};
+
+/******************************************** PROMETHEUS LATENCY */
+
+export type PromNodesLatency = {
+  from_node: string;
+  to_node: string;
+};
+
+export type NodesLatency = {
+  from: string;
+  to: string;
+  latency: number;
 };
 
 /******************************************** PROMETHEUS RPS */
