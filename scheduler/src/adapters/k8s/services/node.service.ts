@@ -13,6 +13,15 @@ export class NodeService {
     return res.body.items;
   }
 
+  async addLabels(nodeName: string, labels: { [key: string]: string }) {
+    const node = await this.client.readNode(nodeName);
+    node.body.metadata!.labels = {
+      ...node.body.metadata!.labels,
+      ...labels,
+    };
+    return this.client.replaceNode(nodeName, node.body);
+  }
+
   // apply taints to nodes
   async addTaint(nodeNames: string[], newTaint: k8s.V1Taint) {
     for (const nodeName of nodeNames) {

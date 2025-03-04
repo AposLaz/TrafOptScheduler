@@ -1,0 +1,88 @@
+###### LOCALITY NEED CUSTOM LABEL: https://istio.io/latest/docs/tasks/traffic-management/locality-load-balancing/
+
+# topology.istio.io/subzone
+
+# apiVersion: networking.istio.io/v1beta1
+# kind: DestinationRule
+# metadata:
+#   name: recommendationservice
+#   namespace: online-boutique
+# spec:
+#   host: recommendationservice.online-boutique.svc.cluster.local
+#   trafficPolicy:
+#     loadBalancer:
+#       localityLbSetting:
+#         enabled: true
+#         distribute:
+#           - from: europe-west8/europe-west8-a/gke-cluster-2-pool-1-d5746933-8qmd
+#             to:
+#               "europe-west8/europe-west8-a/gke-cluster-2-pool-1-d5746933-8qmd": 1
+#               "europe-west8/europe-west8-b/gke-cluster-2-pool-1-fbe5f69c-rbr6": 99
+#           - from: europe-west8/europe-west8-b/gke-cluster-2-pool-1-fbe5f69c-rbr6
+#             to:
+#               "europe-west8/europe-west8-a/gke-cluster-2-pool-1-d5746933-8qmd": 1
+#               "europe-west8/europe-west8-b/gke-cluster-2-pool-1-fbe5f69c-rbr6": 99              
+#     outlierDetection:
+#       consecutive5xxErrors: 5
+#       interval: 10s
+#       baseEjectionTime: 2m
+#       maxEjectionPercent: 50
+
+# ---
+
+# ## ADD LABELS TO PODS => kubectl label pod frontend-6b8cdfd545-qvr76 topology.istio.io/cluster=cluster-1 -n online-boutique
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: recommendationservice-per-cluster-dr
+  namespace: online-boutique
+spec:
+  host: recommendationservice.online-boutique.svc.cluster.local
+  trafficPolicy:
+    connectionPool:
+      http:
+        http1MaxPendingRequests: 1024
+        maxRequestsPerConnection: 10
+  subsets:
+  - name: cluster-1
+    labels:
+      topology.istio.io/cluster: cluster-1
+  - name: cluster-2
+    labels:
+      topology.istio.io/cluster: cluster-2
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: recommendationservice-cluster-local-vs
+  namespace: online-boutique
+spec:
+  hosts:
+  - recommendationservice.online-boutique.svc.cluster.local
+  http:
+  - name: "cluster-1-local"
+    match:
+    - sourceLabels:
+        topology.istio.io/cluster: "cluster-1"
+    route:
+    - destination:
+        host: recommendationservice.online-boutique.svc.cluster.local
+        subset: cluster-1
+      weight: 99
+    - destination:
+        host: recommendationservice.online-boutique.svc.cluster.local
+        subset: cluster-2
+      weight: 1
+  # - name: "cluster-2-local"
+  #   match:
+  #   - sourceLabels:
+  #       topology.istio.io/cluster: "cluster-2"
+  #   route:
+  #   - destination:
+  #       host: recommendationservice.online-boutique.svc.cluster.local
+  #       subset: cluster-2
+  #     weight: 90
+  #   - destination:
+  #       host: recommendationservice.online-boutique.svc.cluster.local
+  #       subset: cluster-1
+  #     weight: 10

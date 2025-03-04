@@ -69,48 +69,48 @@ export const DummyDeployments: DeploymentReplicaPodsMetrics = {
         memory: 253,
       },
     },
-    {
-      node: 'node3',
-      pod: 'checkoutservice-59c7c794b9-8jv2j',
-      usage: {
-        cpu: 3.246622,
-        memory: 48.0390625,
-      },
-      percentUsage: {
-        cpu: 0.008116555,
-        memory: 0.18987771739130435,
-        cpuAndMemory: 0.09899713619565217,
-      },
-      requested: {
-        cpu: 110,
-        memory: 104,
-      },
-      limits: {
-        cpu: 400,
-        memory: 253,
-      },
-    },
-    {
-      node: 'node2',
-      pod: 'checkoutservice-59c7c794b9-kfhn7',
-      usage: {
-        cpu: 2.827604,
-        memory: 48.35546875,
-      },
-      percentUsage: {
-        cpu: 0.00706901,
-        memory: 0.19112833498023715,
-        cpuAndMemory: 0.09909867249011857,
-      },
-      requested: {
-        cpu: 110,
-        memory: 104,
-      },
-      limits: {
-        cpu: 400,
-        memory: 253,
-      },
-    },
+    // {
+    //   node: 'node3',
+    //   pod: 'checkoutservice-59c7c794b9-8jv2j',
+    //   usage: {
+    //     cpu: 3.246622,
+    //     memory: 48.0390625,
+    //   },
+    //   percentUsage: {
+    //     cpu: 0.008116555,
+    //     memory: 0.18987771739130435,
+    //     cpuAndMemory: 0.09899713619565217,
+    //   },
+    //   requested: {
+    //     cpu: 110,
+    //     memory: 104,
+    //   },
+    //   limits: {
+    //     cpu: 400,
+    //     memory: 253,
+    //   },
+    // },
+    // {
+    //   node: 'node2',
+    //   pod: 'checkoutservice-59c7c794b9-kfhn7',
+    //   usage: {
+    //     cpu: 2.827604,
+    //     memory: 48.35546875,
+    //   },
+    //   percentUsage: {
+    //     cpu: 0.00706901,
+    //     memory: 0.19112833498023715,
+    //     cpuAndMemory: 0.09909867249011857,
+    //   },
+    //   requested: {
+    //     cpu: 110,
+    //     memory: 104,
+    //   },
+    //   limits: {
+    //     cpu: 400,
+    //     memory: 253,
+    //   },
+    // },
   ],
   currencyservice: [
     {
@@ -160,15 +160,57 @@ export const DummyDeployments: DeploymentReplicaPodsMetrics = {
   ],
   frontend: [
     {
-      node: 'gke-cluster-2-pool-1-65f94896-zhc4',
-      pod: 'frontend-54848df4db-nrw9s',
+      node: 'gke-cluster-2-pool-1-fd317d52-b6qq',
+      pod: 'frontend-6b8cdfd545-xssxw',
       usage: {
         cpu: 209.725584,
         memory: 253.30078125,
       },
       percentUsage: {
-        cpu: 0.6990852799999998,
-        memory: 0.803599925889328,
+        cpu: 0.7,
+        memory: 0.8,
+        cpuAndMemory: 0.666342602944664,
+      },
+      requested: {
+        cpu: 60.00000000000001,
+        memory: 104,
+      },
+      limits: {
+        cpu: 300.00000000000006,
+        memory: 253,
+      },
+    },
+    {
+      node: 'gke-cluster-2-pool-1-3f5f0212-dl7w',
+      pod: 'frontend-6b8cdfd545-c8pwc',
+      usage: {
+        cpu: 209.725584,
+        memory: 253.30078125,
+      },
+      percentUsage: {
+        cpu: 0.7,
+        memory: 0.8,
+        cpuAndMemory: 0.666342602944664,
+      },
+      requested: {
+        cpu: 60.00000000000001,
+        memory: 104,
+      },
+      limits: {
+        cpu: 300.00000000000006,
+        memory: 253,
+      },
+    },
+    {
+      node: 'gke-cluster-2-pool-1-b4756432-52vr',
+      pod: 'frontend-6b8cdfd545-8kbf2',
+      usage: {
+        cpu: 209.725584,
+        memory: 253.30078125,
+      },
+      percentUsage: {
+        cpu: 0.7,
+        memory: 0.8,
         cpuAndMemory: 0.666342602944664,
       },
       requested: {
@@ -399,15 +441,15 @@ export const DummyDeployments: DeploymentReplicaPodsMetrics = {
   ],
   recommendationservice: [
     {
-      node: 'node3',
-      pod: 'recommendationservice-7cdb6d5ff8-tlf8s',
+      node: 'gke-cluster-2-pool-1-b4756432-52vr',
+      pod: 'recommendationservice-5575864468-xjq8j',
       usage: {
         cpu: 8.953722,
         memory: 80.3671875,
       },
       percentUsage: {
         cpu: 0.022384305000000004,
-        memory: 0.13976902173913044,
+        memory: 0.83976902173913044,
         cpuAndMemory: 0.08107666336956522,
       },
       requested: {
@@ -420,8 +462,8 @@ export const DummyDeployments: DeploymentReplicaPodsMetrics = {
       },
     },
     {
-      node: 'node2',
-      pod: 'recommendationservice-7cdb6d5ff8-z7dwc',
+      node: 'gke-cluster-2-pool-1-3f5f0212-dl7w',
+      pod: 'recommendationservice-5575864468-dkpn6',
       usage: {
         cpu: 8.728896,
         memory: 80.10546875,

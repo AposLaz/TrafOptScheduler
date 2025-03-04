@@ -6,6 +6,8 @@ import { Config } from '../config/config';
 import { logger } from '../config/logger';
 import { FileSystemHandler } from '../fileSystem';
 import { getPodNodeResources } from '../utils';
+import { OptiBalancer } from './optiBalancer';
+import { DummyDeployments } from '../../tests/data/dummy/deployments';
 
 /**
  * Setup the entire application
@@ -33,17 +35,21 @@ export const TrafficScheduler = async () => {
     // });
 
     // Get the kubernetes manager
-    const k8sManager = new KubernetesAdapterImpl();
+    const k8sAdapter = new KubernetesAdapterImpl();
+    // do not block
+    k8sAdapter.addLocalityLabels();
 
     // Get the prometheus manager
-    const prometheusManager = new PrometheusAdapterImpl();
+    const promAdapter = new PrometheusAdapterImpl();
+
+    const optiBalancer = new OptiBalancer(k8sAdapter, promAdapter, Config.metrics.type);
 
     const fileSystem = new FileSystemHandler();
 
-    const zonesNodes = await k8sManager.getClusterAzTopology();
+    const zonesNodes = await k8sAdapter.getClusterAzTopology();
 
     // Get the latency of all nodes in the cluster
-    const nodesLatency = await prometheusManager.getNodesLatency();
+    const nodesLatency = await promAdapter.getNodesLatency();
 
     if (!nodesLatency) {
       logger.error('No nodes latency found');
@@ -54,7 +60,7 @@ export const TrafficScheduler = async () => {
     for (const namespace of Config.NAMESPACES) {
       try {
         // Get the deployments in the namespace
-        const deployments = await k8sManager.getDeploymentsMetrics(namespace);
+        const deployments = DummyDeployments; // await k8sAdapter.getDeploymentsMetrics(namespace);
 
         // If no deployments are found
         if (!deployments || Object.keys(deployments).length === 0) {
@@ -63,7 +69,7 @@ export const TrafficScheduler = async () => {
         }
 
         // Get the critical deployments (deployments that are above the threshold)
-        const loadDeployment = k8sManager.getCriticalDeployments(deployments);
+        const loadDeployment = k8sAdapter.getCriticalDeployments(deployments);
 
         console.log(loadDeployment.lowLoadedDeployments);
         // If there are deployments that are below the threshold
@@ -72,28 +78,20 @@ export const TrafficScheduler = async () => {
             operation: 'LowLoadDeployments',
           });
 
-          for (const [deployment, node] of Object.entries(
-            loadDeployment.lowLoadedDeployments
-          )) {
+          for (const [deployment, node] of Object.entries(loadDeployment.lowLoadedDeployments)) {
             const replicaPods = deployments[deployment];
 
             if (replicaPods.length === 1) {
-              loggerOperation.info(
-                `Deployment "${deployment}" has a single replica. Scaling down is not possible`
-              );
+              loggerOperation.info(`Deployment "${deployment}" has a single replica. Scaling down is not possible`);
               continue;
             }
             // Get the average usage of all nodes in the deployment
-            const sumDeploymentClusterUsage = node.reduce(
-              (preUsage, currentUsage) => {
-                return preUsage + currentUsage.avgMetric;
-              },
-              0
-            );
+            const sumDeploymentClusterUsage = node.reduce((preUsage, currentUsage) => {
+              return preUsage + currentUsage.avgMetric;
+            }, 0);
 
             // Calculate the average usage of the deployment
-            const avgDeploymentClusterUsage =
-              sumDeploymentClusterUsage / node.length;
+            const avgDeploymentClusterUsage = sumDeploymentClusterUsage / node.length;
 
             // If the average usage is above the threshold
             if (avgDeploymentClusterUsage < Config.metrics.lowerThreshold) {
@@ -105,7 +103,7 @@ export const TrafficScheduler = async () => {
                 \n##############################################################################`
               );
               // get all nodes metrics
-              const nodeMetrics = await k8sManager.getNodesMetrics();
+              const nodeMetrics = await k8sAdapter.getNodesMetrics();
 
               // Scale down
               new OptiScaler(
@@ -118,7 +116,7 @@ export const TrafficScheduler = async () => {
                   zonesNodes,
                   nodesLatency,
                 },
-                { prom: prometheusManager, k8s: k8sManager, fileSystem }
+                { prom: promAdapter, k8s: k8sAdapter, fileSystem }
               ).Execute();
             }
           }
@@ -126,48 +124,37 @@ export const TrafficScheduler = async () => {
 
         // If there are deployments that are above the threshold
         if (Object.keys(loadDeployment.highLoadedDeployments).length > 0) {
-          for (const [deployment, node] of Object.entries(
-            loadDeployment.highLoadedDeployments
-          )) {
-            const loggerOperation = logger.child({
-              operation: 'HighLoadDeployments',
-            });
+          for (const [deployment, node] of Object.entries(loadDeployment.highLoadedDeployments)) {
+            const loggerOperation = logger.child({ operation: 'HighLoadDeployments' });
 
             // Get the average usage of all nodes in the deployment
-            const sumDeploymentClusterUsage = node.reduce(
-              (preUsage, currentUsage) => {
-                return preUsage + currentUsage.avgMetric;
-              },
-              0
-            );
+            const sumDeploymentClusterUsage = node.reduce((preUsage, currentUsage) => {
+              return preUsage + currentUsage.avgMetric;
+            }, 0);
 
             // Calculate the average usage of the deployment
-            const avgDeploymentClusterUsage =
-              sumDeploymentClusterUsage / node.length;
+            const avgDeploymentClusterUsage = sumDeploymentClusterUsage / node.length;
+
+            // Get the replica pods of the deployment
+            const replicaPods = deployments[deployment];
 
             // If the average usage is above the threshold
             if (avgDeploymentClusterUsage > Config.metrics.upperThreshold) {
-              // Get the replica pods of the deployment
-              const replicaPods = deployments[deployment];
-
               // get pods usage or requested resources
               const podResources = getPodNodeResources(replicaPods[0]);
 
               // get all nodes with sufficient resources
-              const nodeMetrics =
-                await k8sManager.getNodesWithSufficientResources(podResources);
+              const nodeMetrics = await k8sAdapter.getNodesWithSufficientResources(podResources);
 
               if (nodeMetrics.length === 0) {
                 continue;
               }
 
-              console.log(replicaPods);
-              console.log(
-                `run optiScaler for Deployment ${deployment} in node ${node}`
-              );
+              // console.log(replicaPods);
+              console.log(`run optiScaler for Deployment ${deployment} in node ${node}`);
 
-              console.log(podResources);
-              console.log(nodeMetrics);
+              // console.log(podResources);
+              // console.log(nodeMetrics);
 
               loggerOperation.info(
                 `\n#############################################################################
@@ -176,31 +163,40 @@ export const TrafficScheduler = async () => {
               );
 
               // fault tolerance
-              new OptiScaler(
-                ScaleAction.UP,
-                {
-                  deployment,
-                  namespace,
-                  replicaPods,
-                  nodeMetrics,
-                  zonesNodes,
-                  nodesLatency,
-                },
-                { prom: prometheusManager, k8s: k8sManager, fileSystem }
-              ).Execute();
+              // new OptiScaler(
+              //   ScaleAction.UP,
+              //   {
+              //     deployment,
+              //     namespace,
+              //     replicaPods,
+              //     nodeMetrics,
+              //     zonesNodes,
+              //     nodesLatency,
+              //   },
+              //   { prom: promAdapter, k8s: k8sAdapter, fileSystem }
+              // ).Execute();
 
               continue;
             }
+            loggerOperation.info(
+              `\n#############################################################################
+                \nDeployment "${deployment}" is above the threshold. Traffic Split
+                \n##############################################################################`
+            );
+
+            console.log(node);
 
             // For each node
-            node.forEach((n) => {
-              // If the node is above the threshold
-              if (n.avgMetric > Config.metrics.upperThreshold) {
-                console.log(
-                  `run optiBalancer for Deployment ${deployment} to replica pods in node ${node}`
-                );
-              }
-            });
+            // node.forEach((n) => {
+            // If the node is above the threshold
+            // if (n.avgMetric > Config.metrics.upperThreshold) {
+            //   console.log(
+            //     `run optiBalancer for Deployment ${deployment} to replica pods in node ${node}`
+            //   );
+            // }
+            optiBalancer.Execute({ deployment, deployMetrics: deployments, namespace, replicaPods, nodesLatency });
+
+            // });
           }
         }
       } catch (err: unknown) {

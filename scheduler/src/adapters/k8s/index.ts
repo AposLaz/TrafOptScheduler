@@ -34,27 +34,15 @@ export class KubernetesAdapterImpl implements KubernetesAdapter {
   private metricsType: ConfigMetrics = Config.metrics;
 
   constructor() {
-    const metricClient = K8sClientApiFactory.getClient(
-      K8sClientTypeApi.METRICS
-    ) as k8s.Metrics;
+    const metricClient = K8sClientApiFactory.getClient(K8sClientTypeApi.METRICS) as k8s.Metrics;
 
-    const coreClient = K8sClientApiFactory.getClient(
-      K8sClientTypeApi.CORE
-    ) as k8s.CoreV1Api;
+    const coreClient = K8sClientApiFactory.getClient(K8sClientTypeApi.CORE) as k8s.CoreV1Api;
 
-    const objectClient = K8sClientApiFactory.getClient(
-      K8sClientTypeApi.OBJECTS
-    ) as k8s.KubernetesObjectApi;
+    const objectClient = K8sClientApiFactory.getClient(K8sClientTypeApi.OBJECTS) as k8s.KubernetesObjectApi;
 
-    const appsClient = K8sClientApiFactory.getClient(
-      K8sClientTypeApi.APPS
-    ) as k8s.AppsV1Api;
+    const appsClient = K8sClientApiFactory.getClient(K8sClientTypeApi.APPS) as k8s.AppsV1Api;
 
-    this.metrics = new MetricsService(
-      metricClient,
-      coreClient,
-      this.metricsType.weights
-    );
+    this.metrics = new MetricsService(metricClient, coreClient, this.metricsType.weights);
     this.namespaceAdapter = new NamespaceService(coreClient);
     this.resource = new ResourceService(objectClient);
     this.deployment = new DeploymentService(appsClient);
@@ -62,6 +50,19 @@ export class KubernetesAdapterImpl implements KubernetesAdapter {
     this.node = new NodeService(coreClient);
   }
 
+  async addLocalityLabels() {
+    const nodes = await this.node.getNodes();
+
+    const labels = k8sMapper.toNodeLocalityLabels(nodes);
+    const promise = labels.map(async (n) => {
+      const node = Object.values(n);
+      await this.node.addLabels(node[0], n);
+    });
+
+    Promise.all(promise).catch((error) => {
+      throw new Error('Error updating nodes:', error);
+    });
+  }
   /**
    * Apply a list of resources to the kubernetes cluster.
    *
@@ -116,11 +117,7 @@ export class KubernetesAdapterImpl implements KubernetesAdapter {
    * @param ns - The namespace of the deployment.
    * @param nodes - The nodes to schedule the pod on.
    */
-  async createReplicaPodToSpecificNode(
-    deploymentName: string,
-    ns: string,
-    nodes: string[]
-  ) {
+  async createReplicaPodToSpecificNode(deploymentName: string, ns: string, nodes: string[]) {
     // Taint the nodes so that the deployment will not schedule a pod on it.
     const taint = k8sMapper.toNodeTaints(deploymentName);
     await this.node.addTaint(nodes, taint);
@@ -133,11 +130,7 @@ export class KubernetesAdapterImpl implements KubernetesAdapter {
     await this.node.removeTaint(nodes, taintKey);
   }
 
-  async removeReplicaPodToSpecificNode(
-    deploymentName: string,
-    pod: string,
-    ns: string
-  ) {
+  async removeReplicaPodToSpecificNode(deploymentName: string, pod: string, ns: string) {
     // delete a pod from a specific node
     await this.pod.deletePod(pod, ns);
 
@@ -150,9 +143,10 @@ export class KubernetesAdapterImpl implements KubernetesAdapter {
       upper: this.metricsType.upperThreshold,
       lower: this.metricsType.lowerThreshold,
     };
-    const resourcePods = ThresholdStrategyFactory.getStrategy(
-      this.metricsType.type
-    ).evaluateThreshold(deploy, threshold);
+    const resourcePods = ThresholdStrategyFactory.getStrategy(this.metricsType.type).evaluateThreshold(
+      deploy,
+      threshold
+    );
 
     return resourcePods;
   }
@@ -165,9 +159,7 @@ export class KubernetesAdapterImpl implements KubernetesAdapter {
    * @returns A promise that resolves to a map of deployment names to a list of pods that are part of that deployment,
    *          along with the metrics for each pod. If there is an error during the fetch, the promise will reject with the error.
    */
-  async getDeploymentsMetrics(
-    ns: string
-  ): Promise<DeploymentReplicaPodsMetrics | undefined> {
+  async getDeploymentsMetrics(ns: string): Promise<DeploymentReplicaPodsMetrics | undefined> {
     // Fetch all deployments, replica sets, and pods in the namespace
     const deploys = await this.getPodsPerDeploymentByNs(ns);
 
@@ -224,9 +216,7 @@ export class KubernetesAdapterImpl implements KubernetesAdapter {
    *          the node. Nodes that do not have sufficient resources to create a new replica pod are excluded from the
    *          returned array.
    */
-  async getNodesWithSufficientResources(
-    pod: Resources
-  ): Promise<NodeMetrics[]> {
+  async getNodesWithSufficientResources(pod: Resources): Promise<NodeMetrics[]> {
     // Get the current metrics for all nodes in the cluster
     const nodes = await this.metrics.getNodesMetrics();
 
@@ -266,9 +256,7 @@ export class KubernetesAdapterImpl implements KubernetesAdapter {
    * @returns A promise that resolves to a map of deployment names to a list of pods that are part of that deployment.
    *          If there is an error during the fetch, the promise will reject with the error.
    */
-  async getPodsPerDeploymentByNs(
-    ns: string
-  ): Promise<Record<string, DeploymentPodMapType[]> | undefined> {
+  async getPodsPerDeploymentByNs(ns: string): Promise<Record<string, DeploymentPodMapType[]> | undefined> {
     // Fetch all deployments, replica sets, and pods in the namespace
     const [deployments, replicaSets, pods] = await Promise.all([
       // Get all deployments in the namespace
@@ -298,10 +286,7 @@ export class KubernetesAdapterImpl implements KubernetesAdapter {
 
       // Get ReplicaSets owned by this Deployment
       const rs = replicaSets.filter((rs) =>
-        rs.metadata?.ownerReferences?.some(
-          (owner) =>
-            owner.kind === 'Deployment' && owner.name === deploymentName
-        )
+        rs.metadata?.ownerReferences?.some((owner) => owner.kind === 'Deployment' && owner.name === deploymentName)
       );
 
       // Add ReplicaSet names to the Deployment map
@@ -310,10 +295,7 @@ export class KubernetesAdapterImpl implements KubernetesAdapter {
 
         // Get Pods owned by this ReplicaSet
         const podRs = pods.filter((pod) =>
-          pod.metadata?.ownerReferences?.some(
-            (owner) =>
-              owner.kind === 'ReplicaSet' && owner.name === replicaSetName
-          )
+          pod.metadata?.ownerReferences?.some((owner) => owner.kind === 'ReplicaSet' && owner.name === replicaSetName)
         );
 
         // Add Pod names to the Deployment map
@@ -327,9 +309,7 @@ export class KubernetesAdapterImpl implements KubernetesAdapter {
         });
 
         // clear unknown pods
-        podsByDeployment[deploymentName].filter(
-          (p) => p.node !== 'unknown' && p.pod !== 'unknown'
-        );
+        podsByDeployment[deploymentName].filter((p) => p.node !== 'unknown' && p.pod !== 'unknown');
       }
     }
 

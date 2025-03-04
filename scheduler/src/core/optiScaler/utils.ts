@@ -1,8 +1,5 @@
 import type { CandidateWeights } from './types';
-import type {
-  GraphDataRps,
-  NodesLatency,
-} from '../../adapters/prometheus/types';
+import type { GraphDataRps, NodesLatency } from '../../adapters/prometheus/types';
 
 export const calculateWeights = (
   upstream: GraphDataRps[],
@@ -25,7 +22,7 @@ export const calculateWeights = (
     return acc + n.rps;
   }, 0);
 
-  console.log('perNodeRps', perNodeRps);
+  // console.log('perNodeRps', perNodeRps);
 
   const normalizedRequestPerSeconds = perNodeRps.map(({ node, rps }) => {
     const normRps = (totalRps - rps) / totalRps;
@@ -35,7 +32,7 @@ export const calculateWeights = (
     };
   });
 
-  console.log('normalizedRequestPerSeconds', normalizedRequestPerSeconds);
+  // console.log('normalizedRequestPerSeconds', normalizedRequestPerSeconds);
   const normalizedLatency = nodesLatency.map(({ from, to, latency }) => {
     const normLat = latency / totalLatency;
     return {
@@ -45,19 +42,15 @@ export const calculateWeights = (
     };
   });
 
-  console.log('normalizedLatency', normalizedLatency);
+  // console.log('normalizedLatency', normalizedLatency);
 
   const weights: { from: string; to: string; weight: number }[] = [];
 
   // Iterate over all nodes including self-referencing cases
   ftNodes.forEach((from) => {
     ftNodes.forEach((to) => {
-      const normRps =
-        normalizedRequestPerSeconds.find((n) => n.node === from)
-          ?.normalizedRps ?? 0;
-      const normLatency =
-        normalizedLatency.find((n) => n.from === from && n.to === to)
-          ?.normalizedLatency ?? 0;
+      const normRps = normalizedRequestPerSeconds.find((n) => n.node === from)?.normalizedRps ?? 0;
+      const normLatency = normalizedLatency.find((n) => n.from === from && n.to === to)?.normalizedLatency ?? 0;
 
       // Ensure even self-referencing weights are calculated
       weights.push({

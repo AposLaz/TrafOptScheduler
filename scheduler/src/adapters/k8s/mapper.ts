@@ -104,6 +104,11 @@ const k8sMapper = {
     key: deploymentName, // key is the deployment name
     effect: TaintEffects.NO_SCHEDULE,
   }),
+  toNodeLocalityLabels: (nodes: k8s.V1Node[]): { [key: string]: string }[] => {
+    return nodes.map((node) => ({
+      'topology.istio.io/subzone': node.metadata!.name!,
+    }));
+  },
   toNodeLatency: (
     cluster: ClusterTopology[],
     latencies: LatencyProviderType[]

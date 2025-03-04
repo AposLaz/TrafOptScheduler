@@ -1,0 +1,161 @@
+import { MetricsType } from '../../adapters/k8s/enums';
+
+import type { DistributedPercentTraffic, NormalizedTraffic, OptiScalerType, TrafficWeights } from './types';
+import type { KubernetesAdapterImpl } from '../../adapters/k8s';
+import type { PodMetrics } from '../../adapters/k8s/types';
+import type { PrometheusAdapterImpl } from '../../adapters/prometheus';
+import type { GraphDataRps, NodesLatency } from '../../adapters/prometheus/types';
+
+export class OptiBalancer {
+  private k8s: KubernetesAdapterImpl;
+  private prom: PrometheusAdapterImpl;
+  private metricType: MetricsType;
+
+  constructor(k8s: KubernetesAdapterImpl, prometheus: PrometheusAdapterImpl, metricType: MetricsType) {
+    this.k8s = k8s;
+    this.prom = prometheus;
+    this.metricType = metricType;
+  }
+
+  async Execute(data: OptiScalerType) {
+    const upstream = await this.prom.getUpstreamPodGraph(data.deployment, data.namespace);
+
+    if (upstream && upstream.length > 0) {
+      const podsPerNode = this.groupPodsByNode(data.replicaPods);
+      const uniqueNodes = Array.from(podsPerNode.keys());
+
+      const totalReplicas = data.replicaPods.length;
+      const totalLoad = this.totalLoad(data.replicaPods, this.metricType);
+      const totalLatency = uniqueNodes.reduce((acc, n) => acc + this.totalLatency(upstream, n, data.nodesLatency), 0);
+
+      console.log('total latency', totalLatency);
+      console.log('total load', totalLoad);
+      console.log('total replicas', totalReplicas);
+
+      const weights: TrafficWeights[] = [];
+
+      for (const node of uniqueNodes) {
+        const nodesLatency = this.perNodeLatency(upstream, node, data.nodesLatency);
+
+        const podsWithinNode = podsPerNode.get(node)!;
+        const normalizedPodsLength = podsWithinNode.length / totalReplicas;
+
+        const nodeLoad = this.totalLoad(podsWithinNode, this.metricType);
+        const loadRatio = isNaN(nodeLoad / totalLoad) || nodeLoad / totalLoad >= 1 ? 1 : nodeLoad / totalLoad;
+        const normalizedLoad = Math.min(0.9, loadRatio);
+
+        for (const nl of nodesLatency) {
+          const latencyRatio =
+            isNaN(nl.latency / totalLatency) || nl.latency / totalLatency < 0 ? 0 : nl.latency / totalLatency;
+          const normalizedLatency = Math.min(0.9, latencyRatio);
+
+          const weight = (1 - normalizedLatency) * normalizedPodsLength * (1 - normalizedLoad);
+
+          weights.push({
+            from: nl.from,
+            to: nl.to,
+            weight,
+          });
+        }
+      }
+
+      console.log('weights', weights);
+
+      const totalWeights = weights.reduce((acc, n) => acc + n.weight, 0);
+
+      console.log('total weights', totalWeights);
+      // Compute Traffic Distribution
+      const trafficDistribution = weights.map((w) => ({
+        from: w.from,
+        to: w.to,
+        rawTraffic: Math.max(0.1, w.weight / totalWeights), // Ensure minimum 0.1
+      }));
+
+      console.log('traffic distribution', trafficDistribution);
+
+      // Normalize Traffic Distribution
+      const totalTraffic = trafficDistribution.reduce((acc, t) => acc + t.rawTraffic, 0);
+
+      console.log('total traffic', totalTraffic);
+      const normalizedTraffic: NormalizedTraffic[] = trafficDistribution.map((t) => ({
+        from: t.from,
+        to: t.to,
+        normalizedTraffic: t.rawTraffic / totalTraffic, // Normalize to sum up to 1
+      }));
+
+      console.log('normalized traffic', normalizedTraffic);
+
+      const finalTrafficDistribution = this.convertTrafficDistributionToPercentages(normalizedTraffic);
+      console.log('final traffic distribution', finalTrafficDistribution);
+    }
+  }
+
+  private convertTrafficDistributionToPercentages(normalizedTraffic: NormalizedTraffic[]): DistributedPercentTraffic[] {
+    let trafficAsPercentage = normalizedTraffic.map((t) => ({
+      from: t.from,
+      to: t.to,
+      percentage: Math.floor(t.normalizedTraffic * 100), // Round down initially
+      fraction: (t.normalizedTraffic * 100) % 1, // Store the fraction part for later adjustment
+    }));
+
+    const totalPercentage = trafficAsPercentage.reduce((acc, t) => acc + t.percentage, 0);
+    const deficit = 100 - totalPercentage; // Remaining percentage points to distribute
+
+    // Step 3: Distribute remaining points to highest fraction values
+    trafficAsPercentage
+      .sort((a, b) => b.fraction - a.fraction) // Sort in descending order of fraction part
+      .slice(0, deficit) // Pick the top 'deficit' items
+      .forEach((t) => t.percentage++); // Increment by 1
+
+    const finalTrafficDistribution = trafficAsPercentage.map(({ from, to, percentage }) => ({
+      from,
+      to,
+      percentage,
+    }));
+
+    return finalTrafficDistribution;
+  }
+
+  private totalLoad(rs: PodMetrics[], metric: MetricsType) {
+    switch (metric) {
+      case MetricsType.CPU:
+        return rs.reduce((acc, n) => acc + n.percentUsage.cpu, 0);
+      case MetricsType.CPU_MEMORY:
+        return rs.reduce((acc, n) => acc + n.percentUsage.cpu + n.percentUsage.memory, 0);
+      default:
+        return rs.reduce((acc, n) => acc + n.percentUsage.memory, 0);
+    }
+  }
+
+  private totalLatency(graph: GraphDataRps[], dNode: string, nodesLatency: NodesLatency[]) {
+    const latencyTo = nodesLatency.filter((n) => n.to === dNode);
+
+    const latencyFromTo = latencyTo.filter((node) => graph.some((n) => n.node === node.from));
+
+    console.log(latencyFromTo);
+
+    return latencyFromTo.reduce((acc, n) => acc + n.latency, 0);
+  }
+
+  private perNodeLatency(graph: GraphDataRps[], dNode: string, nodesLatency: NodesLatency[]) {
+    const latencyTo = nodesLatency.filter((n) => n.to === dNode);
+
+    const latencyFromTo = latencyTo.filter((node) => graph.some((n) => n.node === node.from));
+
+    return latencyFromTo;
+  }
+
+  private groupPodsByNode(rs: PodMetrics[]) {
+    // Create a Map where the key is the node, and the value is an array of pods
+    const nodeMap = new Map<string, PodMetrics[]>();
+
+    for (const pod of rs) {
+      if (!nodeMap.has(pod.node)) {
+        nodeMap.set(pod.node, []);
+      }
+      nodeMap.get(pod.node)!.push(pod);
+    }
+
+    return nodeMap;
+  }
+}
