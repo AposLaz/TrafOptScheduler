@@ -12,14 +12,7 @@ import { K8sClientApiFactory } from '../../config/k8sClient';
 import { logger } from '../../config/logger';
 
 import type { KubernetesAdapter } from '../kubernetes.interface';
-import type {
-  ClusterAzTopology,
-  DeploymentPodMapType,
-  NodeMetrics,
-  PodMetrics,
-  Resources,
-  ThresholdType,
-} from './types';
+import type { ClusterTopology, DeploymentPodMapType, NodeMetrics, PodMetrics, Resources, ThresholdType } from './types';
 import type { ConfigMetrics } from './types';
 import type { DeploymentReplicaPodsMetrics } from '../../types';
 import type * as k8s from '@kubernetes/client-node';
@@ -42,9 +35,11 @@ export class KubernetesAdapterImpl implements KubernetesAdapter {
 
     const appsClient = K8sClientApiFactory.getClient(K8sClientTypeApi.APPS) as k8s.AppsV1Api;
 
+    const customObjectClient = K8sClientApiFactory.getClient(K8sClientTypeApi.CUSTOM_OBJECTS) as k8s.CustomObjectsApi;
+
     this.metrics = new MetricsService(metricClient, coreClient, this.metricsType.weights);
     this.namespaceAdapter = new NamespaceService(coreClient);
-    this.resource = new ResourceService(objectClient);
+    this.resource = new ResourceService(objectClient, customObjectClient);
     this.deployment = new DeploymentService(appsClient);
     this.pod = new PodService(coreClient);
     this.node = new NodeService(coreClient);
@@ -77,6 +72,10 @@ export class KubernetesAdapterImpl implements KubernetesAdapter {
    */
   async applyResources(resources: k8s.KubernetesObject[]) {
     return this.resource.apply(resources);
+  }
+
+  async applyCustomResource(resource: k8s.KubernetesObject) {
+    return this.resource.applyCustomObject(resource);
   }
 
   /**
@@ -176,21 +175,12 @@ export class KubernetesAdapterImpl implements KubernetesAdapter {
     return k8sMapper.toDeploymentMetrics(deploys, podMetrics);
   }
 
-  async getClusterAzTopology() {
+  async getClusterTopology(): Promise<ClusterTopology[]> {
     const nodes = await this.node.getNodes();
 
     const nodesTopology = k8sMapper.toClusterTopology(nodes);
 
-    const assignNodesToZones: ClusterAzTopology = {};
-
-    nodesTopology.forEach((node) => {
-      assignNodesToZones[node.zone] = assignNodesToZones[node.zone] || {
-        nodes: [],
-      };
-      assignNodesToZones[node.zone].nodes.push(node.node);
-    });
-
-    return assignNodesToZones;
+    return nodesTopology;
   }
 
   /**

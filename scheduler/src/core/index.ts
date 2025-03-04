@@ -8,6 +8,7 @@ import { FileSystemHandler } from '../fileSystem';
 import { getPodNodeResources } from '../utils';
 import { OptiBalancer } from './optiBalancer';
 import { DummyDeployments } from '../../tests/data/dummy/deployments';
+import { k8sMapper } from '../adapters/k8s/mapper';
 
 /**
  * Setup the entire application
@@ -46,7 +47,8 @@ export const TrafficScheduler = async () => {
 
     const fileSystem = new FileSystemHandler();
 
-    const zonesNodes = await k8sAdapter.getClusterAzTopology();
+    const clusterTopology = await k8sAdapter.getClusterTopology();
+    const zonesNodes = k8sMapper.toClusterAzTopology(clusterTopology);
 
     // Get the latency of all nodes in the cluster
     const nodesLatency = await promAdapter.getNodesLatency();
@@ -194,7 +196,16 @@ export const TrafficScheduler = async () => {
             //     `run optiBalancer for Deployment ${deployment} to replica pods in node ${node}`
             //   );
             // }
-            optiBalancer.Execute({ deployment, deployMetrics: deployments, namespace, replicaPods, nodesLatency });
+            const optiBalancerInput = {
+              deployment,
+              deployMetrics: deployments,
+              namespace,
+              replicaPods,
+              nodesLatency,
+              clusterTopology,
+            };
+
+            optiBalancer.Execute(optiBalancerInput);
 
             // });
           }

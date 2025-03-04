@@ -3,6 +3,7 @@ export enum K8sClientTypeApi {
   CORE = 'core',
   OBJECTS = 'objects',
   METRICS = 'metrics',
+  CUSTOM_OBJECTS = 'custom-objects',
 }
 
 export enum MetricsType {

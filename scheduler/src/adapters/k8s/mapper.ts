@@ -1,11 +1,7 @@
 import { convertResourcesStringToNumber } from '../../common/helpers';
 import { TaintEffects } from '../../enums';
 
-import type {
-  DeploymentReplicaPods,
-  LatencyProviderType,
-  MetricWeights,
-} from './types';
+import type { ClusterAzTopology, DeploymentReplicaPods, LatencyProviderType, MetricWeights } from './types';
 import type {
   ClusterTopology,
   DeploymentNotReadyFilesystem,
@@ -28,6 +24,19 @@ const k8sMapper = {
       };
     });
   },
+  toClusterAzTopology: (cluster: ClusterTopology[]): ClusterAzTopology => {
+    const assignNodesToZones: ClusterAzTopology = {};
+
+    cluster.forEach((node) => {
+      assignNodesToZones[node.zone] = assignNodesToZones[node.zone] || {
+        nodes: [],
+      };
+      assignNodesToZones[node.zone].nodes.push(node.node);
+    });
+
+    return assignNodesToZones;
+  },
+
   /**
    * Map Deployments to its replica pod's metrics
    *
@@ -67,32 +76,22 @@ const k8sMapper = {
    *      ],
    *    }
    */
-  toDeploymentMetrics: (
-    deployments: DeploymentReplicaPods,
-    podMetrics: PodMetrics[]
-  ): DeploymentReplicaPodsMetrics => {
+  toDeploymentMetrics: (deployments: DeploymentReplicaPods, podMetrics: PodMetrics[]): DeploymentReplicaPodsMetrics => {
     const podMetricsMap = new Map(podMetrics.map((m) => [m.pod, m]));
 
     return Object.fromEntries(
       Object.entries(deployments).map(([deployment, pods]) => [
         deployment,
-        pods
-          .map((pod) => podMetricsMap.get(pod.pod))
-          .filter(Boolean) as PodMetrics[],
+        pods.map((pod) => podMetricsMap.get(pod.pod)).filter(Boolean) as PodMetrics[],
       ])
     );
   },
-  toDeploymentStore: (
-    deployment: DeploymentPlacementModel
-  ): DeploymentNotReadyFilesystem => ({
+  toDeploymentStore: (deployment: DeploymentPlacementModel): DeploymentNotReadyFilesystem => ({
     deploymentName: deployment.deploymentName, // key is the pod name
     namespace: deployment.namespace,
     deletePod: deployment.deletePod,
   }),
-  toNamespace: (
-    ns: string,
-    labels?: { [key: string]: string }
-  ): k8s.V1Namespace => ({
+  toNamespace: (ns: string, labels?: { [key: string]: string }): k8s.V1Namespace => ({
     metadata: {
       name: ns,
       labels: {
@@ -109,10 +108,7 @@ const k8sMapper = {
       'topology.istio.io/subzone': node.metadata!.name!,
     }));
   },
-  toNodeLatency: (
-    cluster: ClusterTopology[],
-    latencies: LatencyProviderType[]
-  ): NodeLatency[] => {
+  toNodeLatency: (cluster: ClusterTopology[], latencies: LatencyProviderType[]): NodeLatency[] => {
     const allLatencies: NodeLatency[] = [];
 
     // Ensure all node pairs are accounted for
@@ -121,10 +117,7 @@ const k8sMapper = {
         // Find the latency for the specific zone pair
         const matchingLatency = latencies.flatMap((region) =>
           Object.values(region).flatMap((zoneLatencies: ZoneLatency[]) =>
-            zoneLatencies.filter(
-              (latency) =>
-                latency.from === fromNode.zone && latency.to === toNode.zone
-            )
+            zoneLatencies.filter((latency) => latency.from === fromNode.zone && latency.to === toNode.zone)
           )
         )[0]; // Take the first match if found
 
@@ -148,10 +141,7 @@ const k8sMapper = {
 
       const allocatable = {
         cpu: convertResourcesStringToNumber(node.Node.status!.allocatable!.cpu),
-        memory:
-          convertResourcesStringToNumber(
-            node.Node.status!.allocatable!.memory
-          ) / 1024,
+        memory: convertResourcesStringToNumber(node.Node.status!.allocatable!.memory) / 1024,
       };
 
       const requested = {
@@ -166,9 +156,7 @@ const k8sMapper = {
 
       return {
         name: node.Node.metadata!.name as string,
-        zone:
-          node.Node.metadata!.labels!['topology.kubernetes.io/zone'] ??
-          'no-zone',
+        zone: node.Node.metadata!.labels!['topology.kubernetes.io/zone'] ?? 'no-zone',
         capacity: capacity,
         //Allocatable represents the resources of a node that are available for scheduling. Defaults to Capacity.
         allocatable: allocatable,
@@ -181,10 +169,7 @@ const k8sMapper = {
       };
     });
   },
-  toPodResources: (
-    pods: k8s.PodStatus[],
-    weights: MetricWeights
-  ): PodMetrics[] => {
+  toPodResources: (pods: k8s.PodStatus[], weights: MetricWeights): PodMetrics[] => {
     // CPU to millicores & RAM to MB
     return pods.map((pod) => {
       const usageCpu = Number(pod.CPU.CurrentUsage) * 1000;
@@ -205,8 +190,7 @@ const k8sMapper = {
         percentUsage: {
           cpu: normalizedCpu,
           memory: normalizedMem,
-          cpuAndMemory:
-            weights.CPU * normalizedCpu + weights.Memory * normalizedMem,
+          cpuAndMemory: weights.CPU * normalizedCpu + weights.Memory * normalizedMem,
         },
         requested: {
           cpu: Number(pod.CPU.RequestTotal) * 1000,

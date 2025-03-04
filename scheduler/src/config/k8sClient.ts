@@ -27,7 +27,7 @@ class K8sClientConfig {
 export class K8sClientApiFactory {
   static getClient(
     type: K8sClientApiFactory
-  ): k8s.AppsV1Api | k8s.CoreV1Api | k8s.KubernetesObjectApi | k8s.Metrics {
+  ): k8s.AppsV1Api | k8s.CoreV1Api | k8s.KubernetesObjectApi | k8s.Metrics | k8s.CustomObjectsApi {
     const kc = K8sClientConfig.getInstance();
 
     switch (type) {
@@ -39,6 +39,8 @@ export class K8sClientApiFactory {
         return k8s.KubernetesObjectApi.makeApiClient(kc);
       case K8sClientTypeApi.METRICS:
         return new k8s.Metrics(kc);
+      case K8sClientTypeApi.CUSTOM_OBJECTS:
+        return kc.makeApiClient(k8s.CustomObjectsApi);
       default:
         throw new Error(
           `Invalid Kubernetes API type provided. Expected one of ${Object.values(K8sClientTypeApi).join(', ')}`

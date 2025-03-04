@@ -11,10 +11,7 @@ import type {
 } from './types';
 
 export const PrometheusMapper = {
-  toDeploymentGraphDataRpsPerNode: (
-    results: PrometheusResults[],
-    namespace: string
-  ): GraphDataRps[] => {
+  toDeploymentGraphDataRpsPerNode: (results: PrometheusResults[], namespace: string): GraphDataRps[] => {
     // Initialize an empty array to store the transformed data.
     const mapGraph = new Map<string, DeploymentGraphRps[]>();
     results.forEach((data) => {
@@ -26,10 +23,8 @@ export const PrometheusMapper = {
         source_workload: podMetrics.source_workload ?? 'unknown',
         source_version: podMetrics.source_version ?? 'unknown', // the version is the node of the source
         source_workload_namespace: namespace,
-        destination_service_name:
-          podMetrics.destination_service_name ?? 'unknown',
-        destination_service_namespace:
-          podMetrics.destination_service_namespace ?? 'unknown',
+        destination_service_name: podMetrics.destination_service_name ?? 'unknown',
+        destination_service_namespace: podMetrics.destination_service_namespace ?? 'unknown',
         destination_version: podMetrics.destination_version ?? 'unknown',
         destination_workload: podMetrics.destination_workload ?? 'unknown',
       };
@@ -47,7 +42,7 @@ export const PrometheusMapper = {
     }));
   },
   toNodesLatency(results: PrometheusResults[]): NodesLatency[] {
-    return results.map((data) => {
+    const nodesLatency = results.map((data) => {
       {
         const nodeMetrics = data.metric as PromNodesLatency;
         console.log(nodeMetrics);
@@ -58,6 +53,23 @@ export const PrometheusMapper = {
         };
       }
     });
+    // Get unique nodes from results
+    const uniqueNodes = new Set<string>();
+    results.forEach((data) => {
+      const nodeMetrics = data.metric as PromNodesLatency;
+      uniqueNodes.add(nodeMetrics.from_node);
+      uniqueNodes.add(nodeMetrics.to_node);
+    });
+
+    // Add rules where each node sends 0% traffic to itself
+    const selfTrafficRules: NodesLatency[] = Array.from(uniqueNodes).map((node) => ({
+      from: node,
+      to: node,
+      latency: 0, // Self-traffic should always be zero
+    }));
+
+    // Combine latency results with self-traffic rules
+    return [...nodesLatency, ...selfTrafficRules];
   },
   // toUpstreamDeploymentGraphDataRps: (
   //   results: PrometheusResults[],
@@ -93,9 +105,7 @@ export const PrometheusMapper = {
   //     destinations,
   //   }));
   // },
-  toPodResourceUsage: (
-    results: PrometheusResults[]
-  ): PodResourceUsageType[] => {
+  toPodResourceUsage: (results: PrometheusResults[]): PodResourceUsageType[] => {
     // Initialize an empty array to store the transformed data.
     const returnResults: PodResourceUsageType[] = [];
 
@@ -113,13 +123,9 @@ export const PrometheusMapper = {
     return returnResults;
   },
   toUpperLowerLimitPods: (pods: PodResourceUsageType[]) => {
-    const aboveThreshold = pods.filter(
-      (pod) => pod.metric >= Config.metrics.upperThreshold
-    );
+    const aboveThreshold = pods.filter((pod) => pod.metric >= Config.metrics.upperThreshold);
 
-    const belowThreshold = pods.filter(
-      (pod) => pod.metric < Config.metrics.upperThreshold
-    );
+    const belowThreshold = pods.filter((pod) => pod.metric < Config.metrics.upperThreshold);
 
     return {
       aboveThreshold,
