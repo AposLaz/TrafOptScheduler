@@ -21,3 +21,9 @@ export enum SetupFolderFiles {
 export enum SemaphoreConcLimits {
   MAX_CONCURRENCY = 20,
 }
+
+export enum MetricsType {
+  CPU = 'cpu',
+  MEMORY = 'memory',
+  CPU_MEMORY = 'cpu-memory',
+}

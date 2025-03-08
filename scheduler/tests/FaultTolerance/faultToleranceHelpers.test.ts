@@ -1,0 +1,385 @@
+/**
+ * filterCandidateZones
+Scenario 8: Zones have different numbers of replicas. The function should return zones with at least one replica.
+Scenario 9: If there aren’t enough zones with replicas, it should add additional zones from the available list.
+filterCandidateNodes
+Scenario 10: Nodes should be selected first based on replica count. If fewer than the required number exist, additional nodes without replicas should be included.
+getMostLoadedNode
+Scenario 11: The method should correctly identify the most loaded node from the list.
+Scenario 12: If multiple nodes have the same load, the function should pick the first one in the list.
+getNodesWithinSkew
+Scenario 13: If all nodes have similar replicas, the function should return all of them.
+Scenario 14: If a few nodes have significantly higher replicas than the others, they should be filtered out.
+
+ */
+
+import { DummyCluster } from './data/cluster';
+import { DummyDeployments } from './data/deployments';
+import { FaultMapper } from '../../src/core/optiScaler/mappers';
+import { FaultTolerance } from '../../src/core/optiScaler/services/faultTolerance.service';
+import { MetricsType } from '../../src/enums';
+
+const commonData = {
+  usage: {
+    cpu: 209.725584,
+    memory: 253.30078125,
+  },
+  percentUsage: {
+    cpu: 0.7,
+    memory: 0.8,
+    cpuAndMemory: 0.666342602944664,
+  },
+  requested: {
+    cpu: 60.00000000000001,
+    memory: 104,
+  },
+  limits: {
+    cpu: 300.00000000000006,
+    memory: 253,
+  },
+};
+
+describe('FaultTolerance - Helper Functions', () => {
+  let ft: FaultTolerance;
+
+  beforeEach(() => {
+    ft = new FaultTolerance({
+      deployment: 'frontend',
+      replicaPods: DummyDeployments['frontend'],
+      nodeMetrics: DummyCluster.Nodes,
+      zonesNodes: DummyCluster.AzTopology,
+    });
+  });
+
+  test('filterCandidateZones', () => {
+    // TODO
+  });
+  test('filterCandidateNodes', () => {
+    // TODO
+  });
+  // getMostLoadedNode()
+  describe('Get Most Loaded Node By Metric Type With the most Replicas', () => {
+    const weights = {
+      CPU: 0.5,
+      Memory: 0.5,
+    };
+
+    describe('Same amount of replicas', () => {
+      const zoneNodes = new Map([
+        [
+          'zone-1',
+          {
+            nodes: [{ node: 'node1', replicas: 1 }, { node: 'node11' }, { node: 'node12', replicas: 0 }],
+            replicas: 1,
+          },
+        ],
+        ['zone-2', { nodes: [{ node: 'node2', replicas: 1 }], replicas: 1 }],
+        ['zone-3', { nodes: [{ node: 'node3', replicas: 1 }], replicas: 1 }],
+        [
+          'zone-4',
+          {
+            nodes: [{ node: 'node41', replicas: 0 }, { node: 'node42' }],
+            replicas: 0,
+          },
+        ],
+      ]);
+
+      // Metric Type CPU
+      test('Metric Type CPU', () => {
+        // Create an array of loaded nodes with their names and zones
+        const sortNodesByLoad = FaultMapper.toMostHighLoadedNodes(DummyCluster.Nodes, MetricsType.CPU, weights);
+        console.log(sortNodesByLoad);
+        const loadedNodes = sortNodesByLoad.map(({ name, zone }) => ({
+          node: name,
+          zone,
+        }));
+
+        const zonesWithReplicas = Array.from(zoneNodes.entries()).filter(([, data]) => data.replicas > 0);
+        // Find the maximum replica count present in any zone
+        const maxReplicaCount = Math.max(...zonesWithReplicas.map(([, data]) => data.replicas));
+
+        // Identify zones with the most replicas
+        const zonesWithMostReplicas = zonesWithReplicas.filter(([, data]) => data.replicas === maxReplicaCount);
+
+        // Find the most loaded node within the zones with the most replicas
+        const mostLoadedNode = ft['getMostLoadedNode'](zonesWithMostReplicas, loadedNodes);
+        expect(mostLoadedNode).toEqual('node3');
+      });
+      // Metric Type MEMORY
+      test('Metric Type MEMORY', () => {
+        // Create an array of loaded nodes with their names and zones
+        const sortNodesByLoad = FaultMapper.toMostHighLoadedNodes(DummyCluster.Nodes, MetricsType.MEMORY, weights);
+        console.log(sortNodesByLoad);
+        const loadedNodes = sortNodesByLoad.map(({ name, zone }) => ({
+          node: name,
+          zone,
+        }));
+
+        const zonesWithReplicas = Array.from(zoneNodes.entries()).filter(([, data]) => data.replicas > 0);
+        // Find the maximum replica count present in any zone
+        const maxReplicaCount = Math.max(...zonesWithReplicas.map(([, data]) => data.replicas));
+
+        // Identify zones with the most replicas
+        const zonesWithMostReplicas = zonesWithReplicas.filter(([, data]) => data.replicas === maxReplicaCount);
+
+        // Find the most loaded node within the zones with the most replicas
+        const mostLoadedNode = ft['getMostLoadedNode'](zonesWithMostReplicas, loadedNodes);
+        expect(mostLoadedNode).toEqual('node1');
+      });
+      //   // Metric Type MEMORY & CPU
+      test('Metric Type MEMORY & CPU', () => {
+        // Create an array of loaded nodes with their names and zones
+        const sortNodesByLoad = FaultMapper.toMostHighLoadedNodes(DummyCluster.Nodes, MetricsType.CPU_MEMORY, weights);
+
+        const loadedNodes = sortNodesByLoad.map(({ name, zone }) => ({
+          node: name,
+          zone,
+        }));
+
+        const zonesWithReplicas = Array.from(zoneNodes.entries()).filter(([, data]) => data.replicas > 0);
+        // Find the maximum replica count present in any zone
+        const maxReplicaCount = Math.max(...zonesWithReplicas.map(([, data]) => data.replicas));
+
+        // Identify zones with the most replicas
+        const zonesWithMostReplicas = zonesWithReplicas.filter(([, data]) => data.replicas === maxReplicaCount);
+
+        // Find the most loaded node within the zones with the most replicas
+        const mostLoadedNode = ft['getMostLoadedNode'](zonesWithMostReplicas, loadedNodes);
+        expect(mostLoadedNode).toEqual('node3');
+      });
+    });
+
+    describe('Different amount of replicas', () => {
+      const zoneNodes = new Map([
+        [
+          'zone-1',
+          {
+            nodes: [
+              { node: 'node1', replicas: 1 },
+              { node: 'node13', replicas: 2 },
+              { node: 'node14', replicas: 2 },
+            ],
+            replicas: 5,
+          },
+        ],
+        ['zone-2', { nodes: [{ node: 'node2', replicas: 1 }], replicas: 1 }],
+        ['zone-3', { nodes: [{ node: 'node3', replicas: 1 }], replicas: 1 }],
+        [
+          'zone-4',
+          {
+            nodes: [{ node: 'node41', replicas: 0 }, { node: 'node42' }],
+            replicas: 0,
+          },
+        ],
+      ]);
+
+      const newNodes = [...DummyCluster.Nodes];
+
+      newNodes.push(
+        ...[
+          {
+            name: 'node13',
+            zone: 'zone-1',
+            capacity: { cpu: 940, memory: 2802.3984375 },
+            allocatable: { cpu: 940, memory: 2802.3984375 },
+            requested: { cpu: 850, memory: 872 },
+            limits: { cpu: 3225, memory: 2247 },
+            freeToUse: { cpu: 10, memory: 1330.3984375 },
+          },
+          {
+            name: 'node14',
+            zone: 'zone-1',
+            capacity: { cpu: 940, memory: 2802.3984375 },
+            allocatable: { cpu: 940, memory: 2802.3984375 },
+            requested: { cpu: 850, memory: 872 },
+            limits: { cpu: 3225, memory: 2247 },
+            freeToUse: { cpu: 300, memory: 300 },
+          },
+        ]
+      );
+
+      // Metric Type CPU
+      test('Metric Type CPU', () => {
+        // Create an array of loaded nodes with their names and zones
+        const sortNodesByLoad = FaultMapper.toMostHighLoadedNodes(newNodes, MetricsType.CPU, weights);
+
+        const loadedNodes = sortNodesByLoad.map(({ name, zone }) => ({
+          node: name,
+          zone,
+        }));
+
+        const zonesWithReplicas = Array.from(zoneNodes.entries()).filter(([, data]) => data.replicas > 0);
+        // Find the maximum replica count present in any zone
+        const maxReplicaCount = Math.max(...zonesWithReplicas.map(([, data]) => data.replicas));
+
+        // Identify zones with the most replicas
+        const zonesWithMostReplicas = zonesWithReplicas.filter(([, data]) => data.replicas === maxReplicaCount);
+
+        // Find the most loaded node within the zones with the most replicas
+        const mostLoadedNode = ft['getMostLoadedNode'](zonesWithMostReplicas, loadedNodes);
+        expect(mostLoadedNode).toEqual('node13');
+      });
+      // Metric Type MEMORY
+      test('Metric Type MEMORY', () => {
+        // Create an array of loaded nodes with their names and zones
+        const sortNodesByLoad = FaultMapper.toMostHighLoadedNodes(newNodes, MetricsType.MEMORY, weights);
+
+        const loadedNodes = sortNodesByLoad.map(({ name, zone }) => ({
+          node: name,
+          zone,
+        }));
+
+        const zonesWithReplicas = Array.from(zoneNodes.entries()).filter(([, data]) => data.replicas > 0);
+        // Find the maximum replica count present in any zone
+        const maxReplicaCount = Math.max(...zonesWithReplicas.map(([, data]) => data.replicas));
+
+        // Identify zones with the most replicas
+        const zonesWithMostReplicas = zonesWithReplicas.filter(([, data]) => data.replicas === maxReplicaCount);
+
+        // Find the most loaded node within the zones with the most replicas
+        const mostLoadedNode = ft['getMostLoadedNode'](zonesWithMostReplicas, loadedNodes);
+        expect(mostLoadedNode).toEqual('node14');
+      });
+      // Metric Type MEMORY & CPU
+      test('Metric Type MEMORY & CPU', () => {
+        // Create an array of loaded nodes with their names and zones
+        const sortNodesByLoad = FaultMapper.toMostHighLoadedNodes(newNodes, MetricsType.CPU_MEMORY, weights);
+
+        const loadedNodes = sortNodesByLoad.map(({ name, zone }) => ({
+          node: name,
+          zone,
+        }));
+
+        const zonesWithReplicas = Array.from(zoneNodes.entries()).filter(([, data]) => data.replicas > 0);
+        // Find the maximum replica count present in any zone
+        const maxReplicaCount = Math.max(...zonesWithReplicas.map(([, data]) => data.replicas));
+
+        // Identify zones with the most replicas
+        const zonesWithMostReplicas = zonesWithReplicas.filter(([, data]) => data.replicas === maxReplicaCount);
+
+        // Find the most loaded node within the zones with the most replicas
+        const mostLoadedNode = ft['getMostLoadedNode'](zonesWithMostReplicas, loadedNodes);
+        expect(mostLoadedNode).toEqual('node14');
+      });
+    });
+  });
+
+  // getNodesWithinSkew()
+  describe('Get Nodes within the Skew', () => {
+    test('Max Skew = 1', () => {
+      const nodes = [
+        { node: 'node1', replicas: 1 },
+        { node: 'node2', replicas: 1 },
+        { node: 'node3', replicas: 1 },
+      ];
+
+      const nodesWithinSkew = ft['getNodesWithinSkew'](nodes, 1);
+
+      expect(nodesWithinSkew.length).toBe(3);
+      expect(nodesWithinSkew[0].node).toBe('node1');
+      expect(nodesWithinSkew[1].node).toBe('node2');
+      expect(nodesWithinSkew[2].node).toBe('node3');
+
+      nodes[0].replicas = 2;
+      nodes[1].replicas = 3;
+
+      const nodesWithinSkew2 = ft['getNodesWithinSkew'](nodes, 1);
+
+      expect(nodesWithinSkew2.length).toBe(1);
+      expect(nodesWithinSkew2[0].node).toBe('node3');
+    });
+
+    test('Max Skew = 5', () => {
+      const nodes = [
+        { node: 'node1', replicas: 7 },
+        { node: 'node2', replicas: 2 },
+        { node: 'node3', replicas: 3 },
+      ];
+
+      const nodesWithinSkew = ft['getNodesWithinSkew'](nodes);
+
+      expect(nodesWithinSkew.length).toBe(2);
+      expect(nodesWithinSkew[0].node).toBe('node2');
+      expect(nodesWithinSkew[1].node).toBe('node3');
+    });
+  });
+
+  // replicaPodsPerNode()
+  test('Get Replica Pods length per Node', () => {
+    const addMoreData = [...DummyDeployments['frontend']];
+
+    // add 4 more pods to node 1
+    for (let i = 0; i < 4; i++) {
+      addMoreData.push({
+        node: 'node1',
+        pod: `frontend-[${i}]`,
+        ...commonData,
+      });
+    }
+
+    // add 2 more pods to node 2
+    for (let i = 0; i < 2; i++) {
+      addMoreData.push({
+        node: 'node2',
+        pod: `frontend-[${i}]`,
+        ...commonData,
+      });
+    }
+
+    const replicaPodsByNode = ft['replicaPodsPerNode'](addMoreData);
+
+    expect(replicaPodsByNode['node1']).toBe(5);
+    expect(replicaPodsByNode['node2']).toBe(3);
+    expect(replicaPodsByNode['node3']).toBe(1);
+  });
+
+  // getZonesWithSufficientResources()
+  test('Get Zones with Sufficient Resources', () => {
+    const zoneNodes = new Map([
+      ['zone-1', { nodes: [{ node: 'node1' }, { node: 'node11' }, { node: 'node12' }], replicas: 1 }],
+      ['zone-2', { nodes: [], replicas: 0 }],
+      ['zone-3', { nodes: [{ node: 'node3', replicas: 1 }], replicas: 1 }],
+    ]);
+
+    const zonesWithResources = ft['getZonesWithSufficientResources'](zoneNodes, DummyCluster.Nodes);
+
+    expect(zonesWithResources.size).toBe(2);
+    expect(zonesWithResources.has('zone-1')).toBe(true);
+    expect(zonesWithResources.has('zone-2')).toBe(false);
+    expect(zonesWithResources.has('zone-3')).toBe(true);
+  });
+
+  // getZonesWithinSkew()
+  describe('Get Zones within the Skew', () => {
+    test('Max Skew = 1', () => {
+      const zoneNodes = new Map([
+        ['zone-1', { nodes: [{ node: 'node1' }, { node: 'node11' }, { node: 'node12' }], replicas: 0 }],
+        ['zone-2', { nodes: [{ node: 'node2' }], replicas: 1 }],
+        ['zone-3', { nodes: [{ node: 'node3' }], replicas: 1 }],
+      ]);
+
+      const zonesWithinSkew = ft['getZonesWithinSkew'](zoneNodes, 1);
+
+      expect(zonesWithinSkew.size).toBe(1);
+      expect(zonesWithinSkew.has('zone-1')).toBe(true);
+      expect(zonesWithinSkew.has('zone-2')).toBe(false);
+      expect(zonesWithinSkew.has('zone-3')).toBe(false);
+    });
+
+    test('Max Skew = 5', () => {
+      // The default max skew is 5
+      const zoneNodes = new Map([
+        ['zone-1', { nodes: [{ node: 'node1' }, { node: 'node11' }, { node: 'node12' }], replicas: 7 }],
+        ['zone-2', { nodes: [{ node: 'node2' }], replicas: 2 }],
+        ['zone-3', { nodes: [{ node: 'node3' }], replicas: 3 }],
+      ]);
+
+      const zonesWithinSkew = ft['getZonesWithinSkew'](zoneNodes);
+
+      expect(zonesWithinSkew.size).toBe(2);
+      expect(zonesWithinSkew.has('zone-1')).toBe(false);
+      expect(zonesWithinSkew.has('zone-2')).toBe(true);
+      expect(zonesWithinSkew.has('zone-3')).toBe(true);
+    });
+  });
+});

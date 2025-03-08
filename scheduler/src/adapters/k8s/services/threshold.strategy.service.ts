@@ -1,53 +1,32 @@
-import { MetricsType } from '../enums';
+import { MetricsType } from '../../../enums';
 import { avgDeploymentMetricByNode, classifyDeploymentsByLoad } from '../utils';
 
 import type { DeploymentReplicaPodsMetrics } from '../../../types';
 import type { CriticalDeploymentsNodeUsage, ThresholdType } from '../types';
 
 interface ThresholdStrategy {
-  evaluateThreshold(
-    deployments: DeploymentReplicaPodsMetrics,
-    threshold: ThresholdType
-  ): CriticalDeploymentsNodeUsage;
+  evaluateThreshold(deployments: DeploymentReplicaPodsMetrics, threshold: ThresholdType): CriticalDeploymentsNodeUsage;
 }
 
 class CpuThresholdStrategy implements ThresholdStrategy {
-  evaluateThreshold(
-    deployments: DeploymentReplicaPodsMetrics,
-    threshold: ThresholdType
-  ): CriticalDeploymentsNodeUsage {
-    const deployNodeUsage = avgDeploymentMetricByNode(
-      deployments,
-      MetricsType.CPU
-    );
+  evaluateThreshold(deployments: DeploymentReplicaPodsMetrics, threshold: ThresholdType): CriticalDeploymentsNodeUsage {
+    const deployNodeUsage = avgDeploymentMetricByNode(deployments, MetricsType.CPU);
 
     return classifyDeploymentsByLoad(deployNodeUsage, threshold);
   }
 }
 
 class MemoryThresholdStrategy implements ThresholdStrategy {
-  evaluateThreshold(
-    deployments: DeploymentReplicaPodsMetrics,
-    threshold: ThresholdType
-  ): CriticalDeploymentsNodeUsage {
-    const deployNodeUsage = avgDeploymentMetricByNode(
-      deployments,
-      MetricsType.MEMORY
-    );
+  evaluateThreshold(deployments: DeploymentReplicaPodsMetrics, threshold: ThresholdType): CriticalDeploymentsNodeUsage {
+    const deployNodeUsage = avgDeploymentMetricByNode(deployments, MetricsType.MEMORY);
 
     return classifyDeploymentsByLoad(deployNodeUsage, threshold);
   }
 }
 
 class CpuAndMemoryThresholdStrategy implements ThresholdStrategy {
-  evaluateThreshold(
-    deployments: DeploymentReplicaPodsMetrics,
-    threshold: ThresholdType
-  ): CriticalDeploymentsNodeUsage {
-    const deployNodeUsage = avgDeploymentMetricByNode(
-      deployments,
-      MetricsType.CPU_MEMORY
-    );
+  evaluateThreshold(deployments: DeploymentReplicaPodsMetrics, threshold: ThresholdType): CriticalDeploymentsNodeUsage {
+    const deployNodeUsage = avgDeploymentMetricByNode(deployments, MetricsType.CPU_MEMORY);
 
     return classifyDeploymentsByLoad(deployNodeUsage, threshold);
   }
@@ -63,9 +42,7 @@ export class ThresholdStrategyFactory {
       case MetricsType.CPU_MEMORY:
         return new CpuAndMemoryThresholdStrategy();
       default:
-        throw new Error(
-          `Invalid metric provided. Expected one of ${Object.values(MetricsType).join(', ')}`
-        );
+        throw new Error(`Invalid metric provided. Expected one of ${Object.values(MetricsType).join(', ')}`);
     }
   }
 }

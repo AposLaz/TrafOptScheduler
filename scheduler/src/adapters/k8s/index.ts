@@ -13,8 +13,7 @@ import { logger } from '../../config/logger';
 
 import type { KubernetesAdapter } from '../kubernetes.interface';
 import type { ClusterTopology, DeploymentPodMapType, NodeMetrics, PodMetrics, Resources, ThresholdType } from './types';
-import type { ConfigMetrics } from './types';
-import type { DeploymentReplicaPodsMetrics } from '../../types';
+import type { ConfigMetrics, DeploymentReplicaPodsMetrics } from '../../types';
 import type * as k8s from '@kubernetes/client-node';
 
 export class KubernetesAdapterImpl implements KubernetesAdapter {

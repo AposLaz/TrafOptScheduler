@@ -1,14 +1,14 @@
+import { OptiBalancer } from './optiBalancer';
 import { OptiScaler } from './optiScaler';
 import { ScaleAction } from './optiScaler/enums';
+import { DummyDeployments } from '../../tests/data/dummy/deployments';
+import { FileSystemHandler } from '../adapters/filesystem';
 import { KubernetesAdapterImpl } from '../adapters/k8s';
+import { k8sMapper } from '../adapters/k8s/mapper';
 import { PrometheusAdapterImpl } from '../adapters/prometheus';
 import { Config } from '../config/config';
 import { logger } from '../config/logger';
-import { FileSystemHandler } from '../fileSystem';
 import { getPodNodeResources } from '../utils';
-import { OptiBalancer } from './optiBalancer';
-import { DummyDeployments } from '../../tests/data/dummy/deployments';
-import { k8sMapper } from '../adapters/k8s/mapper';
 
 /**
  * Setup the entire application
@@ -119,7 +119,7 @@ export const TrafficScheduler = async () => {
                   nodesLatency,
                 },
                 { prom: promAdapter, k8s: k8sAdapter, fileSystem }
-              ).Execute();
+              ).Execute(Config.metrics.type, Config.metrics.weights);
             }
           }
         }

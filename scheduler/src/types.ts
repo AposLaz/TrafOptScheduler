@@ -1,7 +1,16 @@
-import type {
-  DeploymentPlacementModel,
-  PodMetrics,
-} from './adapters/k8s/types';
+import type { DeploymentPlacementModel, PodMetrics } from './adapters/k8s/types';
+import type { MetricsType } from './enums';
+
+export type MetricWeights = {
+  CPU: number;
+  Memory: number;
+};
+export type ConfigMetrics = {
+  upperThreshold: number;
+  lowerThreshold: number;
+  type: MetricsType;
+  weights: MetricWeights;
+};
 
 export type Resources = {
   cpu: number;
@@ -25,10 +34,7 @@ export type NodeWeight = {
 /** DEFAULT TYPES */
 
 export type ObjectStrings = { [key: string]: string[] };
-export type ObjectResources = Record<
-  string,
-  { totalCpu: number; totalMemory: number; currentNode: string }[]
->;
+export type ObjectResources = Record<string, { totalCpu: number; totalMemory: number; currentNode: string }[]>;
 export type MapResourcesNode = {
   name: string;
   cpu: number;

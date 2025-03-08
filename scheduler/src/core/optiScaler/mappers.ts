@@ -1,13 +1,10 @@
-import { Config } from '../../config/config';
-
 import type { FaultNodesReplicas, FaultZonesNodes } from './types';
 import type { ClusterAzTopology, NodeMetrics } from '../../adapters/k8s/types';
+import type { MetricsType } from '../../enums';
+import type { MetricWeights } from '../../types';
 
 export const OptiScalerMapper = {
-  toLFUNodes: (nodes: NodeMetrics[]): NodeMetrics[] => {
-    const type = Config.metrics.type;
-    const weights = Config.metrics.weights;
-
+  toLFUNodes: (nodes: NodeMetrics[], type: MetricsType, weights: MetricWeights): NodeMetrics[] => {
     return nodes.sort((a, b) => {
       if (type === 'cpu') {
         return a.requested.cpu - b.requested.cpu;
@@ -21,8 +18,7 @@ export const OptiScalerMapper = {
         const bMemUtil = b.requested.memory / b.allocatable.memory || 0;
 
         const aWeightedUtil = aCpuUtil * weights.CPU + aMemUtil * weights.CPU;
-        const bWeightedUtil =
-          bCpuUtil * weights.Memory + bMemUtil * weights.Memory;
+        const bWeightedUtil = bCpuUtil * weights.Memory + bMemUtil * weights.Memory;
 
         // Sort descending (highest load first)
         return aWeightedUtil - bWeightedUtil;
@@ -32,33 +28,30 @@ export const OptiScalerMapper = {
 };
 
 export const FaultMapper = {
-  toMostHighLoadedNodes: (nodes: NodeMetrics[]): NodeMetrics[] => {
-    const type = Config.metrics.type;
-    const weights = Config.metrics.weights;
-
+  toMostHighLoadedNodes: (nodes: NodeMetrics[], type: MetricsType, weights: MetricWeights): NodeMetrics[] => {
     return nodes.sort((a, b) => {
       if (type === 'cpu') {
-        return b.requested.cpu - a.requested.cpu;
+        return a.freeToUse.cpu - b.freeToUse.cpu;
       } else if (type === 'memory') {
-        return b.requested.memory - a.requested.memory;
+        return a.freeToUse.memory - b.freeToUse.memory;
       } else {
-        const aCpuUtil = a.requested.cpu / a.allocatable.cpu || 0;
-        const bCpuUtil = b.requested.cpu / b.allocatable.cpu || 0;
+        const aCpuUtil = a.freeToUse.cpu;
+        const bCpuUtil = b.freeToUse.cpu;
 
-        const aMemUtil = a.requested.memory / a.allocatable.memory || 0;
-        const bMemUtil = b.requested.memory / b.allocatable.memory || 0;
+        const aMemUtil = a.freeToUse.memory;
+        const bMemUtil = b.freeToUse.memory;
 
         const aWeightedUtil = aCpuUtil * weights.CPU + aMemUtil * weights.CPU;
-        const bWeightedUtil =
-          bCpuUtil * weights.Memory + bMemUtil * weights.Memory;
+        const bWeightedUtil = bCpuUtil * weights.Memory + bMemUtil * weights.Memory;
 
         // Sort descending (highest load first)
-        return bWeightedUtil - aWeightedUtil;
+        return aWeightedUtil - bWeightedUtil;
       }
     });
   },
 
   toNodesReplicas: (nodes: Record<string, number>): FaultNodesReplicas[] => {
+    console.log(nodes);
     return Object.entries(nodes).map(([node, replicas]) => ({
       node,
       replicas,
@@ -68,13 +61,9 @@ export const FaultMapper = {
     const zonesNodes: FaultZonesNodes = new Map();
 
     Object.entries(zones).forEach(([zone, nodesInZone]) => {
-      const nodesWithRs = nodes.filter((n) =>
-        nodesInZone.nodes.includes(n.node)
-      );
+      const nodesWithRs = nodes.filter((n) => nodesInZone.nodes.includes(n.node));
 
-      const noNodesRs = nodesInZone.nodes.filter(
-        (n) => !nodesWithRs.find((node) => node.node === n)
-      );
+      const noNodesRs = nodesInZone.nodes.filter((n) => !nodesWithRs.find((node) => node.node === n));
 
       const noNodesRsTransform = noNodesRs.map((n) => ({ node: n }));
 

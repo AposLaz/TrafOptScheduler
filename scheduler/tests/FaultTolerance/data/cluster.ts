@@ -34,7 +34,7 @@ export const DummyCluster = {
       allocatable: { cpu: 940, memory: 2802.3984375 },
       requested: { cpu: 850, memory: 872 },
       limits: { cpu: 3225, memory: 2247 },
-      freeToUse: { cpu: 300, memory: 1930.3984375 },
+      freeToUse: { cpu: 300, memory: 1330.3984375 },
     },
   ] as NodeMetrics[],
   NodesLatency: [

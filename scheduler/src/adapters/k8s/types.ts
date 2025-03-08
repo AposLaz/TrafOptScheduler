@@ -1,5 +1,3 @@
-import type { MetricsType } from './enums';
-
 /************************************ THRESHOLD */
 
 export type ThresholdType = {
@@ -40,23 +38,9 @@ export type DeploymentPlacementModel = {
   deletePod: string;
 };
 
-export type DeploymentNotReadyFilesystem = Omit<
-  DeploymentPlacementModel,
-  'nodes'
->;
+export type DeploymentNotReadyFilesystem = Omit<DeploymentPlacementModel, 'nodes'>;
 
 /******************** METRICS TYPES **************** */
-
-export type MetricWeights = {
-  CPU: number;
-  Memory: number;
-};
-export type ConfigMetrics = {
-  upperThreshold: number;
-  lowerThreshold: number;
-  type: MetricsType;
-  weights: MetricWeights;
-};
 
 export type NodeUsage = {
   node: string;

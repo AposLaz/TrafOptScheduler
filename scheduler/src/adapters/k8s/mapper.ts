@@ -1,7 +1,7 @@
 import { convertResourcesStringToNumber } from '../../common/helpers';
 import { TaintEffects } from '../../enums';
 
-import type { ClusterAzTopology, DeploymentReplicaPods, LatencyProviderType, MetricWeights } from './types';
+import type { ClusterAzTopology, DeploymentReplicaPods, LatencyProviderType } from './types';
 import type {
   ClusterTopology,
   DeploymentNotReadyFilesystem,
@@ -11,7 +11,7 @@ import type {
   PodMetrics,
   ZoneLatency,
 } from './types';
-import type { DeploymentReplicaPodsMetrics } from '../../types';
+import type { DeploymentReplicaPodsMetrics, MetricWeights } from '../../types';
 import type * as k8s from '@kubernetes/client-node';
 
 const k8sMapper = {

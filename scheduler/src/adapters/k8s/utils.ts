@@ -1,9 +1,5 @@
-import type { MetricsType } from './enums';
-import type {
-  CriticalDeploymentsNodeUsage,
-  DeploymentNodeUsage,
-  ThresholdType,
-} from './types';
+import type { CriticalDeploymentsNodeUsage, DeploymentNodeUsage, ThresholdType } from './types';
+import type { MetricsType } from '../../enums';
 import type { DeploymentReplicaPodsMetrics } from '../../types';
 
 /**
@@ -12,10 +8,7 @@ import type { DeploymentReplicaPodsMetrics } from '../../types';
  * @param metricType - The type of metric to calculate the average for. Can be 'cpu', 'memory' or 'cpuAndMemory'.
  * @returns An object where each key is a deployment name and the value is an array of objects with node and avgMetric properties.
  */
-export const avgDeploymentMetricByNode = (
-  deployments: DeploymentReplicaPodsMetrics,
-  metricType: MetricsType
-) => {
+export const avgDeploymentMetricByNode = (deployments: DeploymentReplicaPodsMetrics, metricType: MetricsType) => {
   const metricDeployments: DeploymentNodeUsage = {};
 
   for (const [deployment, replicaPods] of Object.entries(deployments)) {
@@ -39,9 +32,10 @@ export const avgDeploymentMetricByNode = (
       }
     });
 
-    metricDeployments[deployment] = Object.entries(nodeMemoryUsage).map(
-      ([node, metric]) => ({ node, avgMetric: metric / replicasInNode[node] })
-    );
+    metricDeployments[deployment] = Object.entries(nodeMemoryUsage).map(([node, metric]) => ({
+      node,
+      avgMetric: metric / replicasInNode[node],
+    }));
   }
 
   return metricDeployments;
@@ -74,25 +68,19 @@ export const classifyDeploymentsByLoad = (
 
   for (const [deployment, nodes] of Object.entries(deployments)) {
     // find at least one node with avgMetric above threshold
-    const criticalDeployments = nodes.some(
-      ({ avgMetric }) => avgMetric > threshold.upper
-    );
+    const criticalDeployments = nodes.some(({ avgMetric }) => avgMetric > threshold.upper);
     if (criticalDeployments) {
       highLoadedDeployments[deployment] = nodes;
       continue;
     }
 
-    const lowUsageDeployments = nodes.some(
-      ({ avgMetric }) => avgMetric < threshold.lower
-    );
+    const lowUsageDeployments = nodes.some(({ avgMetric }) => avgMetric < threshold.lower);
 
     if (lowUsageDeployments) lowLoadedDeployments[deployment] = nodes;
   }
 
   const filteredHighLoadedDeploys = Object.fromEntries(
-    Object.entries(highLoadedDeployments).filter(
-      ([, value]) => value.length > 0
-    )
+    Object.entries(highLoadedDeployments).filter(([, value]) => value.length > 0)
   );
 
   const filteredLowLoadedDeploys = Object.fromEntries(

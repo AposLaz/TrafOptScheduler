@@ -5,9 +5,3 @@ export enum K8sClientTypeApi {
   METRICS = 'metrics',
   CUSTOM_OBJECTS = 'custom-objects',
 }
-
-export enum MetricsType {
-  CPU = 'cpu',
-  MEMORY = 'memory',
-  CPU_MEMORY = 'cpu-memory',
-}

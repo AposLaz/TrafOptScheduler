@@ -1,17 +1,10 @@
 import { logger } from '../../../config/logger';
 import { FaultMapper } from '../mappers';
 
-import type {
-  ClusterAzTopology,
-  NodeMetrics,
-  PodMetrics,
-} from '../../../adapters/k8s/types';
-import type {
-  FaultNodesReplicas,
-  FaultNodesSumReplicas,
-  FaultToleranceType,
-  FaultZonesNodes,
-} from '../types';
+import type { ClusterAzTopology, NodeMetrics, PodMetrics } from '../../../adapters/k8s/types';
+import type { MetricsType } from '../../../enums';
+import type { MetricWeights } from '../../../types';
+import type { FaultNodesReplicas, FaultNodesSumReplicas, FaultToleranceType, FaultZonesNodes } from '../types';
 
 export class FaultTolerance {
   private deployRs: PodMetrics[];
@@ -52,7 +45,7 @@ export class FaultTolerance {
     /*
      * Step 1: Count the number of replicas for each node.
      */
-    const currentNodeAssignments = this.rsPodsByNode(this.deployRs);
+    const currentNodeAssignments = this.replicaPodsPerNode(this.deployRs);
     this.loggerOperation.debug({
       deploymentName: this.deploymentName,
       message: 'Current node assignments',
@@ -62,17 +55,12 @@ export class FaultTolerance {
     /*
      * Step 2: Map the replica count to the nodes.
      */
-    const assignReplicasToNodes = FaultMapper.toNodesReplicas(
-      currentNodeAssignments
-    );
+    const assignReplicasToNodes = FaultMapper.toNodesReplicas(currentNodeAssignments);
 
     /*
      * Step 3: Map the replica count to the zones.
      */
-    const assignReplicasToZones = FaultMapper.toZoneReplicas(
-      this.zonesNodes,
-      assignReplicasToNodes
-    );
+    const assignReplicasToZones = FaultMapper.toZoneReplicas(this.zonesNodes, assignReplicasToNodes);
 
     /*
      * Step 4: Find the zones that have replicas.
@@ -83,23 +71,15 @@ export class FaultTolerance {
       sizeFaultZones,
     });
 
-    const maxFtZones = this.filterCandidateZones(
-      sizeFaultZones,
-      assignReplicasToZones
-    );
+    const maxFtZones = this.filterCandidateZones(sizeFaultZones, assignReplicasToZones);
 
     /*
      * Step 5: Filter the nodes that have available resources.
      */
-    const zonesWithResources = this.getZonesWithSufficientResources(
-      maxFtZones,
-      this.nodesWithResources
-    );
+    const zonesWithResources = this.getZonesWithSufficientResources(maxFtZones, this.nodesWithResources);
 
     if (zonesWithResources.size === 0) {
-      this.loggerOperation.warn(
-        `No zones have sufficient resources to host pods.`
-      );
+      this.loggerOperation.warn(`No zones have sufficient resources to host pods.`);
       return [];
     }
 
@@ -110,11 +90,7 @@ export class FaultTolerance {
       candidateZones =
         candidateZones.size === 1
           ? zonesWithResources
-          : new Map(
-              Array.from(zonesWithResources.entries()).filter(
-                ([, data]) => data.replicas === 0
-              )
-            );
+          : new Map(Array.from(zonesWithResources.entries()).filter(([, data]) => data.replicas === 0));
 
       this.loggerOperation.debug({
         message: 'Filtered candidate zones for fewer deployments',
@@ -141,9 +117,7 @@ export class FaultTolerance {
         const maxFtNodes = this.filterCandidateNodes(sizeFtNones, nodesForZone);
 
         // Get the nodes with resources for this zone.
-        const newNodesWithResources = data.nodes.filter((n) =>
-          maxFtNodes.find((node) => node.node === n.node)
-        );
+        const newNodesWithResources = data.nodes.filter((n) => maxFtNodes.find((node) => node.node === n.node));
 
         if (data.replicas < sizeFtNones) {
           // If there are fewer replicas than nodes, only consider nodes with zero replicas.
@@ -185,11 +159,9 @@ export class FaultTolerance {
    * @returns The name of the node that is most loaded and suitable for pod removal.
    */
 
-  public getCandidateNodeToRemove(): string[] {
+  public getCandidateNodeToRemove(metricType: MetricsType, weights: MetricWeights): string[] {
     // Create an array of loaded nodes with their names and zones
-    const sortNodesByLoad = FaultMapper.toMostHighLoadedNodes(
-      this.nodesWithResources
-    );
+    const sortNodesByLoad = FaultMapper.toMostHighLoadedNodes(this.nodesWithResources, metricType, weights);
 
     const loadedNodes = sortNodesByLoad.map(({ name, zone }) => ({
       node: name,
@@ -199,32 +171,23 @@ export class FaultTolerance {
     /*
      * Step 1: Count the number of replicas for each node.
      */
-    const currentNodeAssignments = this.rsPodsByNode(this.deployRs);
+    const currentNodeAssignments = this.replicaPodsPerNode(this.deployRs);
 
     /*
      * Step 2: Map the replica count to the nodes.
      */
-    const assignReplicasToNodes = FaultMapper.toNodesReplicas(
-      currentNodeAssignments
-    );
+    const assignReplicasToNodes = FaultMapper.toNodesReplicas(currentNodeAssignments);
 
     /*
      * Step 3: Map the replica count to the zones.
      */
-    const assignReplicasToZones = FaultMapper.toZoneReplicas(
-      this.zonesNodes,
-      assignReplicasToNodes
-    );
+    const assignReplicasToZones = FaultMapper.toZoneReplicas(this.zonesNodes, assignReplicasToNodes);
 
     // Filter out zones that have at least one replica
-    const zonesWithReplicas = Array.from(
-      assignReplicasToZones.entries()
-    ).filter(([, data]) => data.replicas > 0);
+    const zonesWithReplicas = Array.from(assignReplicasToZones.entries()).filter(([, data]) => data.replicas > 0);
 
     // Check if all zones with replicas only have a single replica
-    const allHaveOneReplica = zonesWithReplicas.every(
-      ([, data]) => data.replicas === 1
-    );
+    const allHaveOneReplica = zonesWithReplicas.every(([, data]) => data.replicas === 1);
 
     if (allHaveOneReplica) {
       // If all zones have one replica, find the most loaded node among them
@@ -235,29 +198,20 @@ export class FaultTolerance {
         ]),
         loadedNodes
       );
-      console.log(mostLoaded.node);
-      return [mostLoaded.node]; // Return the node name of the most loaded node
+      return [mostLoaded]; // Return the node name of the most loaded node
     }
 
     // Find the maximum replica count present in any zone
-    const maxReplicaCount = Math.max(
-      ...zonesWithReplicas.map(([, data]) => data.replicas)
-    );
+    const maxReplicaCount = Math.max(...zonesWithReplicas.map(([, data]) => data.replicas));
 
     // Identify zones with the most replicas
-    const zonesWithMostReplicas = zonesWithReplicas.filter(
-      ([, data]) => data.replicas === maxReplicaCount
-    );
+    const zonesWithMostReplicas = zonesWithReplicas.filter(([, data]) => data.replicas === maxReplicaCount);
 
     // Find the most loaded node within the zones with the most replicas
-    const mostLoaded = this.getMostLoadedNode(
-      zonesWithMostReplicas,
-      loadedNodes
-    );
+    const mostLoadedNode = this.getMostLoadedNode(zonesWithMostReplicas, loadedNodes);
 
-    console.log(mostLoaded.node);
     // Return the node name of the most loaded node
-    return [mostLoaded.node];
+    return [mostLoadedNode];
   }
 
   /**
@@ -272,10 +226,7 @@ export class FaultTolerance {
    *          will also include zones that don't have replicas but aren't already in the
    *          returned map.
    */
-  private filterCandidateZones(
-    maxFt: number,
-    zones: FaultZonesNodes
-  ): FaultZonesNodes {
+  private filterCandidateZones(maxFt: number, zones: FaultZonesNodes): FaultZonesNodes {
     // Create a new Map from zones that already have replicas
     const zonesWithReplicas: FaultZonesNodes = new Map(
       Array.from(zones.entries()).filter(([, data]) => data.replicas > 0)
@@ -286,9 +237,7 @@ export class FaultTolerance {
       const needed = maxFt - zonesWithReplicas.size;
       // Get additional zones that don't have replicas and aren't already in zonesWithReplicas
       const additionalEntries = Array.from(zones.entries())
-        .filter(
-          ([zone, data]) => data.replicas === 0 && !zonesWithReplicas.has(zone)
-        )
+        .filter(([zone, data]) => data.replicas === 0 && !zonesWithReplicas.has(zone))
         .slice(0, needed);
 
       additionalEntries.forEach(([zone, data]) => {
@@ -308,10 +257,7 @@ export class FaultTolerance {
    * @returns An array of FaultNodesReplicas objects, giving priority to nodes with replicas
    *          and filling up with nodes without replicas if needed.
    */
-  private filterCandidateNodes(
-    maxFt: number,
-    nodes: FaultNodesReplicas[]
-  ): FaultNodesReplicas[] {
+  private filterCandidateNodes(maxFt: number, nodes: FaultNodesReplicas[]): FaultNodesReplicas[] {
     // Filter the input array to only include nodes that already have replicas
     const cnNodes = nodes.filter((n) => n.replicas && n.replicas > 0);
 
@@ -321,9 +267,7 @@ export class FaultTolerance {
       const needed = maxFt - cnNodes.length;
 
       // Get additional nodes that don't have replicas and aren't already in cnNodes
-      const additionalEntries = nodes
-        .filter((n) => !n.replicas)
-        .slice(0, needed);
+      const additionalEntries = nodes.filter((n) => !n.replicas).slice(0, needed);
 
       // Add the additional nodes to cnNodes
       cnNodes.push(...additionalEntries);
@@ -351,19 +295,19 @@ export class FaultTolerance {
   private getMostLoadedNode(
     zones: [string, FaultNodesSumReplicas][],
     loadedNodes: { node: string; zone: string }[]
-  ): { node: string; load: number } {
+  ): string {
     let mostLoadedCandidate: { node: string; load: number } | null = null;
     // Iterate through each zone and each node within it
     zones.forEach(([, data]) => {
       data.nodes.forEach((n) => {
         const nodeLoad = loadedNodes.findIndex((ln) => ln.node === n.node);
         const candidate = { node: n.node, load: nodeLoad };
-        if (!mostLoadedCandidate || candidate.load < mostLoadedCandidate.load) {
+        if (nodeLoad !== -1 && (!mostLoadedCandidate || candidate.load < mostLoadedCandidate.load)) {
           mostLoadedCandidate = candidate;
         }
       });
     });
-    return mostLoadedCandidate!;
+    return mostLoadedCandidate!.node;
   }
 
   /**
@@ -382,10 +326,7 @@ export class FaultTolerance {
    *          count. If no nodes are within the specified skew, the original array
    *          is returned.
    */
-  private getNodesWithinSkew(
-    nodes: FaultNodesReplicas[],
-    maxSkew: number = 5
-  ): FaultNodesReplicas[] {
+  private getNodesWithinSkew(nodes: FaultNodesReplicas[], maxSkew: number = 5): FaultNodesReplicas[] {
     // Get an array of all the replica counts in the nodes array
     const rsCount = nodes.map((data) => data.replicas ?? 0);
 
@@ -394,9 +335,7 @@ export class FaultTolerance {
 
     // Create a new array that only includes nodes that are within the specified
     // skew from the lowest replica count
-    const skewNodes = nodes.filter(
-      (data) => (data.replicas ?? 0) - minRs <= maxSkew
-    );
+    const skewNodes = nodes.filter((data) => (data.replicas ?? 0) - minRs < maxSkew);
 
     // If no nodes are within the specified skew, return the original array
     if (skewNodes.length === 0) return nodes;
@@ -416,7 +355,7 @@ export class FaultTolerance {
    * @returns A map where each key is a node name and the value is the number of
    *          replicas on that node.
    */
-  private rsPodsByNode(deployRs: PodMetrics[]): Record<string, number> {
+  private replicaPodsPerNode(deployRs: PodMetrics[]): Record<string, number> {
     return deployRs.reduce(
       (acc, pod) => {
         // Increment the replica count for the node that the pod is on.
@@ -443,16 +382,11 @@ export class FaultTolerance {
    *          node with sufficient resources to create a new replica pod. If no such
    *          zones exist, the returned map is empty.
    */
-  private getZonesWithSufficientResources(
-    zoneNodes: FaultZonesNodes,
-    nodes: NodeMetrics[]
-  ): FaultZonesNodes {
+  private getZonesWithSufficientResources(zoneNodes: FaultZonesNodes, nodes: NodeMetrics[]): FaultZonesNodes {
     const zonesWithResources: FaultZonesNodes = new Map();
 
     zoneNodes.forEach((data, zone) => {
-      const nodesInZone = data.nodes.filter((n) =>
-        nodes.some((nr) => nr.name === n.node)
-      );
+      const nodesInZone = data.nodes.filter((n) => nodes.some((nr) => nr.name === n.node));
 
       if (nodesInZone.length > 0) {
         zonesWithResources.set(zone, {
@@ -477,10 +411,7 @@ export class FaultTolerance {
    *          the specified skew from the lowest replica count. If no zones are
    *          within the specified skew, the original map is returned.
    */
-  private getZonesWithinSkew(
-    zones: FaultZonesNodes,
-    maxSkew: number = 5
-  ): FaultZonesNodes {
+  private getZonesWithinSkew(zones: FaultZonesNodes, maxSkew: number = 5): FaultZonesNodes {
     // Get an array of all the replica counts in the zones map
     const rsCount = Array.from(zones.values()).map((data) => data.replicas);
 
@@ -489,11 +420,7 @@ export class FaultTolerance {
 
     // Create a new map that only includes zones that are within the specified
     // skew from the lowest replica count
-    const skewZones = new Map(
-      Array.from(zones.entries()).filter(
-        ([, data]) => data.replicas - minRs <= maxSkew
-      )
-    );
+    const skewZones = new Map(Array.from(zones.entries()).filter(([, data]) => data.replicas - minRs < maxSkew));
 
     // If no zones are within the specified skew, return the original map
     if (skewZones.size === 0) return zones;
