@@ -7,11 +7,11 @@ import type { MetricWeights } from '../../../types';
 import type { FaultNodesReplicas, FaultNodesSumReplicas, FaultToleranceType, FaultZonesNodes } from '../types';
 
 export class FaultTolerance {
-  private deployRs: PodMetrics[];
-  private nodesWithResources: NodeMetrics[];
-  private zonesNodes: ClusterAzTopology;
-  private loggerOperation = logger.child({ operation: 'FaultTolerance' });
-  private deploymentName: string;
+  private readonly deployRs: PodMetrics[];
+  private readonly nodesWithResources: NodeMetrics[];
+  private readonly zonesNodes: ClusterAzTopology;
+  private readonly loggerOperation = logger.child({ operation: 'FaultTolerance' });
+  private readonly deploymentName: string;
 
   constructor(data: FaultToleranceType) {
     this.deploymentName = data.deployment;

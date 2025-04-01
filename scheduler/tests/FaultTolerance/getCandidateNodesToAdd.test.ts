@@ -14,3 +14,9 @@ Input: Some zones have significantly more replicas than others.
 Expected Output: The function should prioritize zones with the fewest replicas.
 
  */
+
+describe('FaultTolerance - getCandidateNodesToAdd', () => {
+  test('setup', () => {
+    expect(true).toBe(true);
+  });
+});

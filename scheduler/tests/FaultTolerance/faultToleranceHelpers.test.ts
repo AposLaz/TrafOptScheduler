@@ -51,11 +51,156 @@ describe('FaultTolerance - Helper Functions', () => {
     });
   });
 
-  test('filterCandidateZones', () => {
-    // TODO
+  describe('filterCandidateZones', () => {
+    test('1. All Zones have replicas, fewer than maxFt', () => {
+      const maxFt = 3;
+      const zones = new Map([
+        [
+          'zone-1',
+          {
+            nodes: [{ node: 'node1', replicas: 1 }, { node: 'node11' }, { node: 'node12', replicas: 0 }],
+            replicas: 1,
+          },
+        ],
+        ['zone-2', { nodes: [{ node: 'node2', replicas: 1 }], replicas: 1 }],
+      ]);
+      const filteredZones = ft['filterCandidateZones'](maxFt, zones);
+      expect(filteredZones.size).toBe(2);
+      expect(filteredZones.has('zone-1')).toBe(true);
+      expect(filteredZones.has('zone-2')).toBe(true);
+    });
+
+    test('2. All Zones have replicas, more than maxFt', () => {
+      const maxFt = 2;
+      const zones = new Map([
+        [
+          'zone-1',
+          {
+            nodes: [{ node: 'node1', replicas: 1 }, { node: 'node11' }, { node: 'node12', replicas: 0 }],
+            replicas: 1,
+          },
+        ],
+        ['zone-2', { nodes: [{ node: 'node2', replicas: 1 }], replicas: 1 }],
+        ['zone-3', { nodes: [{ node: 'node3', replicas: 1 }], replicas: 1 }],
+        ['zone-4', { nodes: [{ node: 'node4', replicas: 1 }], replicas: 1 }],
+      ]);
+
+      // should return all maxFt zones with replicas
+      const filteredZones = ft['filterCandidateZones'](maxFt, zones);
+      expect(filteredZones.size).toBe(4);
+    });
+
+    test('3. Not enough zones with replicas to meet maxFt', () => {
+      const maxFt = 3;
+      const zones = new Map([
+        [
+          'zone-1',
+          {
+            nodes: [{ node: 'node1', replicas: 1 }, { node: 'node11' }, { node: 'node12', replicas: 0 }],
+            replicas: 1,
+          },
+        ],
+        ['zone-2', { nodes: [{ node: 'node2', replicas: 0 }], replicas: 0 }],
+        ['zone-3', { nodes: [{ node: 'node3', replicas: 0 }], replicas: 0 }],
+      ]);
+
+      // should include zones with no replicas if not enough zones with replicas exist
+      const filteredZones = ft['filterCandidateZones'](maxFt, zones);
+      expect(filteredZones.size).toBe(3);
+      expect(filteredZones.has('zone-1')).toBe(true);
+      expect(filteredZones.has('zone-2')).toBe(true);
+      expect(filteredZones.has('zone-3')).toBe(true);
+    });
+
+    test('4. All zones have zero replicas', () => {
+      const maxFt = 3;
+      const zones = new Map([
+        ['zone-1', { nodes: [{ node: 'node1', replicas: 0 }], replicas: 0 }],
+        ['zone-2', { nodes: [{ node: 'node2' }], replicas: 0 }],
+        ['zone-3', { nodes: [{ node: 'node3' }], replicas: 0 }],
+      ]);
+
+      // should return first "maxFt" zones when all zones have zero replicas
+      const filteredZones = ft['filterCandidateZones'](maxFt, zones);
+
+      expect(filteredZones.size).toBe(3);
+    });
+
+    test('5. maxFt equals number of zones with replicas', () => {
+      const maxFt = 3;
+      const zones = new Map([
+        [
+          'zone-1',
+          {
+            nodes: [{ node: 'node1', replicas: 1 }, { node: 'node11' }, { node: 'node12', replicas: 0 }],
+            replicas: 1,
+          },
+        ],
+        ['zone-2', { nodes: [{ node: 'node2', replicas: 1 }], replicas: 1 }],
+        ['zone-3', { nodes: [{ node: 'node3', replicas: 0 }], replicas: 0 }],
+      ]);
+
+      // should return all maxFt zones with replicas and zones with no replicas if maxFt > number of zones with replicas
+      const filteredZones = ft['filterCandidateZones'](maxFt, zones);
+
+      expect(filteredZones.size).toBe(3);
+    });
   });
-  test('filterCandidateNodes', () => {
-    // TODO
+
+  describe('filterCandidateNodes', () => {
+    test('1. All Nodes have replicas, more than maxFt', () => {
+      const maxFt = 2;
+      const nodes = [
+        { node: 'node1', replicas: 1 },
+        { node: 'node2', replicas: 2 },
+        { node: 'node3', replicas: 5 },
+        { node: 'node4', replicas: 2 },
+      ];
+
+      // should return all maxFt nodes with replicas
+      const filteredNodes = ft['filterCandidateNodes'](maxFt, nodes);
+
+      expect(filteredNodes.length).toBe(4);
+    });
+
+    test('2. Not enough nodes with replicas to meet maxFt', () => {
+      const maxFt = 4;
+      const nodes = [
+        { node: 'node1', replicas: 1 },
+        { node: 'node2' },
+        { node: 'node3' },
+        { node: 'node4', replicas: 0 },
+      ];
+
+      const filteredNodes = ft['filterCandidateNodes'](maxFt, nodes);
+
+      expect(filteredNodes.length).toBe(4);
+      expect(filteredNodes.filter((n) => n.replicas && n.replicas > 0).length).toBe(1);
+    });
+
+    test('3. All nodes have zero replicas', () => {
+      const maxFt = 3;
+      const nodes = [{ node: 'node1', replicas: 0 }, { node: 'node2' }, { node: 'node3' }, { node: 'node4' }];
+
+      const filteredNodes = ft['filterCandidateNodes'](maxFt, nodes);
+
+      expect(filteredNodes.length).toBe(3);
+    });
+
+    test('4. maxFt equals number of nodes with replicas', () => {
+      const maxFt = 2;
+      const nodes = [
+        { node: 'node1', replicas: 1 },
+        { node: 'node2', replicas: 1 },
+        { node: 'node3', replicas: 0 },
+        { node: 'node4', replicas: 0 },
+      ];
+
+      const filteredNodes = ft['filterCandidateNodes'](maxFt, nodes);
+
+      expect(filteredNodes.length).toBe(2);
+      expect(filteredNodes.every((n) => n.replicas && n.replicas > 0)).toBe(true);
+    });
   });
   // getMostLoadedNode()
   describe('Get Most Loaded Node By Metric Type With the most Replicas', () => {
@@ -88,7 +233,7 @@ describe('FaultTolerance - Helper Functions', () => {
       test('Metric Type CPU', () => {
         // Create an array of loaded nodes with their names and zones
         const sortNodesByLoad = FaultMapper.toMostHighLoadedNodes(DummyCluster.Nodes, MetricsType.CPU, weights);
-        console.log(sortNodesByLoad);
+
         const loadedNodes = sortNodesByLoad.map(({ name, zone }) => ({
           node: name,
           zone,
@@ -109,7 +254,7 @@ describe('FaultTolerance - Helper Functions', () => {
       test('Metric Type MEMORY', () => {
         // Create an array of loaded nodes with their names and zones
         const sortNodesByLoad = FaultMapper.toMostHighLoadedNodes(DummyCluster.Nodes, MetricsType.MEMORY, weights);
-        console.log(sortNodesByLoad);
+
         const loadedNodes = sortNodesByLoad.map(({ name, zone }) => ({
           node: name,
           zone,

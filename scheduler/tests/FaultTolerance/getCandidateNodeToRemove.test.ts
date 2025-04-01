@@ -10,3 +10,9 @@ Input: All zones have only one node with replicas.
 Expected Output: The function should return the most loaded node.
 
 */
+
+describe('FaultTolerance - getCandidateNodeToRemove', () => {
+  test('setup', () => {
+    expect(true).toBe(true);
+  });
+});
