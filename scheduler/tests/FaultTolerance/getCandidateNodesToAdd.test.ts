@@ -232,27 +232,59 @@ describe('FaultTolerance - getCandidateNodesToAdd', () => {
   // Input: Zone-1 has replicas, Zone-2 has available nodes, but some without resources
   // Expected Output: Only nodes in Zone-2 that have available resources
   test('Scenario 7: Ignore zones without resources', () => {
-    expect(true).toBe(true);
+    // nodes with resources
+    const zones = { 'zone-1': DummyCluster.AzTopology['zone-1'], 'zone-2': DummyCluster.AzTopology['zone-2'] };
+
+    const nodesWithResources = [
+      {
+        name: 'node1',
+        zone: 'zone-1',
+        ...commonDataNodes,
+      },
+      {
+        name: 'node12',
+        zone: 'zone-1',
+        ...commonDataNodes,
+      },
+      {
+        name: 'node2',
+        zone: 'zone-2',
+        ...commonDataNodes,
+      },
+    ];
+
+    const dummyDeploys = [];
+    dummyDeploys.push({
+      node: 'node1',
+      pod: `frontend-[1]`,
+      ...commonData,
+    });
+
+    const ft: FaultTolerance = new FaultTolerance({
+      deployment: 'frontend',
+      replicaPods: dummyDeploys,
+      nodeMetrics: nodesWithResources,
+      zonesNodes: zones,
+    });
+
+    const cNodes = ft.getCandidateNodesToAdd();
+
+    expect(cNodes.length).toBe(1);
+    expect(cNodes[0]).toBe('node2');
   });
 
   // Scenario 8: All zones and nodes have no available resources
   // Input: Dummy.Nodes = [] (no capacity)
   // Expected Output: Empty array
   test('Scenario 8: No candidates due to lack of resources', () => {
-    expect(true).toBe(true);
-  });
+    const ft: FaultTolerance = new FaultTolerance({
+      deployment: 'frontend',
+      replicaPods: DummyDeployments['frontend'],
+      nodeMetrics: [],
+      zonesNodes: DummyCluster.AzTopology,
+    });
 
-  // Scenario 9: Select single node with resources from partially available zone
-  // Input: Zone-1 has 3 nodes, only one with resources, Zone-2 has none
-  // Expected Output: That single node in Zone-1 with available resources
-  test('Scenario 9: Select single node with resources from partially available zone', () => {
-    expect(true).toBe(true);
-  });
-
-  // Scenario 10: Zones with Nodes with No available resources
-  // Input: All without Dummy.Nodes=[]
-  // Expected Output: empty array
-  test('Scenario 10: No available resources', () => {
-    expect(true).toBe(true);
+    const cNodes = ft.getCandidateNodesToAdd();
+    expect(cNodes.length).toBe(0);
   });
 });

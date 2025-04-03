@@ -11,73 +11,177 @@ Expected Output: The function should return the most loaded node.
 
 */
 
+import { PodMetrics } from '../../src/adapters/k8s/types';
+import { FaultTolerance } from '../../src/core/optiScaler/services/faultTolerance.service';
+import { MetricsType } from '../../src/enums';
+import { DummyCluster } from './data/cluster';
+import { DummyDeployments } from './data/deployments';
+
+const commonData = {
+  usage: {
+    cpu: 209.725584,
+    memory: 253.30078125,
+  },
+  percentUsage: {
+    cpu: 0.7,
+    memory: 0.8,
+    cpuAndMemory: 0.666342602944664,
+  },
+  requested: {
+    cpu: 60.00000000000001,
+    memory: 104,
+  },
+  limits: {
+    cpu: 300.00000000000006,
+    memory: 253,
+  },
+};
+
+const weights = {
+  CPU: 0.5,
+  Memory: 0.5,
+};
+
 describe('FaultTolerance - getCandidateNodeToRemove', () => {
-  test('setup', () => {
-    expect(true).toBe(true);
+  // Scenario 1: All zones have exactly one replica
+  // Input: 3 zones, each with one replica
+  // Expected Output: The most loaded node from any zone (based on CPU/Memory usage or custom weights). All zones have one replica
+  describe('Scenario 1: All zones have exactly one replica', () => {
+    test('Metric type CPU', () => {
+      const ft: FaultTolerance = new FaultTolerance({
+        deployment: 'frontend',
+        replicaPods: DummyDeployments['frontend'],
+        nodeMetrics: DummyCluster.Nodes,
+        zonesNodes: DummyCluster.AzTopology,
+      });
+
+      const cNode = ft.getCandidateNodeToRemove(MetricsType.CPU, weights);
+
+      expect(cNode.length).toBe(1);
+      expect(cNode[0]).toBe('node3');
+    });
+    test('Metric type Memory', () => {
+      const ft: FaultTolerance = new FaultTolerance({
+        deployment: 'frontend',
+        replicaPods: DummyDeployments['frontend'],
+        nodeMetrics: DummyCluster.Nodes,
+        zonesNodes: DummyCluster.AzTopology,
+      });
+
+      const cNode = ft.getCandidateNodeToRemove(MetricsType.MEMORY, weights);
+
+      expect(cNode.length).toBe(1);
+      expect(cNode[0]).toBe('node1');
+    });
+    test('Metric type CPU-MEMORY', () => {
+      const ft: FaultTolerance = new FaultTolerance({
+        deployment: 'frontend',
+        replicaPods: DummyDeployments['frontend'],
+        nodeMetrics: DummyCluster.Nodes,
+        zonesNodes: DummyCluster.AzTopology,
+      });
+
+      const cNode = ft.getCandidateNodeToRemove(MetricsType.CPU_MEMORY, weights);
+
+      expect(cNode.length).toBe(1);
+      expect(cNode[0]).toBe('node3');
+    });
   });
 
-  //   ✅ Scenario 1: All zones have exactly one replica
-  // Input: 3 zones, each with one replica
-
-  // Expected Output: The most loaded node from any zone (based on CPU/Memory usage or custom weights)
-
-  // test('Scenario 1: All zones have exactly one replica', () => {
-  //   // Should return the node with highest usage among node1, node2, node3
-  // });
-  // ✅ Scenario 2: One zone has more replicas than others
+  // Scenario 2: One zone has more replicas than others
   // Input: Zone-1 has 3 replicas, Zone-2 has 1, Zone-3 has 1
-
   // Expected Output: The most loaded node from Zone-1
+  describe('Scenario 2: All nones in zone with the most replicas have exactly one replica', () => {
+    const nodes = [
+      {
+        name: 'node1',
+        zone: 'zone-1',
+        capacity: { cpu: 940, memory: 2802.3984375 },
+        allocatable: { cpu: 940, memory: 2802.3984375 },
+        requested: { cpu: 850, memory: 872 },
+        limits: { cpu: 3225, memory: 2247 },
+        freeToUse: { cpu: 100, memory: 1330.3984375 },
+      },
+      {
+        name: 'node11',
+        zone: 'zone-1',
+        capacity: { cpu: 940, memory: 2802.3984375 },
+        allocatable: { cpu: 940, memory: 2802.3984375 },
+        requested: { cpu: 850, memory: 872 },
+        limits: { cpu: 3225, memory: 2247 },
+        freeToUse: { cpu: 300, memory: 630.3984375 },
+      },
+      {
+        name: 'node12',
+        zone: 'zone-1',
+        capacity: { cpu: 940, memory: 2802.3984375 },
+        allocatable: { cpu: 940, memory: 2802.3984375 },
+        requested: { cpu: 850, memory: 872 },
+        limits: { cpu: 3225, memory: 2247 },
+        freeToUse: { cpu: 150, memory: 730.3984375 },
+      },
+    ];
+    const dummyDeploys: PodMetrics[] = [];
+    dummyDeploys.push({
+      node: 'node2',
+      pod: `frontend-21`,
+      ...commonData,
+    });
 
-  // test('Scenario 2: One zone is more populated', () => {
-  //   // Should select the most loaded node in Zone-1
-  // });
-  // ✅ Scenario 3: All zones have a single node with replicas
-  // Input: Each zone has only 1 node and 1 replica
+    dummyDeploys.push({
+      node: 'node3',
+      pod: `frontend-31`,
+      ...commonData,
+    });
 
-  // Expected Output: The most loaded node among them
+    for (let i = 0; i < 3; i++) {
+      dummyDeploys.push({
+        node: i === 0 ? 'node1' : `node1${i}`,
+        pod: `frontend-${i}`,
+        ...commonData,
+      });
+    }
 
-  // test('Scenario 3: Only one replica per zone', () => {
-  //   // Should still return the most loaded node
-  // });
-  // ✅ Scenario 4: One node is much more loaded than others
-  // Input: All zones balanced in replica count, but one node is overloaded
+    test('Metric type CPU', () => {
+      const ft: FaultTolerance = new FaultTolerance({
+        deployment: 'frontend',
+        replicaPods: dummyDeploys,
+        nodeMetrics: nodes,
+        zonesNodes: DummyCluster.AzTopology,
+      });
 
-  // Expected Output: That overloaded node should be returned
+      const cNode = ft.getCandidateNodeToRemove(MetricsType.CPU, weights);
 
-  // test('Scenario 4: One node is significantly overloaded', () => {
-  //   // Should select the overloaded node, even if zone replica count is even
-  // });
-  // ✅ Scenario 5: Only one zone has multiple nodes
-  // Input: Zone-1 has multiple nodes and replicas, others have one node
+      expect(cNode.length).toBe(1);
+      expect(cNode[0]).toBe('node1');
+    });
 
-  // Expected Output: Most loaded node from Zone-1 if it has most replicas
+    test('Metric type Memory', () => {
+      const ft: FaultTolerance = new FaultTolerance({
+        deployment: 'frontend',
+        replicaPods: dummyDeploys,
+        nodeMetrics: nodes,
+        zonesNodes: DummyCluster.AzTopology,
+      });
 
-  // test('Scenario 5: Zone with more nodes', () => {
-  //   // Should select the most loaded from zone with max replicas
-  // });
-  // ✅ Scenario 6: All nodes heavily loaded but in different zones
-  // Input: All nodes have similar replicas, but load varies significantly
+      const cNode = ft.getCandidateNodeToRemove(MetricsType.MEMORY, weights);
 
-  // Expected Output: Most loaded node regardless of zone
+      expect(cNode.length).toBe(1);
+      expect(cNode[0]).toBe('node11');
+    });
 
-  // test('Scenario 6: Equal replicas, uneven resource usage', () => {
-  //   // Most loaded node should be selected
-  // });
-  // ✅ Scenario 7: Weighted usage type (CPU vs Memory vs Combined)
-  // Input: Replica distribution is same, load differs depending on metric type
+    test('Metric type CPU-MEMORY', () => {
+      const ft: FaultTolerance = new FaultTolerance({
+        deployment: 'frontend',
+        replicaPods: dummyDeploys,
+        nodeMetrics: nodes,
+        zonesNodes: DummyCluster.AzTopology,
+      });
 
-  // Expected Output: Selected node depends on the weight configuration
+      const cNode = ft.getCandidateNodeToRemove(MetricsType.CPU_MEMORY, weights);
 
-  // test('Scenario 7: Metric weights affect node choice', () => {
-  //   // Depending on metric type and weight, node selection will change
-  // });
-  // ✅ Scenario 8: All zones have same replica count but different number of nodes
-  // Input: Zone-1 has 3 nodes, Zone-2 and Zone-3 have 1 each
-
-  // Expected Output: Still select the most loaded node from a zone with the highest replica count
-
-  // test('Scenario 8: More nodes in a zone with same replicas', () => {
-  //   // Should consider replica count not node count
-  // });
+      expect(cNode.length).toBe(1);
+      expect(cNode[0]).toBe('node12');
+    });
+  });
 });
