@@ -17,13 +17,13 @@ import type { ConfigMetrics, DeploymentReplicaPodsMetrics } from '../../types';
 import type * as k8s from '@kubernetes/client-node';
 
 export class KubernetesAdapterImpl implements KubernetesAdapter {
-  private metrics: MetricsService;
-  private namespaceAdapter: NamespaceService;
-  private resource: ResourceService;
-  private deployment: DeploymentService;
-  private pod: PodService;
-  private node: NodeService;
-  private metricsType: ConfigMetrics = Config.metrics;
+  private readonly metrics: MetricsService;
+  private readonly namespaceAdapter: NamespaceService;
+  private readonly resource: ResourceService;
+  private readonly deployment: DeploymentService;
+  private readonly pod: PodService;
+  private readonly node: NodeService;
+  private readonly metricsType: ConfigMetrics = Config.metrics;
 
   constructor() {
     const metricClient = K8sClientApiFactory.getClient(K8sClientTypeApi.METRICS) as k8s.Metrics;

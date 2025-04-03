@@ -10,7 +10,6 @@ Scenario 12: If multiple nodes have the same load, the function should pick the 
 getNodesWithinSkew
 Scenario 13: If all nodes have similar replicas, the function should return all of them.
 Scenario 14: If a few nodes have significantly higher replicas than the others, they should be filtered out.
-
  */
 
 import { DummyCluster } from './data/cluster';
