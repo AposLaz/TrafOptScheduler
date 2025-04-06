@@ -1,5 +1,4 @@
 import { OptiBalancerMapper } from './mapper';
-import { MetricsType } from '../../adapters/k8s/enums';
 
 import type {
   DestinationRule,
@@ -12,11 +11,12 @@ import type { KubernetesAdapterImpl } from '../../adapters/k8s';
 import type { PodMetrics } from '../../adapters/k8s/types';
 import type { PrometheusAdapterImpl } from '../../adapters/prometheus';
 import type { GraphDataRps, NodesLatency } from '../../adapters/prometheus/types';
+import { MetricsType } from '../../enums';
 
 export class OptiBalancer {
-  private k8s: KubernetesAdapterImpl;
-  private prom: PrometheusAdapterImpl;
-  private metricType: MetricsType;
+  private readonly k8s: KubernetesAdapterImpl;
+  private readonly prom: PrometheusAdapterImpl;
+  private readonly metricType: MetricsType;
 
   constructor(k8s: KubernetesAdapterImpl, prometheus: PrometheusAdapterImpl, metricType: MetricsType) {
     this.k8s = k8s;

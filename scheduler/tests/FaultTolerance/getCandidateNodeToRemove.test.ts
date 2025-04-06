@@ -11,11 +11,12 @@ Expected Output: The function should return the most loaded node.
 
 */
 
-import { PodMetrics } from '../../src/adapters/k8s/types';
-import { FaultTolerance } from '../../src/core/optiScaler/services/faultTolerance.service';
-import { MetricsType } from '../../src/enums';
 import { DummyCluster } from './data/cluster';
 import { DummyDeployments } from './data/deployments';
+import { FaultTolerance } from '../../src/core/optiScaler/services/faultTolerance.service';
+import { MetricsType } from '../../src/enums';
+
+import type { PodMetrics } from '../../src/adapters/k8s/types';
 
 const commonData = {
   usage: {

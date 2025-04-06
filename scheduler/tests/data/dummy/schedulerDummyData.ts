@@ -1,5 +1,5 @@
-import type { NodeLatency, NodeMetrics } from '../../../src/k8s/types';
 import type { GraphDataRps } from '../../../src/adapters/prometheus/types';
+import type { NodeLatency, NodeMetrics } from '../../../src/k8s/types';
 import type {
   DeploymentMultipleRs,
   DeploymentSingleRs,

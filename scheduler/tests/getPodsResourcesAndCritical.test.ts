@@ -7,10 +7,10 @@
 
 import path from 'path';
 
+import { KubernetesAdapterImpl } from '../src/adapters/k8s';
 import { logger } from '../src/config/logger';
 
 import type { KubernetesAdapter } from '../src/adapters/kubernetes.interface';
-import { KubernetesAdapterImpl } from '../src/adapters/k8s';
 // import { PrometheusManager } from '../src/prometheus/manager';
 
 jest.setTimeout(120000);
@@ -32,7 +32,7 @@ beforeAll(async () => {
   // });
 
   // deploy the application from the yaml files
-  const yamlPath = path.join(__dirname, 'data', namespace);
+  // const yamlPath = path.join(__dirname, 'data', namespace);
   // const res = await k8sManager.applyResourcesFromFile(yamlPath);
 
   // expect(res.length).toBe(0);

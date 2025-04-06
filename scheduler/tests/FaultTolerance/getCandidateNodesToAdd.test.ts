@@ -2,9 +2,9 @@
  * Test Cases for getCandidateNodesToAdd
  */
 
-import { FaultTolerance } from '../../src/core/optiScaler/services/faultTolerance.service';
 import { DummyCluster } from './data/cluster';
 import { DummyDeployments } from './data/deployments';
+import { FaultTolerance } from '../../src/core/optiScaler/services/faultTolerance.service';
 
 const commonData = {
   usage: {

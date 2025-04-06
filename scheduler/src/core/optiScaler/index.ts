@@ -12,12 +12,12 @@ import type { MetricsType } from '../../enums';
 import type { MetricWeights } from '../../types';
 
 export class OptiScaler {
-  private scaleAction: ScaleAction;
-  private optiData: OptiScalerType;
-  private ft: FaultTolerance;
-  private prom: PrometheusAdapterImpl;
-  private k8s: KubernetesAdapterImpl;
-  private fileSystem: FileSystemHandler;
+  private readonly scaleAction: ScaleAction;
+  private readonly optiData: OptiScalerType;
+  private readonly ft: FaultTolerance;
+  private readonly prom: PrometheusAdapterImpl;
+  private readonly k8s: KubernetesAdapterImpl;
+  private readonly fileSystem: FileSystemHandler;
 
   constructor(action: ScaleAction, data: OptiScalerType, handles: OptiScalerHandlers) {
     this.optiData = data;
