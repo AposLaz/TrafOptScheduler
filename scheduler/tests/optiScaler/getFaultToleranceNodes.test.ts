@@ -7,6 +7,10 @@ import { MetricsType } from '../../src/enums';
 import { DummyCluster } from './data/cluster';
 import { DummyDeployments } from './data/deployment';
 
+/**
+ * All nodes have 1 replica in each zone
+ */
+
 let k8s: KubernetesAdapterImpl;
 let prometheus: PrometheusAdapterImpl;
 let fileSystem = new FileSystemHandler();
