@@ -45,7 +45,7 @@ export const PrometheusMapper = {
     const nodesLatency = results.map((data) => {
       {
         const nodeMetrics = data.metric as PromNodesLatency;
-        console.log(nodeMetrics);
+
         return {
           from: nodeMetrics.from_node,
           to: nodeMetrics.to_node,
