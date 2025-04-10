@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     "outDir": "./dist",
-    "target": "ES2022",
+    "target": "ES2023",
     "module": "commonjs",
-    "lib": ["es2022", "dom"],
+    "lib": ["es2023", "dom"],
     "typeRoots": ["node_modules/@types"],
     "moduleResolution": "node",
     "declaration": true,
@@ -25,11 +25,6 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true
   },
-  "include": [
-    "src/**/*.ts",
-    "tests/**/*.ts",
-    "eslint.config.mjss",
-    "jest.config.cjs"
-  ],
+  "include": ["src/**/*.ts", "tests/**/*.ts", "eslint.config.mjss", "jest.config.cjs"],
   "exclude": ["dist", "node_modules"]
 }

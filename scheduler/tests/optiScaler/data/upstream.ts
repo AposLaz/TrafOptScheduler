@@ -1,10 +1,10 @@
-export const upstreamPods = [
+export const DummyUpstreamPods = [
   {
-    node: 'gke-cluster-2-pool-1-93709e9b-hh6c',
+    node: 'node1',
     destinations: [
       {
         rps: 2.3777777777777778,
-        node: 'gke-cluster-2-pool-1-93709e9b-hh6c',
+        node: 'node1',
         pod: 'loadgenerator-ccfcbf6d4-ks996',
         source_workload: 'loadgenerator',
         source_version: 'unknown',

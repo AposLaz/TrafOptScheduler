@@ -38,7 +38,7 @@ describe('FaultTolerance - getCandidateNodesToAdd', () => {
   // Scenario 1: Node 1, from zone 1 have available resources
   // Input: all nodes have one replica & the 3 nodes have available resources
   // Expected Output: all 3 nodes
-  test('Scenario 1: Nodes have sufficient resources and are evenly distributed', () => {
+  it('Scenario 1: Nodes have sufficient resources and are evenly distributed', () => {
     const ft: FaultTolerance = new FaultTolerance({
       deployment: 'frontend',
       replicaPods: DummyDeployments['frontend'],
@@ -53,7 +53,7 @@ describe('FaultTolerance - getCandidateNodesToAdd', () => {
   // Scenario 2: Some zones lack resources
   // Input: At least one zone lacks nodes with enough available resources. Frontend deployment have replica to nodes with replicas
   // Expected Output: The returned candidate nodes should only come from zones with available resources.
-  test('Scenario 2: Some zones lack resources', () => {
+  it('Scenario 2: Some zones lack resources', () => {
     // remove node-2, zone2 from the nodes with available resources
     const dummyNodes = DummyCluster.Nodes.filter((node) => node.name !== 'node2');
 
@@ -74,7 +74,7 @@ describe('FaultTolerance - getCandidateNodesToAdd', () => {
   // Scenario 3: A zone do not have any replicas
   // Input: node2 have resources but no replicas and the other 2 zone, nodes have replicas
   // Expected Output: The function should prioritize zones that currently have zero replicas.
-  test('Scenario 3: Deployment replicas are fewer than zones', () => {
+  it('Scenario 3: Deployment replicas are fewer than zones', () => {
     const dummyDeploys = DummyDeployments['frontend'].filter((f) => f.node !== 'node2');
 
     const ft: FaultTolerance = new FaultTolerance({
@@ -92,7 +92,7 @@ describe('FaultTolerance - getCandidateNodesToAdd', () => {
   // Scenario 4: 3 nodes across 3 zones, only one zone has replicas
   // Input: Zone-1 has replicas, Zone-2 and Zone-3 have no replicas
   // Expected Output: Nodes from Zone-2 and Zone-3 (i.e., nodes with no replicas)
-  test('Scenario 4: Select nodes from zones without replicas', () => {
+  it('Scenario 4: Select nodes from zones without replicas', () => {
     const dummyDeploys = DummyDeployments['frontend'].filter((f) => f.node === 'node1');
 
     const ft: FaultTolerance = new FaultTolerance({
@@ -113,7 +113,7 @@ describe('FaultTolerance - getCandidateNodesToAdd', () => {
   // Input: Node-1 has 1 replica, Node-2 and Node-3 each have 6 replicas (maxSkew = 5)
   // Expected Output: Node-1 (least loaded node)
   describe('Scenario 5: Select node with skew of replicas', () => {
-    test('skew=5', () => {
+    it('skew=5', () => {
       const dummyDeploys = [];
       dummyDeploys.push({
         node: 'node1',
@@ -151,7 +151,7 @@ describe('FaultTolerance - getCandidateNodesToAdd', () => {
       expect(cNodes[0]).toBe('node1');
     });
 
-    test('maxSkew=5 && skew=3', () => {
+    it('maxSkew=5 && skew=3', () => {
       const dummyDeploys = [];
       dummyDeploys.push({
         node: 'node1',
@@ -194,7 +194,7 @@ describe('FaultTolerance - getCandidateNodesToAdd', () => {
   // Scenario 6: 1 zone with 3 nodes, only one node has replicas
   // Input: Zone-1 contains Node-1 (with replicas), Node-11, Node-12 (no replicas but has resources)
   // Expected Output: Node-11, Node-12
-  test('Scenario 6: Select nodes in the same zone without replicas', () => {
+  it('Scenario 6: Select nodes in the same zone without replicas', () => {
     // nodes with resources
     const zones = { 'zone-1': DummyCluster.AzTopology['zone-1'] };
     const nodesWithResources = [
@@ -231,7 +231,7 @@ describe('FaultTolerance - getCandidateNodesToAdd', () => {
   // Scenario 7: 2 zones, each with 3 nodes, only one zone has replicas, some nodes have no available resources
   // Input: Zone-1 has replicas, Zone-2 has available nodes, but some without resources
   // Expected Output: Only nodes in Zone-2 that have available resources
-  test('Scenario 7: Ignore zones without resources', () => {
+  it('Scenario 7: Ignore zones without resources', () => {
     // nodes with resources
     const zones = { 'zone-1': DummyCluster.AzTopology['zone-1'], 'zone-2': DummyCluster.AzTopology['zone-2'] };
 
@@ -276,7 +276,7 @@ describe('FaultTolerance - getCandidateNodesToAdd', () => {
   // Scenario 8: All zones and nodes have no available resources
   // Input: Dummy.Nodes = [] (no capacity)
   // Expected Output: Empty array
-  test('Scenario 8: No candidates due to lack of resources', () => {
+  it('Scenario 8: No candidates due to lack of resources', () => {
     const ft: FaultTolerance = new FaultTolerance({
       deployment: 'frontend',
       replicaPods: DummyDeployments['frontend'],

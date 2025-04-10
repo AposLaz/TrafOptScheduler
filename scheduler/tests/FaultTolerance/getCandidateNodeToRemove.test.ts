@@ -48,7 +48,7 @@ describe('FaultTolerance - getCandidateNodeToRemove', () => {
   // Input: 3 zones, each with one replica
   // Expected Output: The most loaded node from any zone (based on CPU/Memory usage or custom weights). All zones have one replica
   describe('Scenario 1: All zones have exactly one replica', () => {
-    test('Metric type CPU', () => {
+    it('Metric type CPU', () => {
       const ft: FaultTolerance = new FaultTolerance({
         deployment: 'frontend',
         replicaPods: DummyDeployments['frontend'],
@@ -61,7 +61,7 @@ describe('FaultTolerance - getCandidateNodeToRemove', () => {
       expect(cNode.length).toBe(1);
       expect(cNode[0]).toBe('node3');
     });
-    test('Metric type Memory', () => {
+    it('Metric type Memory', () => {
       const ft: FaultTolerance = new FaultTolerance({
         deployment: 'frontend',
         replicaPods: DummyDeployments['frontend'],
@@ -74,7 +74,7 @@ describe('FaultTolerance - getCandidateNodeToRemove', () => {
       expect(cNode.length).toBe(1);
       expect(cNode[0]).toBe('node1');
     });
-    test('Metric type CPU-MEMORY', () => {
+    it('Metric type CPU-MEMORY', () => {
       const ft: FaultTolerance = new FaultTolerance({
         deployment: 'frontend',
         replicaPods: DummyDeployments['frontend'],
@@ -143,7 +143,7 @@ describe('FaultTolerance - getCandidateNodeToRemove', () => {
       });
     }
 
-    test('Metric type CPU', () => {
+    it('Metric type CPU', () => {
       const ft: FaultTolerance = new FaultTolerance({
         deployment: 'frontend',
         replicaPods: dummyDeploys,
@@ -157,7 +157,7 @@ describe('FaultTolerance - getCandidateNodeToRemove', () => {
       expect(cNode[0]).toBe('node1');
     });
 
-    test('Metric type Memory', () => {
+    it('Metric type Memory', () => {
       const ft: FaultTolerance = new FaultTolerance({
         deployment: 'frontend',
         replicaPods: dummyDeploys,
@@ -171,7 +171,7 @@ describe('FaultTolerance - getCandidateNodeToRemove', () => {
       expect(cNode[0]).toBe('node11');
     });
 
-    test('Metric type CPU-MEMORY', () => {
+    it('Metric type CPU-MEMORY', () => {
       const ft: FaultTolerance = new FaultTolerance({
         deployment: 'frontend',
         replicaPods: dummyDeploys,

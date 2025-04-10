@@ -51,7 +51,7 @@ describe('FaultTolerance - Helper Functions', () => {
   });
 
   describe('filterCandidateZones', () => {
-    test('1. All Zones have replicas, fewer than maxFt', () => {
+    it('1. All Zones have replicas, fewer than maxFt', () => {
       const maxFt = 3;
       const zones = new Map([
         [
@@ -69,7 +69,7 @@ describe('FaultTolerance - Helper Functions', () => {
       expect(filteredZones.has('zone-2')).toBe(true);
     });
 
-    test('2. All Zones have replicas, more than maxFt', () => {
+    it('2. All Zones have replicas, more than maxFt', () => {
       const maxFt = 2;
       const zones = new Map([
         [
@@ -89,7 +89,7 @@ describe('FaultTolerance - Helper Functions', () => {
       expect(filteredZones.size).toBe(4);
     });
 
-    test('3. Not enough zones with replicas to meet maxFt', () => {
+    it('3. Not enough zones with replicas to meet maxFt', () => {
       const maxFt = 3;
       const zones = new Map([
         [
@@ -111,7 +111,7 @@ describe('FaultTolerance - Helper Functions', () => {
       expect(filteredZones.has('zone-3')).toBe(true);
     });
 
-    test('4. All zones have zero replicas', () => {
+    it('4. All zones have zero replicas', () => {
       const maxFt = 3;
       const zones = new Map([
         ['zone-1', { nodes: [{ node: 'node1', replicas: 0 }], replicas: 0 }],
@@ -125,7 +125,7 @@ describe('FaultTolerance - Helper Functions', () => {
       expect(filteredZones.size).toBe(3);
     });
 
-    test('5. maxFt equals number of zones with replicas', () => {
+    it('5. maxFt equals number of zones with replicas', () => {
       const maxFt = 3;
       const zones = new Map([
         [
@@ -147,7 +147,7 @@ describe('FaultTolerance - Helper Functions', () => {
   });
 
   describe('filterCandidateNodes', () => {
-    test('1. All Nodes have replicas, more than maxFt', () => {
+    it('1. All Nodes have replicas, more than maxFt', () => {
       const maxFt = 2;
       const nodes = [
         { node: 'node1', replicas: 1 },
@@ -162,7 +162,7 @@ describe('FaultTolerance - Helper Functions', () => {
       expect(filteredNodes.length).toBe(4);
     });
 
-    test('2. Not enough nodes with replicas to meet maxFt', () => {
+    it('2. Not enough nodes with replicas to meet maxFt', () => {
       const maxFt = 4;
       const nodes = [
         { node: 'node1', replicas: 1 },
@@ -177,7 +177,7 @@ describe('FaultTolerance - Helper Functions', () => {
       expect(filteredNodes.filter((n) => n.replicas && n.replicas > 0).length).toBe(1);
     });
 
-    test('3. All nodes have zero replicas', () => {
+    it('3. All nodes have zero replicas', () => {
       const maxFt = 3;
       const nodes = [{ node: 'node1', replicas: 0 }, { node: 'node2' }, { node: 'node3' }, { node: 'node4' }];
 
@@ -186,7 +186,7 @@ describe('FaultTolerance - Helper Functions', () => {
       expect(filteredNodes.length).toBe(3);
     });
 
-    test('4. maxFt equals number of nodes with replicas', () => {
+    it('4. maxFt equals number of nodes with replicas', () => {
       const maxFt = 2;
       const nodes = [
         { node: 'node1', replicas: 1 },
@@ -229,7 +229,7 @@ describe('FaultTolerance - Helper Functions', () => {
       ]);
 
       // Metric Type CPU
-      test('Metric Type CPU', () => {
+      it('Metric Type CPU', () => {
         // Create an array of loaded nodes with their names and zones
         const sortNodesByLoad = FaultMapper.toMostHighLoadedNodes(DummyCluster.Nodes, MetricsType.CPU, weights);
 
@@ -250,7 +250,7 @@ describe('FaultTolerance - Helper Functions', () => {
         expect(mostLoadedNode).toEqual('node3');
       });
       // Metric Type MEMORY
-      test('Metric Type MEMORY', () => {
+      it('Metric Type MEMORY', () => {
         // Create an array of loaded nodes with their names and zones
         const sortNodesByLoad = FaultMapper.toMostHighLoadedNodes(DummyCluster.Nodes, MetricsType.MEMORY, weights);
 
@@ -271,7 +271,7 @@ describe('FaultTolerance - Helper Functions', () => {
         expect(mostLoadedNode).toEqual('node1');
       });
       //   // Metric Type MEMORY & CPU
-      test('Metric Type MEMORY & CPU', () => {
+      it('Metric Type MEMORY & CPU', () => {
         // Create an array of loaded nodes with their names and zones
         const sortNodesByLoad = FaultMapper.toMostHighLoadedNodes(DummyCluster.Nodes, MetricsType.CPU_MEMORY, weights);
 
@@ -343,7 +343,7 @@ describe('FaultTolerance - Helper Functions', () => {
       );
 
       // Metric Type CPU
-      test('Metric Type CPU', () => {
+      it('Metric Type CPU', () => {
         // Create an array of loaded nodes with their names and zones
         const sortNodesByLoad = FaultMapper.toMostHighLoadedNodes(newNodes, MetricsType.CPU, weights);
 
@@ -364,7 +364,7 @@ describe('FaultTolerance - Helper Functions', () => {
         expect(mostLoadedNode).toEqual('node13');
       });
       // Metric Type MEMORY
-      test('Metric Type MEMORY', () => {
+      it('Metric Type MEMORY', () => {
         // Create an array of loaded nodes with their names and zones
         const sortNodesByLoad = FaultMapper.toMostHighLoadedNodes(newNodes, MetricsType.MEMORY, weights);
 
@@ -385,7 +385,7 @@ describe('FaultTolerance - Helper Functions', () => {
         expect(mostLoadedNode).toEqual('node14');
       });
       // Metric Type MEMORY & CPU
-      test('Metric Type MEMORY & CPU', () => {
+      it('Metric Type MEMORY & CPU', () => {
         // Create an array of loaded nodes with their names and zones
         const sortNodesByLoad = FaultMapper.toMostHighLoadedNodes(newNodes, MetricsType.CPU_MEMORY, weights);
 
@@ -410,7 +410,7 @@ describe('FaultTolerance - Helper Functions', () => {
 
   // getNodesWithinSkew()
   describe('Get Nodes within the Skew', () => {
-    test('Max Skew = 1', () => {
+    it('Max Skew = 1', () => {
       const nodes = [
         { node: 'node1', replicas: 1 },
         { node: 'node2', replicas: 1 },
@@ -433,7 +433,7 @@ describe('FaultTolerance - Helper Functions', () => {
       expect(nodesWithinSkew2[0].node).toBe('node3');
     });
 
-    test('Max Skew = 5', () => {
+    it('Max Skew = 5', () => {
       const nodes = [
         { node: 'node1', replicas: 7 },
         { node: 'node2', replicas: 2 },
@@ -449,7 +449,7 @@ describe('FaultTolerance - Helper Functions', () => {
   });
 
   // replicaPodsPerNode()
-  test('Get Replica Pods length per Node', () => {
+  it('Get Replica Pods length per Node', () => {
     const addMoreData = [...DummyDeployments['frontend']];
 
     // add 4 more pods to node 1
@@ -478,7 +478,7 @@ describe('FaultTolerance - Helper Functions', () => {
   });
 
   // getZonesWithSufficientResources()
-  test('Get Zones with Sufficient Resources', () => {
+  it('Get Zones with Sufficient Resources', () => {
     const zoneNodes = new Map([
       ['zone-1', { nodes: [{ node: 'node1' }, { node: 'node11' }, { node: 'node12' }], replicas: 1 }],
       ['zone-2', { nodes: [], replicas: 0 }],
@@ -495,7 +495,7 @@ describe('FaultTolerance - Helper Functions', () => {
 
   // getZonesWithinSkew()
   describe('Get Zones within the Skew', () => {
-    test('Max Skew = 1', () => {
+    it('Max Skew = 1', () => {
       const zoneNodes = new Map([
         ['zone-1', { nodes: [{ node: 'node1' }, { node: 'node11' }, { node: 'node12' }], replicas: 0 }],
         ['zone-2', { nodes: [{ node: 'node2' }], replicas: 1 }],
@@ -510,7 +510,7 @@ describe('FaultTolerance - Helper Functions', () => {
       expect(zonesWithinSkew.has('zone-3')).toBe(false);
     });
 
-    test('Max Skew = 5', () => {
+    it('Max Skew = 5', () => {
       // The default max skew is 5
       const zoneNodes = new Map([
         ['zone-1', { nodes: [{ node: 'node1' }, { node: 'node11' }, { node: 'node12' }], replicas: 7 }],

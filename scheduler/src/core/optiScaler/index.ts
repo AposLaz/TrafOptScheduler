@@ -36,8 +36,13 @@ export class OptiScaler {
     if (ftNodes.length === 0) return;
 
     if (this.scaleAction === ScaleAction.UP) {
-      // get the candidate node by Um and Dm
-      const cNode = await this.getCandidateNodeByGraph(ftNodes, metricType, weight);
+      let cNode = ftNodes[0];
+
+      // if the candidate nodes are more than one, find the candidate nodes from the graph
+      if (ftNodes.length > 1) {
+        // get the candidate node by Um and Dm
+        cNode = await this.getCandidateNodeByGraph(ftNodes, metricType, weight);
+      }
 
       const taintNodes = Object.values(this.optiData.zonesNodes).flatMap((n) => {
         const nodes = n.nodes.filter((node) => node !== cNode);
@@ -108,30 +113,30 @@ export class OptiScaler {
       return this.getCandidateNodeByLFU(ftNodes, metricType, weight);
     }
 
-    const nodesLatency = ftNodes.map((node) => {
-      // Find the latency where the upstream node sends traffic to this node
-      const latency = this.optiData.nodesLatency.find(
-        (n) => n.to === node && upstreamNodes.some((um) => um.node === n.from)
-      );
-      // the node send traffic to itself, so the latency is zero
-      if (!latency) {
-        // Get an upstream node that is sending traffic
-        const upstreamNode = upstreamNodes.find((um) =>
-          this.optiData.nodesLatency.some((n) => n.from === um.node && n.to === node)
+    // get nodes latency from the candidate nodes
+    const nodesLatency = ftNodes
+      .map((node) => {
+        // Find the latency where the upstream node sends traffic to this node
+        const latency = this.optiData.nodesLatency.filter(
+          (n) => n.to === node && upstreamNodes.some((um) => um.node === n.from)
         );
 
-        return {
-          from: upstreamNode ? upstreamNode.node : node, // Avoid undefined values
-          to: node,
-          latency: 0,
-        };
-      }
-      return latency;
-    });
+        return latency;
+      })
+      .flatMap((n) => n);
+
+    console.log(nodesLatency);
 
     const weights = calculateWeights(upstreamNodes, ftNodes, nodesLatency);
 
-    const sortByLowestWeight = weights.sort((a, b) => a.weight - b.weight);
+    // Filter out edges with zero weight unless the 'to' node is in upstreamNodes,
+    // effectively prioritizing zero-weight edges that lead to upstream nodes
+    const upstreamNodeSet = new Set(upstreamNodes.map((n) => n.node));
+    const prioritizedWeights = weights.filter((w) => !(w.weight === 0 && !upstreamNodeSet.has(w.from)));
+
+    console.log(prioritizedWeights);
+
+    const sortByLowestWeight = prioritizedWeights.toSorted((a, b) => a.weight - b.weight);
 
     // return the node with the lowest weight
     return sortByLowestWeight[0].to;
@@ -169,7 +174,7 @@ export class OptiScaler {
 
     const weights = calculateWeights(dmNodes, ftNodes, nodesLatency);
 
-    const sortByLowestWeight = weights.sort((a, b) => a.weight - b.weight);
+    const sortByLowestWeight = weights.toSorted((a, b) => a.weight - b.weight);
 
     // return the node with the lowest weight
     return sortByLowestWeight[0].from;

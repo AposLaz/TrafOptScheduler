@@ -41,32 +41,47 @@ export const DummyCluster = {
     {
       from: 'node1',
       to: 'node2',
-      latency: 0.5965775,
+      latency: 0.7060250000000001,
+    },
+    {
+      from: 'node2',
+      to: 'node1',
+      latency: 0.88663,
     },
     {
       from: 'node1',
       to: 'node3',
-      latency: 0.7595974999999999,
+      latency: 0.8242775,
     },
     {
-      from: 'node2',
+      from: 'node3',
       to: 'node1',
-      latency: 0.5947374999999999,
-    },
-    {
-      from: 'node2',
-      to: 'node3',
-      latency: 0.7708200000000001,
+      latency: 0.8736125,
     },
     {
       from: 'node3',
       to: 'node2',
-      latency: 0.7850600000000001,
+      latency: 0.79895,
+    },
+    {
+      from: 'node2',
+      to: 'node3',
+      latency: 0.7874425,
+    },
+    {
+      from: 'node1',
+      to: 'node1',
+      latency: 0,
+    },
+    {
+      from: 'node2',
+      to: 'node2',
+      latency: 0,
     },
     {
       from: 'node3',
-      to: 'node1',
-      latency: 0.7136525,
+      to: 'node3',
+      latency: 0,
     },
   ] as NodesLatency[],
 };

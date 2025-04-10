@@ -42,7 +42,7 @@ export const calculateWeights = (
     };
   });
 
-  // console.log('normalizedLatency', normalizedLatency);
+  //console.log('normalizedLatency', normalizedLatency);
 
   const weights: { from: string; to: string; weight: number }[] = [];
 
