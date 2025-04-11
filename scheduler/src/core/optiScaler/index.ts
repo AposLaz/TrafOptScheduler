@@ -82,19 +82,15 @@ export class OptiScaler {
 
     const downstream = await this.prom.getDownstreamPodGraph(this.optiData.deployment, this.optiData.namespace);
 
-    let cNode = ftNodes[(Math.random() * ftNodes.length) | 0];
-
     if (upstream && upstream.length > 0) {
-      cNode = this.getCandidateNodeByUm(upstream, ftNodes, metricType, weight);
+      return this.getCandidateNodeByUm(upstream, ftNodes, metricType, weight);
     }
 
     if (downstream && downstream.length > 0) {
-      cNode = this.getCandidateNodeByDm(downstream, ftNodes, metricType, weight);
+      return this.getCandidateNodeByDm(downstream, ftNodes, metricType, weight);
     }
 
-    cNode = this.getCandidateNodeByLFU(ftNodes, metricType, weight);
-
-    return cNode;
+    return this.getCandidateNodeByLFU(ftNodes, metricType, weight);
   }
 
   getCandidateNodeByLFU(nodes: string[], metricType: MetricsType, weight: MetricWeights) {
@@ -106,11 +102,11 @@ export class OptiScaler {
 
   getCandidateNodeByUm(upstream: GraphDataRps[], ftNodes: string[], metricType: MetricsType, weight: MetricWeights) {
     // check if the upstream rs pods nodes is candidate node
-    const upstreamNodes = upstream.filter((node) => ftNodes.includes(node.node));
+    let upstreamNodes = upstream.filter((node) => ftNodes.includes(node.node));
 
-    // if do not be candidate node then choose the cNode by LFU
+    // if do not be candidate node then choose the cNode by the node that has the lower latency
     if (upstreamNodes.length === 0) {
-      return this.getCandidateNodeByLFU(ftNodes, metricType, weight);
+      upstreamNodes = upstream.map((node) => node);
     }
 
     // get nodes latency from the candidate nodes
@@ -132,11 +128,11 @@ export class OptiScaler {
     // Filter out edges with zero weight unless the 'to' node is in upstreamNodes,
     // effectively prioritizing zero-weight edges that lead to upstream nodes
     const upstreamNodeSet = new Set(upstreamNodes.map((n) => n.node));
-    const prioritizedWeights = weights.filter((w) => !(w.weight === 0 && !upstreamNodeSet.has(w.from)));
-
-    console.log(prioritizedWeights);
+    const prioritizedWeights = weights.filter((w) => upstreamNodeSet.has(w.from));
 
     const sortByLowestWeight = prioritizedWeights.toSorted((a, b) => a.weight - b.weight);
+
+    console.log(sortByLowestWeight);
 
     // return the node with the lowest weight
     return sortByLowestWeight[0].to;
@@ -144,38 +140,37 @@ export class OptiScaler {
 
   getCandidateNodeByDm(downstream: GraphDataRps[], ftNodes: string[], metricType: MetricsType, weight: MetricWeights) {
     // check if the downstream rs pods nodes is candidate node
-    const dmNodes = downstream.filter((node) => ftNodes.includes(node.node));
+    let dmNodes = downstream.filter((node) => ftNodes.includes(node.node));
 
     // if do not be candidate node then choose the cNode by LFU
     if (dmNodes.length === 0) {
-      return this.getCandidateNodeByLFU(ftNodes, metricType, weight);
+      dmNodes = downstream.map((node) => node);
     }
 
-    const nodesLatency = ftNodes.map((node) => {
-      // Find the latency where the upstream node sends traffic to this node
-      const latency = this.optiData.nodesLatency.find((n) => n.from === node && dmNodes.some((dm) => dm.node === n.to));
-      // the node send traffic to itself, so the latency is zero
-      if (!latency) {
-        // Get an upstream node that is sending traffic
-        const dmNode = dmNodes.find((dm) =>
-          this.optiData.nodesLatency.some((n) => n.to === dm.node && n.from === node)
+    // get nodes latency from the candidate nodes
+    const nodesLatency = ftNodes
+      .map((node) => {
+        // Find the latency where the upstream node sends traffic to this node
+        const latency = this.optiData.nodesLatency.filter(
+          (n) => n.from === node && dmNodes.some((dm) => dm.node === n.to)
         );
 
-        return {
-          from: node,
-          to: dmNode ? dmNode.node : node, // Avoid undefined values
-          latency: 0,
-        };
-      }
-      return latency;
-    });
+        return latency;
+      })
+      .flatMap((n) => n);
 
     console.log(nodesLatency);
 
     const weights = calculateWeights(dmNodes, ftNodes, nodesLatency);
 
-    const sortByLowestWeight = weights.toSorted((a, b) => a.weight - b.weight);
+    // Filter out edges with zero weight unless the 'to' node is in dmNodes,
+    // effectively prioritizing zero-weight edges that lead to dowsntream nodes
+    const dmNodeSet = new Set(dmNodes.map((n) => n.node));
+    const prioritizedWeights = weights.filter((w) => dmNodeSet.has(w.to));
 
+    const sortByLowestWeight = prioritizedWeights.toSorted((a, b) => a.weight - b.weight);
+
+    console.log(sortByLowestWeight);
     // return the node with the lowest weight
     return sortByLowestWeight[0].from;
   }

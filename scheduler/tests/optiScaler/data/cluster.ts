@@ -46,7 +46,7 @@ export const DummyCluster = {
     {
       from: 'node2',
       to: 'node1',
-      latency: 0.88663,
+      latency: 0.86663,
     },
     {
       from: 'node1',

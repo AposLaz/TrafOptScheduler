@@ -46,8 +46,11 @@ export const calculateWeights = (
 
   const weights: { from: string; to: string; weight: number }[] = [];
 
-  // Iterate over all nodes including self-referencing cases
-  ftNodes.forEach((from) => {
+  //
+  const upstreamNodeNames = Array.from(new Set(upstream.map((n) => n.node)));
+
+  // Only calculate weights from upstream nodes to all candidate nodes
+  upstreamNodeNames.forEach((from) => {
     ftNodes.forEach((to) => {
       const normRps = normalizedRequestPerSeconds.find((n) => n.node === from)?.normalizedRps ?? 0;
       const normLatency = normalizedLatency.find((n) => n.from === from && n.to === to)?.normalizedLatency ?? 0;

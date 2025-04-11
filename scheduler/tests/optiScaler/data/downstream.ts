@@ -1,10 +1,10 @@
 export const DummyDownstream = [
   {
-    node: 'gke-cluster-2-pool-1-360501e0-z0tl',
+    node: 'node1',
     destinations: [
       {
-        rps: 1.622222222222222,
-        node: 'gke-cluster-2-pool-1-360501e0-z0tl',
+        rps: 1.6,
+        node: 'node1',
         pod: 'adservice-5df696df54-mfskk',
         source_workload: 'frontend',
         source_version: 'unknown',
@@ -17,11 +17,11 @@ export const DummyDownstream = [
     ],
   },
   {
-    node: 'gke-cluster-2-pool-1-93709e9b-hh6c',
+    node: 'node2',
     destinations: [
       {
-        rps: 12.355555555555554,
-        node: 'gke-cluster-2-pool-1-93709e9b-hh6c',
+        rps: 12.35,
+        node: 'node2',
         pod: 'productcatalogservice-5477df86fd-bwwlw',
         source_workload: 'frontend',
         source_version: 'unknown',
@@ -32,8 +32,8 @@ export const DummyDownstream = [
         destination_workload: 'productcatalogservice',
       },
       {
-        rps: 7.933333333333333,
-        node: 'gke-cluster-2-pool-1-93709e9b-hh6c',
+        rps: 7.9,
+        node: 'node2',
         pod: 'currencyservice-7ff84bf664-nvld2',
         source_workload: 'frontend',
         source_version: 'unknown',
@@ -44,8 +44,8 @@ export const DummyDownstream = [
         destination_workload: 'currencyservice',
       },
       {
-        rps: 0.4888888888888888,
-        node: 'gke-cluster-2-pool-1-93709e9b-hh6c',
+        rps: 0.49,
+        node: 'node2',
         pod: 'shippingservice-77c794d5fd-lnwtj',
         source_workload: 'frontend',
         source_version: 'unknown',
@@ -56,8 +56,8 @@ export const DummyDownstream = [
         destination_workload: 'shippingservice',
       },
       {
-        rps: 0.08888888888888888,
-        node: 'gke-cluster-2-pool-1-93709e9b-hh6c',
+        rps: 0.09,
+        node: 'node2',
         pod: 'checkoutservice-b688bdbb8-58pgx',
         source_workload: 'frontend',
         source_version: 'unknown',
@@ -70,11 +70,11 @@ export const DummyDownstream = [
     ],
   },
   {
-    node: 'gke-cluster-2-pool-1-65f94896-zhc4',
+    node: 'node3',
     destinations: [
       {
-        rps: 2.3777777777777773,
-        node: 'gke-cluster-2-pool-1-65f94896-zhc4',
+        rps: 2.4,
+        node: 'node3',
         pod: 'cartservice-c856dc69c-phcx5',
         source_workload: 'frontend',
         source_version: 'unknown',
@@ -85,8 +85,8 @@ export const DummyDownstream = [
         destination_workload: 'cartservice',
       },
       {
-        rps: 1.822222222222222,
-        node: 'gke-cluster-2-pool-1-65f94896-zhc4',
+        rps: 1.8,
+        node: 'node3',
         pod: 'recommendationservice-f666f74-nwf5c',
         source_workload: 'frontend',
         source_version: 'unknown',
