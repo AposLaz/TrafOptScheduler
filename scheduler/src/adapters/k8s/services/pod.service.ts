@@ -14,14 +14,7 @@ export class PodService {
   }
 
   async fetchPodsByLabels(namespace: string, label?: string) {
-    const pods = await this.client.listNamespacedPod(
-      namespace,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      label
-    );
+    const pods = await this.client.listNamespacedPod(namespace, undefined, undefined, undefined, undefined, label);
 
     if (pods.body.items.length === 0) return;
 

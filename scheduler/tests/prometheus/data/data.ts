@@ -1,4 +1,4 @@
-import { PrometheusResults, PromNodesLatency } from '../../../src/adapters/prometheus/types';
+import type { PrometheusResults, PromNodesLatency } from '../../../src/adapters/prometheus/types';
 
 export const DummyPromMetrics = {
   latency: [

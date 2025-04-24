@@ -9,9 +9,7 @@ export const executePrometheusQuery = async (
   query: string
 ): Promise<PrometheusResponseType | undefined> => {
   try {
-    const result = await axios.get<PrometheusResponseType>(
-      `${prometheusUrl}/api/v1/query?query=${query}`
-    );
+    const result = await axios.get<PrometheusResponseType>(`${prometheusUrl}/api/v1/query?query=${query}`);
 
     return result.data;
   } catch (error) {
@@ -22,10 +20,7 @@ export const executePrometheusQuery = async (
         responseStatus: error.response?.status,
       });
     } else {
-      logger.error(
-        `Unexpected error executing Prometheus query: ${query}`,
-        error
-      );
+      logger.error(`Unexpected error executing Prometheus query: ${query}`, error);
     }
 
     return;

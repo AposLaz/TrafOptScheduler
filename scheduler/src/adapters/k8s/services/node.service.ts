@@ -34,9 +34,7 @@ export class NodeService {
 
       if (taintsExists) {
         // check if exist taints with different key
-        const taintsDiff = taintsExists.filter(
-          (taint) => newTaint.key !== taint.key
-        );
+        const taintsDiff = taintsExists.filter((taint) => newTaint.key !== taint.key);
 
         // if other taints exists let them
         if (taintsDiff.length > 0) concatTaints = [newTaint, ...taintsDiff];
@@ -57,9 +55,7 @@ export class NodeService {
       const taintsExists = node.body.spec?.taints;
       if (taintsExists) {
         // check if exists taints with different key and get them
-        const taintsDiff = taintsExists.filter(
-          (taint) => taintKey !== taint.key
-        );
+        const taintsDiff = taintsExists.filter((taint) => taintKey !== taint.key);
 
         // if other taints exists let them and remove taints with key = taintKey
         node.body.spec!.taints = taintsDiff.length > 0 ? taintsDiff : undefined;

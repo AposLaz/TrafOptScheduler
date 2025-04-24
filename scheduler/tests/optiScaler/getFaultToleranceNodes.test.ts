@@ -1,11 +1,11 @@
+import { DummyCluster } from './data/cluster';
+import { DummyDeployments } from './data/deployment';
 import { FileSystemHandler } from '../../src/adapters/filesystem';
 import { KubernetesAdapterImpl } from '../../src/adapters/k8s';
 import { PrometheusAdapterImpl } from '../../src/adapters/prometheus';
 import { OptiScaler } from '../../src/core/optiScaler';
 import { ScaleAction } from '../../src/core/optiScaler/enums';
 import { MetricsType } from '../../src/enums';
-import { DummyCluster } from './data/cluster';
-import { DummyDeployments } from './data/deployment';
 
 /**
  * All nodes have 1 replica in each zone

@@ -45,14 +45,7 @@ export default [
       'import/order': [
         'error',
         {
-          groups: [
-            'builtin',
-            'external',
-            'internal',
-            ['parent', 'sibling', 'index'],
-            'object',
-            'type',
-          ],
+          groups: ['builtin', 'external', 'internal', ['parent', 'sibling', 'index'], 'object', 'type'],
           alphabetize: {
             order: 'asc',
             caseInsensitive: true,
@@ -61,12 +54,6 @@ export default [
         },
       ],
     },
-    ignores: [
-      '**/node_modules/**',
-      '**/dist/**',
-      '.env*',
-      'eslint.config.js',
-      'jest.config.js',
-    ],
+    ignores: ['**/node_modules/**', '**/dist/**', '.env*', 'eslint.config.js', 'jest.config.js'],
   },
 ];

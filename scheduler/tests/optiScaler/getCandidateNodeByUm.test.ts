@@ -1,14 +1,14 @@
-import { FileSystemHandler } from '../../src/adapters/filesystem';
-import { KubernetesAdapterImpl } from '../../src/adapters/k8s';
-import { NodeMetrics } from '../../src/adapters/k8s/types';
-import { PrometheusAdapterImpl } from '../../src/adapters/prometheus';
-import { NodesLatency } from '../../src/adapters/prometheus/types';
-import { OptiScaler } from '../../src/core/optiScaler';
-import { ScaleAction } from '../../src/core/optiScaler/enums';
-import { MetricsType } from '../../src/enums';
 import { DummyCluster } from './data/cluster';
 import { DummyDeployments } from './data/deployment';
 import { DummyUpstreamPods } from './data/upstream';
+import { FileSystemHandler } from '../../src/adapters/filesystem';
+import { KubernetesAdapterImpl } from '../../src/adapters/k8s';
+import { PrometheusAdapterImpl } from '../../src/adapters/prometheus';
+import { OptiScaler } from '../../src/core/optiScaler';
+import { ScaleAction } from '../../src/core/optiScaler/enums';
+
+import type { NodeMetrics } from '../../src/adapters/k8s/types';
+import type { NodesLatency } from '../../src/adapters/prometheus/types';
 
 let k8s: KubernetesAdapterImpl;
 let prometheus: PrometheusAdapterImpl;
@@ -18,11 +18,6 @@ beforeAll(() => {
   k8s = new KubernetesAdapterImpl();
   prometheus = new PrometheusAdapterImpl();
 });
-
-const weights = {
-  CPU: 0.5,
-  Memory: 0.5,
-};
 
 const commonData = {
   capacity: { cpu: 940, memory: 2802.3984375 },
@@ -95,7 +90,7 @@ describe('OptiScaler => getCandidateNodeByUm', () => {
     };
     const optiScaler = new OptiScaler(ScaleAction.UP, data, { prom: prometheus, k8s: k8s, fileSystem });
     const nodes = data.nodeMetrics.map((node) => node.name);
-    const cNode = optiScaler.getCandidateNodeByUm(DummyUpstreamPods, nodes, MetricsType.CPU, weights);
+    const cNode = optiScaler.getCandidateNodeByUm(DummyUpstreamPods, nodes);
     expect(cNode).toBe('node1');
   });
   /**
@@ -150,18 +145,18 @@ describe('OptiScaler => getCandidateNodeByUm', () => {
         ],
       },
     ];
-    const cNode = optiScaler.getCandidateNodeByUm(DummyUm, nodes, MetricsType.CPU, weights);
+    const cNode = optiScaler.getCandidateNodeByUm(DummyUm, nodes);
     expect(cNode).toBe('node1');
   });
   /**
-   * Scenario 3: 5 Upstream Replica pods
+   * Scenario 3: Scheduling Pod Based on Load Over Latency
    * Description: The loaded pod node will be the Node2 which will have 1 replica pod of the frontend.
    *              The Upstream replica pods will be located on Node1 (1 rs), Node2 (1 rs), Node3 (3 rs).
    *              The Node1, Node2, Node3 will have available resources to add a replica pod of the frontend.
    * Expected Output: The new replica pod should be created on the Node3. Node1 -> Node2 have lower latency than the Node3 -> Node2
    *                  but Node3 have more rps than Node1.
    */
-  it('Upstream count and latency tradeoff', () => {
+  it('Scheduling Pod Based on Load Over Latency', () => {
     const data = {
       deployment: 'frontend',
       namespace: 'online-boutique',
@@ -214,18 +209,18 @@ describe('OptiScaler => getCandidateNodeByUm', () => {
         ],
       },
     ];
-    const cNode = optiScaler.getCandidateNodeByUm(DummyUm, nodes, MetricsType.CPU, weights);
+    const cNode = optiScaler.getCandidateNodeByUm(DummyUm, nodes);
     expect(cNode).toBe('node3');
   });
   /**
-   * Scenario 4: 7 Upstream Replica pods.
+   * Scenario 4: Favoring Higher RPS Over Lower Latency in Pod Placement.
    * Description: The loaded pod node will be the Node2 which will have 3 distributed replica pods of the frontend.
    *              The Upstream replica pods will be located on Node1 (1 rs), Node2 (3 rs), Node3 (3 rs).
    *              The Node1, Node2, Node3 will have available resources to add a replica pod of the frontend.
    * Expected Output: The new replica pod should be created on the Node3 (Because latency on Node3 -> from Node3 = 0). Node1 -> Node2 have lower latency than the Node3 -> Node2
    *                  but Node3 have more rps than Node1 (no much higher).
    */
-  it('Replica saturation across nodes', () => {
+  it('Favoring Higher RPS Over Lower Latency in Pod Placement', () => {
     const data = {
       deployment: 'frontend',
       namespace: 'online-boutique',
@@ -354,24 +349,24 @@ describe('OptiScaler => getCandidateNodeByUm', () => {
         ],
       },
     ];
-    const cNode = optiScaler.getCandidateNodeByUm(DummyUm, nodes, MetricsType.CPU, weights);
+    const cNode = optiScaler.getCandidateNodeByUm(DummyUm, nodes);
     expect(cNode).toBe('node3');
   });
 
   /**
-   * Scenario 5: Upstream and loaded pod one the same Node.
+   * Scenario 5: Node Selection Based on Downstream Latency.
    * Description: The loaded pod node will be the Node1 which will have 1 distributed replica pods of the frontend.
    *              The Upstream replica pods will be located on Node1 (1 rs).
    *              The Node2, Node3 will have available resources to add a replica pod of the frontend.
    * Expected Output: The new replica pod should be created on the Node3 (Because latency from Node1 -> from Node3 < latency from Node1 -> Node2).
    */
-  it('Replica saturation across nodes', () => {
+  it('Node Selection Based on Downstream Latency', () => {
     const data = {
       deployment: 'frontend',
       namespace: 'online-boutique',
       replicaPods: [
         {
-          node: 'node2',
+          node: 'node1',
           pod: 'frontend-6b8cdfd545-c8pwc',
           usage: {
             cpu: 209.725584,
@@ -467,7 +462,13 @@ describe('OptiScaler => getCandidateNodeByUm', () => {
         ],
       },
     ];
-    const cNode = optiScaler.getCandidateNodeByUm(DummyUm, nodes, MetricsType.CPU, weights);
+    const cNode = optiScaler.getCandidateNodeByUm(DummyUm, nodes);
     expect(cNode).toBe('node3');
   });
 });
+
+/** prove that the sum of load pod of all latencies are lower to put Node1 to Node3 */
+/**
+ * 1. Ergasia kinezwn
+ * 2. Google trails
+ */

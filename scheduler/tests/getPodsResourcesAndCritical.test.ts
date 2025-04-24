@@ -5,25 +5,25 @@
 // get the resources again
 // get the resources that the pods have reached the limit of 80% CPU
 
-import path from 'path';
+// import path from 'path';
 
-import { KubernetesAdapterImpl } from '../src/adapters/k8s';
+// import { KubernetesAdapterImpl } from '../src/adapters/k8s';
 import { logger } from '../src/config/logger';
 
-import type { KubernetesAdapter } from '../src/adapters/kubernetes.interface';
+// import type { KubernetesAdapter } from '../src/adapters/kubernetes.interface';
 // import { PrometheusManager } from '../src/prometheus/manager';
 
 jest.setTimeout(120000);
 
-let k8sManager: KubernetesAdapter; // Declare k8sManager in the outer scope
+// let k8sManager: KubernetesAdapter; // Declare k8sManager in the outer scope
 // let promManager: PrometheusManager;
 
-let namespace = 'online-boutique';
+// let namespace = 'online-boutique';
 // connect to the client
 // deploy the app to the namespace
 beforeAll(async () => {
   logger.info('set up the environment');
-  k8sManager = new KubernetesAdapterImpl();
+  // k8sManager = new KubernetesAdapterImpl();
   // promManager = new PrometheusManager();
 
   // create namespace

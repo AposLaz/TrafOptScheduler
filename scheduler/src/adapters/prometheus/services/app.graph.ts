@@ -10,11 +10,7 @@ export class Graph {
     this.prometheusUrl = prometheusUrl;
   }
 
-  async getDeploymentDownstream(
-    deployment: string,
-    namespace: string,
-    time: string
-  ) {
+  async getDeploymentDownstream(deployment: string, namespace: string, time: string) {
     try {
       const query = `sum(rate(istio_requests_total{source_workload="${deployment}", source_workload_namespace="${namespace}", destination_workload!="unknown", reporter="destination", job="kubernetes-pods", response_code!="404"}[${time}])) by (pod, node, destination_workload, destination_service_namespace, destination_service_name, destination_version, source_version, source_workload, source_workload_namespace)`;
       const result = await executePrometheusQuery(this.prometheusUrl, query);
@@ -24,10 +20,7 @@ export class Graph {
         return;
       }
 
-      return PrometheusMapper.toDeploymentGraphDataRpsPerNode(
-        result.data.result,
-        namespace
-      );
+      return PrometheusMapper.toDeploymentGraphDataRpsPerNode(result.data.result, namespace);
     } catch (e: unknown) {
       const error = e as Error;
       logger.error(error);
@@ -35,11 +28,7 @@ export class Graph {
     }
   }
 
-  async getDeploymentUpstream(
-    deployment: string,
-    namespace: string,
-    time: string
-  ) {
+  async getDeploymentUpstream(deployment: string, namespace: string, time: string) {
     try {
       const query = `sum(rate(istio_requests_total{source_workload!="unknown",destination_workload="${deployment}", destination_service_namespace="${namespace}", reporter="source", job="kubernetes-pods", response_code!="404"}[${time}])) by (pod, node, destination_workload, destination_service_namespace, destination_service_name, destination_version, source_version, source_workload, source_workload_namespace)`;
       const result = await executePrometheusQuery(this.prometheusUrl, query);
@@ -49,10 +38,7 @@ export class Graph {
         return;
       }
 
-      return PrometheusMapper.toDeploymentGraphDataRpsPerNode(
-        result.data.result,
-        namespace
-      );
+      return PrometheusMapper.toDeploymentGraphDataRpsPerNode(result.data.result, namespace);
     } catch (e: unknown) {
       const error = e as Error;
       logger.error(error);

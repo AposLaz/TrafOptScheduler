@@ -9,10 +9,7 @@ export class NamespaceService {
     this.client = client;
   }
 
-  async createNamespaceIfNotExists(
-    ns: string,
-    labels?: { [key: string]: string }
-  ) {
+  async createNamespaceIfNotExists(ns: string, labels?: { [key: string]: string }) {
     try {
       const namespace = k8sMapper.toNamespace(ns, labels);
       const res = await this.client.createNamespace(namespace);

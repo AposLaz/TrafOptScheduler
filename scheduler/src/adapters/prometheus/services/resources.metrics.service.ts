@@ -28,10 +28,7 @@ export class ResourcesMetricsService {
     }
   }
 
-  async fetchPodCpuUsageRelativeToLimit(
-    namespace: string,
-    time: string
-  ): Promise<PodResourceUsageType[] | undefined> {
+  async fetchPodCpuUsageRelativeToLimit(namespace: string, time: string): Promise<PodResourceUsageType[] | undefined> {
     try {
       const query = `sum(rate(container_cpu_usage_seconds_total{container!="", pod !="" ,namespace="${namespace}"}[${time}m])) by (pod,namespace) / sum(kube_pod_container_resource_limits{resource="cpu",namespace="${namespace}", container !="", pod !=""}) by (pod,namespace)`;
 
@@ -50,9 +47,7 @@ export class ResourcesMetricsService {
     }
   }
 
-  async fetchPodMemoryUsageRelativeToLimit(
-    namespace: string
-  ): Promise<PodResourceUsageType[] | undefined> {
+  async fetchPodMemoryUsageRelativeToLimit(namespace: string): Promise<PodResourceUsageType[] | undefined> {
     try {
       // memory usage 100%
       const query = `sum(container_memory_working_set_bytes{namespace="${namespace}", pod!="", container != ""}) by (pod,namespace) / sum(kube_pod_container_resource_limits{resource="memory",namespace="${namespace}", container != "", pod !=""}) by (pod,namespace)`;
@@ -85,18 +80,14 @@ export class ResourcesMetricsService {
     ]);
 
     if (!cpuUsage || !memoryUsage) {
-      logger.error(
-        'Error fetching CPU and memory usage data for find the Multicriteria score'
-      );
+      logger.error('Error fetching CPU and memory usage data for find the Multicriteria score');
       return;
     }
 
     // calculate multicriteria function
     const podCpuMemoryUsage = cpuUsage
       .map((podCpu) => {
-        const podMemory = memoryUsage.find(
-          (podMem) => podMem.podName === podCpu.podName
-        );
+        const podMemory = memoryUsage.find((podMem) => podMem.podName === podCpu.podName);
 
         if (!podMemory) {
           logger.error(`No memory data for pod: "${podCpu.podName}"`);

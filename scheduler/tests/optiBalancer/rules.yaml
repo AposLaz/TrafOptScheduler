@@ -31,7 +31,6 @@ spec:
       interval: 10s
       baseEjectionTime: 2m
       maxEjectionPercent: 50
-
 # ---
 
 # ## ADD LABELS TO PODS => kubectl label pod frontend-6b8cdfd545-qvr76 topology.istio.io/cluster=cluster-1 -n online-boutique

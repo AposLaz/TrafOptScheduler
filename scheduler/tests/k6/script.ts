@@ -7,16 +7,7 @@ export const options = {
   // A string specifying the total duration of the test run.
   duration: '1h',
 
-  summaryTrendStats: [
-    'avg',
-    'min',
-    'med',
-    'max',
-    'p(95)',
-    'p(99)',
-    'p(99.99)',
-    'count',
-  ],
+  summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(95)', 'p(99)', 'p(99.99)', 'count'],
 
   // The following section contains configuration options for execution of this
   // test script in Grafana Cloud.

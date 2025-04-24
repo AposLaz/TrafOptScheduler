@@ -1,7 +1,7 @@
 import { ScaleAction } from './enums';
 import { OptiScalerMapper } from './mappers';
 import { FaultTolerance } from './services/faultTolerance.service';
-import { calculateWeights } from './utils';
+import { calculateWeightsDm, calculateWeightsUm } from './utils';
 
 import type { FaultToleranceType, OptiScalerHandlers, OptiScalerType } from './types';
 import type { FileSystemHandler } from '../../adapters/filesystem';
@@ -83,11 +83,11 @@ export class OptiScaler {
     const downstream = await this.prom.getDownstreamPodGraph(this.optiData.deployment, this.optiData.namespace);
 
     if (upstream && upstream.length > 0) {
-      return this.getCandidateNodeByUm(upstream, ftNodes, metricType, weight);
+      return this.getCandidateNodeByUm(upstream, ftNodes);
     }
 
     if (downstream && downstream.length > 0) {
-      return this.getCandidateNodeByDm(downstream, ftNodes, metricType, weight);
+      return this.getCandidateNodeByDm(downstream, ftNodes);
     }
 
     return this.getCandidateNodeByLFU(ftNodes, metricType, weight);
@@ -100,7 +100,7 @@ export class OptiScaler {
     return nodeLFU[0].name;
   }
 
-  getCandidateNodeByUm(upstream: GraphDataRps[], ftNodes: string[], metricType: MetricsType, weight: MetricWeights) {
+  getCandidateNodeByUm(upstream: GraphDataRps[], ftNodes: string[]) {
     // check if the upstream rs pods nodes is candidate node
     let upstreamNodes = upstream.filter((node) => ftNodes.includes(node.node));
 
@@ -123,7 +123,7 @@ export class OptiScaler {
 
     console.log(nodesLatency);
 
-    const weights = calculateWeights(upstreamNodes, ftNodes, nodesLatency);
+    const weights = calculateWeightsUm(upstreamNodes, ftNodes, nodesLatency);
 
     // Filter out edges with zero weight unless the 'to' node is in upstreamNodes,
     // effectively prioritizing zero-weight edges that lead to upstream nodes
@@ -138,7 +138,7 @@ export class OptiScaler {
     return sortByLowestWeight[0].to;
   }
 
-  getCandidateNodeByDm(downstream: GraphDataRps[], ftNodes: string[], metricType: MetricsType, weight: MetricWeights) {
+  getCandidateNodeByDm(downstream: GraphDataRps[], ftNodes: string[]) {
     // check if the downstream rs pods nodes is candidate node
     let dmNodes = downstream.filter((node) => ftNodes.includes(node.node));
 
@@ -152,7 +152,7 @@ export class OptiScaler {
       .map((node) => {
         // Find the latency where the upstream node sends traffic to this node
         const latency = this.optiData.nodesLatency.filter(
-          (n) => n.from === node && dmNodes.some((dm) => dm.node === n.to)
+          (n) => n.to === node && dmNodes.some((dm) => dm.node === n.from)
         );
 
         return latency;
@@ -161,18 +161,17 @@ export class OptiScaler {
 
     console.log(nodesLatency);
 
-    const weights = calculateWeights(dmNodes, ftNodes, nodesLatency);
-
+    const weights = calculateWeightsDm(dmNodes, ftNodes, nodesLatency);
+    console.log(weights);
     // Filter out edges with zero weight unless the 'to' node is in dmNodes,
     // effectively prioritizing zero-weight edges that lead to dowsntream nodes
     const dmNodeSet = new Set(dmNodes.map((n) => n.node));
-    const prioritizedWeights = weights.filter((w) => dmNodeSet.has(w.to));
+    const prioritizedWeights = weights.filter((w) => dmNodeSet.has(w.from));
 
     const sortByLowestWeight = prioritizedWeights.toSorted((a, b) => a.weight - b.weight);
 
-    console.log(sortByLowestWeight);
     // return the node with the lowest weight
-    return sortByLowestWeight[0].from;
+    return sortByLowestWeight[0].to;
   }
 
   getFaultToleranceNodes(metricType: MetricsType, weight: MetricWeights) {

@@ -17,26 +17,12 @@ export class PrometheusAdapterImpl implements PrometheusAdapter {
     this.resourcesMetrics = new ResourcesMetricsService(this.prometheusUrl);
   }
 
-  async getDownstreamPodGraph(
-    deployment: string,
-    namespace: string
-  ): Promise<GraphDataRps[] | undefined> {
-    return this.appGraph.getDeploymentDownstream(
-      deployment,
-      namespace,
-      this.time
-    );
+  async getDownstreamPodGraph(deployment: string, namespace: string): Promise<GraphDataRps[] | undefined> {
+    return this.appGraph.getDeploymentDownstream(deployment, namespace, this.time);
   }
 
-  async getUpstreamPodGraph(
-    deployment: string,
-    namespace: string
-  ): Promise<GraphDataRps[] | undefined> {
-    return this.appGraph.getDeploymentUpstream(
-      deployment,
-      namespace,
-      this.time
-    );
+  async getUpstreamPodGraph(deployment: string, namespace: string): Promise<GraphDataRps[] | undefined> {
+    return this.appGraph.getDeploymentUpstream(deployment, namespace, this.time);
   }
 
   async getNodesLatency(): Promise<NodesLatency[] | undefined> {
