@@ -208,16 +208,17 @@ prometheus:
       servicePort: 9090
       type: ClusterIP
 
-    # extraConfigmapMounts:
-    #     - name: kube-netlag
-    #       mountPath: /etc/config/kube-netlag
-    #       configMap: kube-netlag
-    #       readOnly: true
+    extraConfigmapMounts:
+      - name: kube-netlag
+        mountPath: /etc/config/kube-netlag
+        configMap: kube-netlag
+        readOnly: true
     ## Prometheus server ConfigMap entries for scrape_config_files
     ## (allows scrape configs defined in additional files)
     ##
-  # scrapeConfigFiles:
-  #   - /etc/config/kube-netlag/kube-netlag.yaml
+  scrapeConfigFiles:
+    - /etc/config/kube-netlag/kube-netlag.yaml
+
   extraScrapeConfigs: |-
     - job_name: "kube-state-metrics"
       metrics_path: /metrics
@@ -264,36 +265,36 @@ prometheus:
             ]
           action: keep
           regex: istiod;http-monitoring
-    - job_name: "kube-netlag-daemon"
-      kubernetes_sd_configs:
-        - role: pod
-          namespaces:
-            names:
-              - kube-netlag
-      relabel_configs:
-        - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
-          action: keep
-          regex: kube-netlag
-        - source_labels: [__meta_kubernetes_namespace]
-          action: keep
-          regex: kube-netlag
-        - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
-          action: replace
-          regex: (.+)
-          target_label: __metrics_path__
-          replacement: /metrics
-        - source_labels:
-            [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
-          action: replace
-          regex: (.+):(?:\d+);(9090)
-          replacement: $1:$2
-          target_label: __address__
-        - source_labels: [__meta_kubernetes_pod_node_name]
-          target_label: node
-        - source_labels: [__meta_kubernetes_namespace]
-          target_label: namespace
-        - source_labels: [__meta_kubernetes_pod_name]
-          target_label: pod
+  # - job_name: "kube-netlag-daemon"
+  #   kubernetes_sd_configs:
+  #     - role: pod
+  #       namespaces:
+  #         names:
+  #           - kube-netlag
+  #   relabel_configs:
+  #     - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+  #       action: keep
+  #       regex: kube-netlag
+  #     - source_labels: [__meta_kubernetes_namespace]
+  #       action: keep
+  #       regex: kube-netlag
+  #     - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+  #       action: replace
+  #       regex: (.+)
+  #       target_label: __metrics_path__
+  #       replacement: /metrics
+  #     - source_labels:
+  #         [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+  #       action: replace
+  #       regex: (.+):(?:\d+);(9090)
+  #       replacement: $1:$2
+  #       target_label: __address__
+  #     - source_labels: [__meta_kubernetes_pod_node_name]
+  #       target_label: node
+  #     - source_labels: [__meta_kubernetes_namespace]
+  #       target_label: namespace
+  #     - source_labels: [__meta_kubernetes_pod_name]
+  #       target_label: pod
 
   ## kube-state-metrics sub-chart configurable values
   ## Please see https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-state-metrics
@@ -310,7 +311,6 @@ prometheus:
     ## If false, node-exporter will not be installed
     ##
     enabled: true
-
 
 kiali:
   enabled: true
@@ -349,7 +349,7 @@ kiali:
 
     # Annotations to place in the Kiali CR metadata.
     annotations: {}
-      
+
     spec:
       deployment:
         cluster_wide_access: true

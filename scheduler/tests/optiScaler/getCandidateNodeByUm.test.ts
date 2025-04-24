@@ -466,9 +466,3 @@ describe('OptiScaler => getCandidateNodeByUm', () => {
     expect(cNode).toBe('node3');
   });
 });
-
-/** prove that the sum of load pod of all latencies are lower to put Node1 to Node3 */
-/**
- * 1. Ergasia kinezwn
- * 2. Google trails
- */
