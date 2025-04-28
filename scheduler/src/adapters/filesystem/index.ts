@@ -32,7 +32,9 @@ export class FileSystemHandler {
         await fs
           .writeFile(deployFile, JSON.stringify([]), { flag: 'wx' })
           .then(() => logger.info(`Created required file [${deployFile}] successfully.`))
-          .catch(() => {}); // Ignore error if the file already exists
+          .catch(() => {
+            logger.info(`File [${deployFile}] already exists.`);
+          });
       });
     } catch (error: unknown) {
       const err = error as Error;

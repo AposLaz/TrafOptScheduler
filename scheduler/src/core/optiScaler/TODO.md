@@ -5,6 +5,8 @@ when a replica pod is scale up or down, then get all the downstream replica pods
 "scaled up/down pod 2": ["its downstream pods"]
 }
 
+A -> B
+
 The structure should be something like that
 
 ├── src

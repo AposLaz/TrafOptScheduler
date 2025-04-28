@@ -9,6 +9,7 @@ import { PrometheusAdapterImpl } from '../adapters/prometheus';
 import { Config } from '../config/config';
 import { logger } from '../config/logger';
 import { getPodNodeResources } from '../utils';
+import { setup } from '../config/setup';
 
 /**
  * Setup the entire application
@@ -29,6 +30,8 @@ import { getPodNodeResources } from '../utils';
  */
 export const TrafficScheduler = async () => {
   try {
+    await setup();
+
     // Setup the entire application
     // check if all deploys are ready in background
     // Promise.all([checkNotReadyPodsInQueue()]).then(() => {

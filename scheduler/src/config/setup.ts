@@ -3,12 +3,10 @@ import { FileSystemHandler } from '../adapters/filesystem';
 
 const fileHandler = new FileSystemHandler();
 
-const setup = () => {
+export const setup = async () => {
   // start the app logger
   loggerStartApp();
   // create the base folder path
-  fileHandler.createMountPath();
-  fileHandler.createFile();
+  await fileHandler.createMountPath();
+  await fileHandler.createFile();
 };
-
-setup();

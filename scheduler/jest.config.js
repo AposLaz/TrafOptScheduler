@@ -6,4 +6,7 @@ module.exports = {
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'], // Recognize TypeScript extensions
   transformIgnorePatterns: ['node_modules/(?!@babel/runtime)'], // Ensure node_modules are handled properly
+  collectCoverage: true,
+  collectCoverageFrom: ['src/**/*.{ts,tsx}'],
+  coveragePathIgnorePatterns: ['/node_modules/', '/tests/'],
 };
