@@ -57,6 +57,7 @@ pipeline {
                 container (name: 'sched-builder') {
                     sh '''
                     cd scheduler
+                    npm install --global yarn
                     yarn install
                     '''
                 }
