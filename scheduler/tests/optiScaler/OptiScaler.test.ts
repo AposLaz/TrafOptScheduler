@@ -1,13 +1,13 @@
 import fs from 'node:fs';
 import * as fsSync from 'node:fs/promises';
 
-import { MetricsType, SetupFolderFiles } from '../../src/enums';
-import { setup } from '../../src/config/setup';
-import { OptiScaler } from '../../src/core/optiScaler';
-import { ScaleAction } from '../../src/core/optiScaler/enums';
 import { DummyCluster } from './data/cluster';
 import { DummyDeployments } from './data/deployment';
 import { FileSystemHandler } from '../../src/adapters/filesystem';
+import { setup } from '../../src/config/setup';
+import { OptiScaler } from '../../src/core/optiScaler';
+import { ScaleAction } from '../../src/core/optiScaler/enums';
+import { MetricsType, SetupFolderFiles } from '../../src/enums';
 
 const weights = {
   CPU: 0.5,

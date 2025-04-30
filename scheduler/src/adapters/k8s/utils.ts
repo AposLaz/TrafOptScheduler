@@ -1,7 +1,8 @@
+
 import type { CriticalDeploymentsNodeUsage, DeploymentNodeUsage, ThresholdType } from './types';
 import type { MetricsType } from '../../enums';
 import type { DeploymentReplicaPodsMetrics } from '../../types';
-import { V1Deployment } from '@kubernetes/client-node';
+import type { V1Deployment } from '@kubernetes/client-node';
 
 /**
  * Calculate the average metric for each node of each deployment.

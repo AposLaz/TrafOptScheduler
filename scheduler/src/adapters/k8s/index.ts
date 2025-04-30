@@ -7,6 +7,7 @@ import { NodeService } from './services/node.service';
 import { PodService } from './services/pod.service';
 import { ResourceService } from './services/resources.service';
 import { ThresholdStrategyFactory } from './services/threshold.strategy.service';
+import { isDeploymentFullyRunning } from './utils';
 import { Config } from '../../config/config';
 import { K8sClientApiFactory } from '../../config/k8sClient';
 import { logger } from '../../config/logger';
@@ -15,7 +16,6 @@ import type { KubernetesAdapter } from '../kubernetes.interface';
 import type { ClusterTopology, DeploymentPodMapType, NodeMetrics, PodMetrics, Resources, ThresholdType } from './types';
 import type { ConfigMetrics, DeploymentReplicaPodsMetrics } from '../../types';
 import type * as k8s from '@kubernetes/client-node';
-import { isDeploymentFullyRunning } from './utils';
 
 export class KubernetesAdapterImpl implements KubernetesAdapter {
   private readonly metrics: MetricsService;

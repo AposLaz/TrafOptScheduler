@@ -8,10 +8,11 @@ import { k8sMapper } from '../adapters/k8s/mapper';
 import { PrometheusAdapterImpl } from '../adapters/prometheus';
 import { Config } from '../config/config';
 import { logger } from '../config/logger';
-import { getPodNodeResources } from '../utils';
 import { setup } from '../config/setup';
-import { ClusterTopology } from '../adapters/k8s/types';
-import { NodesLatency } from '../adapters/prometheus/types';
+import { getPodNodeResources } from '../utils';
+
+import type { ClusterTopology } from '../adapters/k8s/types';
+import type { NodesLatency } from '../adapters/prometheus/types';
 
 /**
  * Setup the entire application

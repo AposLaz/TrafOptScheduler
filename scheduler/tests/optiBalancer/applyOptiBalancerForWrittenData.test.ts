@@ -1,10 +1,11 @@
+import fs from 'node:fs';
+import * as fsSync from 'node:fs/promises';
+
 import { FileSystemHandler } from '../../src/adapters/filesystem';
 import { KubernetesAdapterImpl } from '../../src/adapters/k8s';
 import { PrometheusAdapterImpl } from '../../src/adapters/prometheus';
 import { setup } from '../../src/config/setup';
 import { SetupFolderFiles } from '../../src/enums';
-import fs from 'node:fs';
-import * as fsSync from 'node:fs/promises';
 
 let k8s: KubernetesAdapterImpl;
 let prometheus: PrometheusAdapterImpl;
