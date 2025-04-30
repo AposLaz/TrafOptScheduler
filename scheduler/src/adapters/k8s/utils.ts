@@ -1,6 +1,7 @@
 import type { CriticalDeploymentsNodeUsage, DeploymentNodeUsage, ThresholdType } from './types';
 import type { MetricsType } from '../../enums';
 import type { DeploymentReplicaPodsMetrics } from '../../types';
+import { V1Deployment } from '@kubernetes/client-node';
 
 /**
  * Calculate the average metric for each node of each deployment.
@@ -91,4 +92,13 @@ export const classifyDeploymentsByLoad = (
     highLoadedDeployments: filteredHighLoadedDeploys,
     lowLoadedDeployments: filteredLowLoadedDeploys,
   };
+};
+
+export const isDeploymentFullyRunning = (deployment: V1Deployment): boolean => {
+  const desired = deployment.spec?.replicas ?? 0;
+  const ready = deployment.status?.readyReplicas ?? 0;
+  const available = deployment.status?.availableReplicas ?? 0;
+  const updated = deployment.status?.updatedReplicas ?? 0;
+
+  return desired > 0 && desired === ready && desired === available && desired === updated;
 };

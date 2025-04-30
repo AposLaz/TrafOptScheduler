@@ -54,7 +54,6 @@ export class OptiScaler {
       const writeData = {
         deployment: this.optiData.deployment,
         namespace: this.optiData.namespace,
-        node: cNode,
       };
       this.fileSystem.appendData(writeData);
     }
@@ -70,7 +69,6 @@ export class OptiScaler {
       const writeData = {
         deployment: this.optiData.deployment,
         namespace: this.optiData.namespace,
-        node: cNode,
       };
 
       this.fileSystem.appendData(writeData);

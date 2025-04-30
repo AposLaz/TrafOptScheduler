@@ -24,6 +24,10 @@ export class OptiBalancer {
     this.metricType = metricType;
   }
 
+  async ExecuteForHealthyDeployments(data: OptiScalerType) {
+    await this.Execute(data);
+  }
+
   async Execute(data: OptiScalerType) {
     const upstream = await this.prom.getUpstreamPodGraph(data.deployment, data.namespace);
     if (upstream && upstream.length > 0) {

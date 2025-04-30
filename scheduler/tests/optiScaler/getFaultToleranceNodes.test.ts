@@ -26,7 +26,7 @@ const weights = {
 };
 
 describe(`OptiScaler => getFaultToleranceNodes`, () => {
-  test('Fault Tolerance by CPU', () => {
+  it('Fault Tolerance by CPU', () => {
     const data = {
       deployment: 'frontend',
       namespace: 'online-boutique',
@@ -44,7 +44,7 @@ describe(`OptiScaler => getFaultToleranceNodes`, () => {
     expect(ftNodes.some((node) => node === 'node2')).toBe(true);
     expect(ftNodes.some((node) => node === 'node3')).toBe(true);
   });
-  test('Fault Tolerance by MEMORY', () => {
+  it('Fault Tolerance by MEMORY', () => {
     const data = {
       deployment: 'frontend',
       namespace: 'online-boutique',
@@ -62,7 +62,7 @@ describe(`OptiScaler => getFaultToleranceNodes`, () => {
     expect(ftNodes.some((node) => node === 'node2')).toBe(true);
     expect(ftNodes.some((node) => node === 'node3')).toBe(true);
   });
-  test('Fault Tolerance by CPU-MEMORY', () => {
+  it('Fault Tolerance by CPU-MEMORY', () => {
     const data = {
       deployment: 'frontend',
       namespace: 'online-boutique',

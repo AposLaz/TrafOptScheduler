@@ -5,7 +5,7 @@ import { logger } from '../../../config/logger';
 import type { ReplicasAction } from '../types';
 
 export class DeploymentService {
-  private client: k8s.AppsV1Api;
+  private readonly client: k8s.AppsV1Api;
 
   constructor(client: k8s.AppsV1Api) {
     this.client = client;
@@ -22,6 +22,11 @@ export class DeploymentService {
     }
 
     return deployments;
+  }
+
+  async fetchNamespacedDeployments(deployment: string, ns: string) {
+    const res = await this.client.readNamespacedDeployment(deployment, ns);
+    return res.body;
   }
 
   async fetchDeploymentReplicaSetsByNamespace(ns: string) {

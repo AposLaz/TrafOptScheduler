@@ -22,7 +22,7 @@ const weights = {
 };
 
 describe(`OptiScaler => getCandidateNodeByLFU`, () => {
-  test('LFU by CPU', () => {
+  it('LFU by CPU', () => {
     const data = {
       deployment: 'frontend',
       namespace: 'online-boutique',
@@ -39,7 +39,7 @@ describe(`OptiScaler => getCandidateNodeByLFU`, () => {
 
     expect(cNode).toBe('node1');
   });
-  test('LFU by Memory', () => {
+  it('LFU by Memory', () => {
     const data = {
       deployment: 'frontend',
       namespace: 'online-boutique',
@@ -56,7 +56,7 @@ describe(`OptiScaler => getCandidateNodeByLFU`, () => {
 
     expect(cNode).toBe('node2');
   });
-  test('LFU by CPU-Memory', () => {
+  it('LFU by CPU-Memory', () => {
     const data = {
       deployment: 'frontend',
       namespace: 'online-boutique',

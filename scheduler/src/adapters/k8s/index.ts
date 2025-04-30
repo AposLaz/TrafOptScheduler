@@ -15,6 +15,7 @@ import type { KubernetesAdapter } from '../kubernetes.interface';
 import type { ClusterTopology, DeploymentPodMapType, NodeMetrics, PodMetrics, Resources, ThresholdType } from './types';
 import type { ConfigMetrics, DeploymentReplicaPodsMetrics } from '../../types';
 import type * as k8s from '@kubernetes/client-node';
+import { isDeploymentFullyRunning } from './utils';
 
 export class KubernetesAdapterImpl implements KubernetesAdapter {
   private readonly metrics: MetricsService;
@@ -54,7 +55,7 @@ export class KubernetesAdapterImpl implements KubernetesAdapter {
     });
 
     Promise.all(promise).catch((error) => {
-      throw new Error('Error updating nodes:', error);
+      throw new Error('Updating nodes:', error);
     });
   }
   /**
@@ -91,6 +92,16 @@ export class KubernetesAdapterImpl implements KubernetesAdapter {
    */
   async applyResourcesFromFile(specPath: string) {
     return this.resource.applyFromFile(specPath);
+  }
+
+  async checkDeploymentHealthy(deployName: string, ns: string) {
+    const deployment = await this.deployment.fetchNamespacedDeployments(deployName, ns);
+
+    if (isDeploymentFullyRunning(deployment)) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   /**
@@ -298,7 +309,9 @@ export class KubernetesAdapterImpl implements KubernetesAdapter {
         });
 
         // clear unknown pods
-        podsByDeployment[deploymentName].filter((p) => p.node !== 'unknown' && p.pod !== 'unknown');
+        podsByDeployment[deploymentName] = podsByDeployment[deploymentName].filter(
+          (p) => p.node !== 'unknown' && p.pod !== 'unknown'
+        );
       }
     }
 

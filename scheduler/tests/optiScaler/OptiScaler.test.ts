@@ -1,6 +1,5 @@
 import fs from 'node:fs';
 import * as fsSync from 'node:fs/promises';
-import { constants } from 'node:fs';
 
 import { MetricsType, SetupFolderFiles } from '../../src/enums';
 import { setup } from '../../src/config/setup';
@@ -23,7 +22,7 @@ beforeAll(async () => {
 beforeEach(async () => {
   const filePath = `${SetupFolderFiles.DEFAULT_PATH}/${SetupFolderFiles.DEPLOYS_PATH}/${SetupFolderFiles.DEPLOYS_FILE}`;
   const fileExists = await fsSync
-    .access(filePath, constants.F_OK)
+    .access(filePath, fs.constants.F_OK)
     .then(() => true)
     .catch(() => false);
 
@@ -36,7 +35,7 @@ beforeEach(async () => {
 
 afterAll(() => {
   // remove the filesystem
-  fs.rmSync(SetupFolderFiles.DEFAULT_PATH, { recursive: true, force: true });
+  // fs.rmSync(SetupFolderFiles.DEFAULT_PATH, { recursive: true, force: true });
 });
 
 it('check setup of the file system', () => {
@@ -107,7 +106,6 @@ describe('filesystem setup scale up', () => {
     expect(jsonData[0]).toEqual({
       deployment: 'frontend',
       namespace: 'online-boutique',
-      node: 'node1', // Because mocked getCandidateNodeByGraph return 'node1'
     });
 
     await optiScaler.Execute(MetricsType.CPU, weights);
@@ -128,7 +126,6 @@ describe('filesystem setup scale up', () => {
     expect(jsonData2[1]).toEqual({
       deployment: 'frontend',
       namespace: 'online-boutique',
-      node: 'node1', // Because mocked getCandidateNodeByGraph return 'node1'
     });
   });
 });

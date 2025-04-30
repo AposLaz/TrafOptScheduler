@@ -112,4 +112,8 @@ export class FileSystemHandler {
       }
     });
   }
+
+  async readData(): Promise<WriteDataType[]> {
+    return await fs.readFile(deployFile, 'utf-8').then((data) => JSON.parse(data));
+  }
 }
