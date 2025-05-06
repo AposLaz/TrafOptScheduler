@@ -93,17 +93,17 @@ pipeline {
                 }
             }
         }
-        // stage('Dependency-Track Analysis') {
-        //     steps{
-        //         container (name: 'sched-builder') {
-        //             sh '''
-        //                 echo '{"project": "926ca99f-0884-46cf-8dc0-fa1aca48ea01", "bom": "'"$(cat scheduler/bom.json | base64 -w 0)"'"}' > payload.json
-        //             '''
-        //             sh '''
-        //                 curl -X "PUT" ${DEPENDENCY_TRACK_URL} -H 'Content-Type: application/json' -H 'X-API-Key: '${DEPENDENCY_TRACK_API_KEY} -d @payload.json
-        //             '''
-        //         }
-        //     }
-        // }
+        stage('Dependency-Track Analysis') {
+            steps{
+                container (name: 'sched-builder') {
+                    sh '''
+                        echo '{"project": "03b3af51-fef1-4143-9973-5c846ccf16e4", "bom": "'"$(cat scheduler/bom.json | base64 -w 0)"'"}' > payload.json
+                    '''
+                    sh '''
+                        curl -X "PUT" ${DEPENDENCY_TRACK_URL} -H 'Content-Type: application/json' -H 'X-API-Key: '${DEPENDENCY_TRACK_API_KEY} -d @payload.json
+                    '''
+                }
+            }
+        }
     }
 }
