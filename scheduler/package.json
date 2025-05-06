@@ -22,7 +22,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@kubernetes/client-node": "0.22.3",
+    "@kubernetes/client-node": "1.1.2",
     "async-mutex": "^0.5.0",
     "axios": "^1.9.0",
     "child_process": "^1.0.2",
