@@ -25,6 +25,7 @@ export class KubernetesAdapterImpl implements KubernetesAdapter {
   private readonly pod: PodService;
   private readonly node: NodeService;
   private readonly metricsType: ConfigMetrics = Config.metrics;
+  private readonly loggerOperation = logger.child({ operation: 'KubeApi' });
 
   constructor() {
     const metricClient = K8sClientApiFactory.getClient(K8sClientTypeApi.METRICS) as k8s.Metrics;
@@ -95,12 +96,18 @@ export class KubernetesAdapterImpl implements KubernetesAdapter {
   }
 
   async checkDeploymentHealthy(deployName: string, ns: string) {
-    const deployment = await this.deployment.fetchNamespacedDeployments(deployName, ns);
+    try {
+      const deployment = await this.deployment.fetchNamespacedDeployments(deployName, ns);
 
-    if (isDeploymentFullyRunning(deployment)) {
-      return true;
-    } else {
-      return false;
+      if (isDeploymentFullyRunning(deployment)) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e: unknown) {
+      const error = e as Error;
+      this.loggerOperation.error(error);
+      return error;
     }
   }
 
@@ -277,7 +284,7 @@ export class KubernetesAdapterImpl implements KubernetesAdapter {
 
     // Iterate over each deployment
     for (const deployment of deployments) {
-      const deploymentName = deployment.metadata?.name || 'unknown';
+      const deploymentName = deployment.metadata?.name ?? 'unknown';
 
       // Add new deployment
       if (!podsByDeployment[deploymentName]) {
@@ -291,7 +298,7 @@ export class KubernetesAdapterImpl implements KubernetesAdapter {
 
       // Add ReplicaSet names to the Deployment map
       for (const r of rs) {
-        const replicaSetName = r.metadata?.name || 'unknown';
+        const replicaSetName = r.metadata?.name ?? 'unknown';
 
         // Get Pods owned by this ReplicaSet
         const podRs = pods.filter((pod) =>
@@ -300,8 +307,8 @@ export class KubernetesAdapterImpl implements KubernetesAdapter {
 
         // Add Pod names to the Deployment map
         podRs.forEach((pod) => {
-          const podName = pod.metadata?.name || 'unknown';
-          const node = pod.spec?.nodeName || 'unknown';
+          const podName = pod.metadata?.name ?? 'unknown';
+          const node = pod.spec?.nodeName ?? 'unknown';
           podsByDeployment[deploymentName].push({
             pod: podName,
             node: node,

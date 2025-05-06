@@ -6,9 +6,9 @@ import type { MetricWeights } from '../../../types';
 import type { NodeMetrics, PodMetrics } from '../types';
 
 export class MetricsService {
-  private metricClient: k8s.Metrics;
-  private coreClient: k8s.CoreV1Api;
-  private weights: MetricWeights;
+  private readonly metricClient: k8s.Metrics;
+  private readonly coreClient: k8s.CoreV1Api;
+  private readonly weights: MetricWeights;
 
   constructor(metricClient: k8s.Metrics, coreClient: k8s.CoreV1Api, weights: MetricWeights) {
     this.metricClient = metricClient;

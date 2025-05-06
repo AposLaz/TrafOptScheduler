@@ -105,8 +105,3 @@ export class ResourcesMetricsService {
     return podCpuMemoryUsage;
   }
 }
-
-//https://signoz.io/guides/prometheus-queries-to-get-cpu-and-memory-usage-in-kubernetes-pods/
-// const cpuUsage = `100 * (sum(rate(container_cpu_usage_seconds_total{container!="",namespace="online-boutique"}[1m])) by (pod,namespace) / sum(kube_pod_container_resource_limits{resource="cpu",namespace="online-boutique"}) by (pod,namespace))`;
-// const throttledCpu = `sum(rate(container_cpu_cfs_throttled_seconds_total{container!=""}[5m])) by (pod) > 0`;
-// const memoryUsage = `100 * sum(container_memory_working_set_bytes{namespace="online-boutique", pod!=""}) by (pod) / sum(kube_pod_container_resource_limits{resource="memory",namespace="online-boutique"}) by (pod)`;

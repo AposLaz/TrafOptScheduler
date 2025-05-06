@@ -24,10 +24,6 @@ export class OptiBalancer {
     this.metricType = metricType;
   }
 
-  async ExecuteForHealthyDeployments(data: OptiScalerType) {
-    await this.Execute(data);
-  }
-
   async Execute(data: OptiScalerType) {
     const upstream = await this.prom.getUpstreamPodGraph(data.deployment, data.namespace);
     if (upstream && upstream.length > 0) {
@@ -149,7 +145,7 @@ export class OptiBalancer {
 
       // Distribute missing points to the highest fraction values
       trafficAsPercentage
-        .sort((a, b) => b.fraction - a.fraction) // Sort by highest fraction first
+        .toSorted((a, b) => b.fraction - a.fraction) // Sort by highest fraction first
         .slice(0, deficit) // Pick the top 'deficit' items
         .forEach((t) => t.percentage++); // Increment by 1
 

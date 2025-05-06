@@ -6,7 +6,7 @@ export interface KubernetesAdapter {
   addLocalityLabels(): Promise<void>;
   applyResources(resources: k8s.KubernetesObject[]): Promise<k8s.KubernetesObject[]>;
   applyResourcesFromFile(specPath: string): Promise<k8s.KubernetesObject[]>;
-  checkDeploymentHealthy(deployName: string, ns: string): Promise<boolean>;
+  checkDeploymentHealthy(deployName: string, ns: string): Promise<boolean | Error>;
   createNamespace(ns: string, labels?: { [key: string]: string }): Promise<void>;
   getDeploymentsMetrics(namespace: string): Promise<DeploymentReplicaPodsMetrics | undefined>;
   getClusterTopology(): Promise<ClusterTopology[]>;

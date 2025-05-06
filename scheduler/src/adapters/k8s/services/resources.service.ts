@@ -4,8 +4,8 @@ import { logger } from '../../../config/logger';
 import type * as k8s from '@kubernetes/client-node';
 
 export class ResourceService {
-  private client: k8s.KubernetesObjectApi;
-  private customClient: k8s.CustomObjectsApi;
+  private readonly client: k8s.KubernetesObjectApi;
+  private readonly customClient: k8s.CustomObjectsApi;
 
   constructor(client: k8s.KubernetesObjectApi, customClient: k8s.CustomObjectsApi) {
     this.client = client;
@@ -18,8 +18,8 @@ export class ResourceService {
 
     for (const resource of resources) {
       try {
-        if (!resource.metadata || !resource.metadata.name) {
-          logger.error(`Failed to apply resource: ${resource}. Metadata or name is undefined`);
+        if (!resource.metadata?.name) {
+          logger.error(`Failed to apply resource: ${JSON.stringify(resource, null, 2)}. Metadata or name is undefined`);
           notCreated.push(resource);
           continue;
         }
@@ -36,7 +36,7 @@ export class ResourceService {
           kind: resource.kind,
           metadata: {
             name: resource.metadata.name,
-            namespace: resource.metadata.namespace || 'default',
+            namespace: resource.metadata.namespace ?? 'default',
           },
         };
 
@@ -53,7 +53,7 @@ export class ResourceService {
           const response = await this.client.create(resource);
           created.push(`${response.body.metadata!.name!}:${response.body.kind}`);
         } else {
-          logger.error(`Error creating resource: ${resource} / ${err.message}`);
+          logger.error(`Error creating resource: ${JSON.stringify(resource, null, 2)} / ${err.message}`);
           notCreated.push(resource);
         }
       }
@@ -84,14 +84,14 @@ export class ResourceService {
 
   async applyCustomObject(resource: k8s.KubernetesObject): Promise<void> {
     try {
-      if (!resource.metadata || !resource.metadata.name) {
+      if (!resource.metadata?.name) {
         throw new Error(`Resource metadata or name is missing: ${JSON.stringify(resource)}`);
       }
 
       // Extract API information
       const [group, version] = resource.apiVersion ? resource.apiVersion.split('/') : ['', ''];
-      const kind = resource.kind || '';
-      const namespace = resource.metadata.namespace || 'default';
+      const kind = resource.kind ?? '';
+      const namespace = resource.metadata.namespace ?? 'default';
       const name = resource.metadata.name;
       const plural = this.getPluralName(kind); // Get the plural form for CRD
 
@@ -127,7 +127,7 @@ export class ResourceService {
             plural,
             resource
           );
-          logger.info(`Custom Object created: ${response.body}`);
+          logger.info(`Custom Object created: ${JSON.stringify(response.body, null, 2)}`);
         } else {
           logger.error(`Error applying Custom Object: ${JSON.stringify(resource, null, 2)} - ${err.message}`);
         }

@@ -1,7 +1,7 @@
 import type * as k8s from '@kubernetes/client-node';
 
 export class NodeService {
-  private client: k8s.CoreV1Api;
+  private readonly client: k8s.CoreV1Api;
 
   constructor(client: k8s.CoreV1Api) {
     this.client = client;
