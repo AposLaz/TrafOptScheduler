@@ -63,7 +63,7 @@ export class KubernetesAdapterImpl implements KubernetesAdapter {
     });
 
     Promise.all(promise).catch((error) => {
-      throw new Error('Updating nodes:', error);
+      throw new Error(error);
     });
   }
   /**

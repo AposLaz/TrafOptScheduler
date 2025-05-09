@@ -11,9 +11,12 @@ spec:
       labels:
         app: traf-opt-scheduler
     spec:
+      imagePullSecrets:
+        - name: regcred
+      serviceAccountName: traf-opt-scheduler-sa
       containers:
         - name: traf-opt-scheduler
-          image: lpa-controller:latest
+          image: alazidis/opt-scheduler:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 3000
@@ -33,7 +36,7 @@ spec:
             - name: METRICS_UPPER_THRESHOLD
               value: "70"
             - name: METRICS_LOWER_THRESHOLD
-              value: 20
+              value: "20"
           livenessProbe:
             httpGet:
               path: /health
