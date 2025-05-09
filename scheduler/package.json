@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "description": "First of all get resource usage from Nodes, Pods and the available host machines of the cluster. After place a service, resource usage and availability of resources at the host are taken into account",
   "main": "index.ts",
+  "type": "module",
   "scripts": {
-    "start": "ts-node src/index.ts",
+    "start": "node --loader ts-node/esm src/index.ts",
     "build": "tsc",
     "ts-check": "tsc --noEmit",
     "build:clean": "rm -rf tsconfig.build.tsbuildinfo && rm -rf ./dist",
-    "test": "jest --passWithNoTests --detectOpenHandles --forceExit",
+    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --detectOpenHandles --testTimeout=30000",
     "test:ci": "yarn test --colors --coverage --ci",
     "test:stress": "k6 run --compatibility-mode=experimental_enhanced tests/k6/script.ts",
     "test:coverage": "yarn test --coverage",
@@ -22,7 +23,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@kubernetes/client-node": "1.1.2",
+    "@kubernetes/client-node": "1.2.0",
     "async-mutex": "^0.5.0",
     "axios": "^1.9.0",
     "child_process": "^1.0.2",
@@ -31,7 +32,8 @@
     "express": "^5.1.0",
     "figlet": "^1.8.0",
     "js-yaml": "^4.1.0",
-    "winston": "^3.17.0"
+    "winston": "^3.17.0",
+    "ws": "^8.18.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.16.0",
@@ -56,12 +58,12 @@
     "nodemon": "^3.1.7",
     "prettier": "^3.4.1",
     "ts-jest": "^29.2.5",
-    "ts-node": "^10.9.1",
+    "ts-node": "^10.9.2",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.16.0"
   },
   "resolutions": {
-      "tough-cookie": "^4.1.3",
-      "@babel/helpers": ">=7.26.10"
+    "tough-cookie": "^4.1.3",
+    "@babel/helpers": ">=7.26.10"
   }
 }

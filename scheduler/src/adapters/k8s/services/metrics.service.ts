@@ -1,9 +1,9 @@
 import * as k8s from '@kubernetes/client-node';
 
-import { k8sMapper } from '../mapper';
+import { k8sMapper } from '../mapper.ts';
 
-import type { MetricWeights } from '../../../types';
-import type { NodeMetrics, PodMetrics } from '../types';
+import type { MetricWeights } from '../../../types.ts';
+import type { NodeMetrics, PodMetrics } from '../types.ts';
 
 export class MetricsService {
   private readonly metricClient: k8s.Metrics;

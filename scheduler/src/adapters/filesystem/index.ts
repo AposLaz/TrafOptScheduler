@@ -3,10 +3,10 @@ import path from 'node:path';
 
 import { Mutex } from 'async-mutex';
 
-import { logger } from '../../config/logger';
-import { SetupFolderFiles } from '../../enums';
+import { logger } from '../../config/logger.ts';
+import { SetupFolderFiles } from '../../enums.ts';
 
-import type { WriteDataType } from './types';
+import type { WriteDataType } from './types.ts';
 
 const deployPath = path.join(SetupFolderFiles.DEFAULT_PATH, SetupFolderFiles.DEPLOYS_PATH);
 const deployFile = path.join(deployPath, SetupFolderFiles.DEPLOYS_FILE);

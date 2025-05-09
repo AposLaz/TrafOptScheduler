@@ -9,26 +9,26 @@ export class NodeService {
 
   // get Nodes
   async getNodes() {
-    const res = await this.client.listNode();
-    return res.body.items;
+    const response = await this.client.listNode();
+    return response.items;
   }
 
   async addLabels(nodeName: string, labels: { [key: string]: string }) {
-    const node = await this.client.readNode(nodeName);
-    node.body.metadata!.labels = {
-      ...node.body.metadata!.labels,
+    const node = await this.client.readNode({ name: nodeName });
+    node.metadata!.labels = {
+      ...node.metadata!.labels,
       ...labels,
     };
-    return this.client.replaceNode(nodeName, node.body);
+    return this.client.replaceNode({ name: nodeName, body: node });
   }
 
   // apply taints to nodes
   async addTaint(nodeNames: string[], newTaint: k8s.V1Taint) {
     for (const nodeName of nodeNames) {
       // get all nodes and apply the taints
-      const node = await this.client.readNode(nodeName);
+      const node = await this.client.readNode({ name: nodeName });
 
-      const taintsExists = node.body.spec?.taints;
+      const taintsExists = node.spec?.taints;
 
       let concatTaints = [newTaint];
 
@@ -40,9 +40,9 @@ export class NodeService {
         if (taintsDiff.length > 0) concatTaints = [newTaint, ...taintsDiff];
       }
 
-      node.body.spec!.taints = concatTaints;
+      node.spec!.taints = concatTaints;
       // apply taints for the node
-      await this.client.replaceNode(nodeName, node.body);
+      await this.client.replaceNode({ name: nodeName, body: node });
     }
   }
 
@@ -50,18 +50,18 @@ export class NodeService {
   async removeTaint(nodeNames: string[], taintKey: string) {
     for (const nodeName of nodeNames) {
       // set up k8s api
-      const node = await this.client.readNode(nodeName);
+      const node = await this.client.readNode({ name: nodeName });
 
-      const taintsExists = node.body.spec?.taints;
+      const taintsExists = node.spec?.taints;
       if (taintsExists) {
         // check if exists taints with different key and get them
         const taintsDiff = taintsExists.filter((taint) => taintKey !== taint.key);
 
         // if other taints exists let them and remove taints with key = taintKey
-        node.body.spec!.taints = taintsDiff.length > 0 ? taintsDiff : undefined;
+        node.spec!.taints = taintsDiff.length > 0 ? taintsDiff : undefined;
 
         // remove taints
-        await this.client.replaceNode(nodeName, node.body);
+        await this.client.replaceNode({ name: nodeName, body: node });
       }
     }
   }

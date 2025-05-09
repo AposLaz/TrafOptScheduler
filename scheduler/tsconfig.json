@@ -2,7 +2,7 @@
   "compilerOptions": {
     "outDir": "./dist",
     "target": "ES2023",
-    "module": "commonjs",
+    "module": "ESNext",
     "lib": ["es2023", "dom"],
     "typeRoots": ["node_modules/@types"],
     "moduleResolution": "node",
@@ -23,7 +23,8 @@
     "esModuleInterop": true,
     "noPropertyAccessFromIndexSignature": false,
     "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": true
   },
   "include": ["src/**/*.ts", "tests/**/*.ts", "eslint.config.mjss", "jest.config.cjs"],
   "exclude": ["dist", "node_modules"]

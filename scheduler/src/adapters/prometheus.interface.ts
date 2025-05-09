@@ -1,4 +1,4 @@
-import type { NodesLatency, GraphDataRps } from './prometheus/types';
+import type { NodesLatency, GraphDataRps } from './prometheus/types.ts';
 
 export interface PrometheusAdapter {
   getDownstreamPodGraph(deployment: string, namespace: string): Promise<GraphDataRps[] | undefined>;

@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-import { logger } from '../../config/logger';
+import { logger } from '../../config/logger.ts';
 
-import type { PrometheusResponseType } from './types';
+import type { PrometheusResponseType } from './types.ts';
 
 export const executePrometheusQuery = async (
   prometheusUrl: string,

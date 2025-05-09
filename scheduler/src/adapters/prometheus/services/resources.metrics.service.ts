@@ -1,8 +1,8 @@
-import { logger } from '../../../config/logger';
-import { PrometheusMapper } from '../mapper';
-import { executePrometheusQuery } from '../utils';
+import { logger } from '../../../config/logger.ts';
+import { PrometheusMapper } from '../mapper.ts';
+import { executePrometheusQuery } from '../utils.ts';
 
-import type { PodResourceUsageType } from '../types';
+import type { PodResourceUsageType } from '../types.ts';
 
 export class ResourcesMetricsService {
   constructor(private readonly prometheusUrl: string) {

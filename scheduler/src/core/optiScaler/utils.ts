@@ -1,5 +1,5 @@
-import type { CandidateWeights } from './types';
-import type { GraphDataRps, NodesLatency } from '../../adapters/prometheus/types';
+import type { CandidateWeights } from './types.ts';
+import type { GraphDataRps, NodesLatency } from '../../adapters/prometheus/types.ts';
 
 export const calculateWeightsUm = (
   upstream: GraphDataRps[],

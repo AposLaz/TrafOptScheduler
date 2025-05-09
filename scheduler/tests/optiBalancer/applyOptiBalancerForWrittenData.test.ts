@@ -92,7 +92,7 @@ describe('OptiBalancer => applyOptiBalancerForWrittenData', () => {
   //   expect(fileSystem.deleteData).toHaveBeenCalledWith(expect.any(Function));
   // });
 
-  it('should skip unhealthy deployments', () => {
+  it('should skip unhealthy deployments', async () => {
     jest
       .spyOn(k8s, 'checkDeploymentHealthy')
       .mockImplementationOnce(async () => false) // 1st deployment: unhealthy

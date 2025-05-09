@@ -1,8 +1,8 @@
 import * as k8s from '@kubernetes/client-node';
 
-import { logger } from '../../../config/logger';
+import { logger } from '../../../config/logger.ts';
 
-import type { ReplicasAction } from '../types';
+import type { ReplicasAction } from '../types.ts';
 
 export class DeploymentService {
   private readonly client: k8s.AppsV1Api;
@@ -11,65 +11,64 @@ export class DeploymentService {
     this.client = client;
   }
 
-  async fetchDeploymentsByNamespace(ns: string) {
-    const res = await this.client.listNamespacedDeployment(ns);
+  async fetchDeploymentsByNamespace(namespace: string) {
+    const response = await this.client.listNamespacedDeployment({ namespace });
 
     // get Deployments on Namespace
-    const deployments = res.body.items.filter((deploy) => deploy.metadata?.name !== undefined);
+    const deployments = response.items.filter((deploy) => deploy.metadata?.name !== undefined);
     if (deployments.length === 0) {
-      logger.warn(`No Deployments found on Namespace: ${ns}`);
+      logger.warn(`No Deployments found on Namespace: ${namespace}`);
       return;
     }
 
     return deployments;
   }
 
-  async fetchNamespacedDeployments(deployment: string, ns: string) {
-    const res = await this.client.readNamespacedDeployment(deployment, ns);
-    return res.body;
+  async fetchNamespacedDeployments(deployment: string, namespace: string) {
+    const response = await this.client.readNamespacedDeployment({ name: deployment, namespace });
+    return response;
   }
 
-  async fetchDeploymentReplicaSetsByNamespace(ns: string) {
+  async fetchDeploymentReplicaSetsByNamespace(namespace: string) {
     // get Replica sets on Namespace
-    const res = await this.client.listNamespacedReplicaSet(ns);
-    const replicaSets = res.body.items.filter((rs) =>
+    const res = await this.client.listNamespacedReplicaSet({ namespace });
+    const replicaSets = res.items.filter((rs) =>
       rs.metadata?.ownerReferences?.some((owner) => owner.kind === 'Deployment')
     );
     if (replicaSets.length === 0) {
-      logger.warn(`No Replica Sets found on Namespace: ${ns}`);
+      logger.warn(`No Replica Sets found on Namespace: ${namespace}`);
       return;
     }
 
     return replicaSets;
   }
 
-  async handleDeployReplicas(deployName: string, ns: string, action: ReplicasAction) {
-    const deploy = await this.client.readNamespacedDeployment(deployName, ns);
+  async handleDeployReplicas(deployName: string, namespace: string, action: ReplicasAction) {
+    const deploy = await this.client.readNamespacedDeployment({ name: deployName, namespace });
 
     if (action === 'add') {
       logger.info(`Adding 1 replicas to deployment ${deployName}`);
-      deploy.body.spec!.replicas!++;
+      deploy.spec!.replicas!++;
     }
     if (action === 'delete') {
       logger.info(`Deleting 1 replicas to deployment ${deployName}`);
-      deploy.body.spec!.replicas!--;
+      deploy.spec!.replicas!--;
     }
 
+    const patchReplicas = {
+      spec: {
+        replicas: deploy.spec!.replicas,
+      },
+    };
+
     // update replicas
-    await this.client.patchNamespacedDeployment(
-      deployName,
-      ns,
-      deploy.body,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
+    await this.client.patchNamespacedDeploymentScale(
       {
-        headers: {
-          'Content-Type': k8s.PatchUtils.PATCH_FORMAT_STRATEGIC_MERGE_PATCH,
-        },
-      }
+        name: deployName,
+        namespace,
+        body: patchReplicas,
+      },
+      k8s.setHeaderOptions('Content-Type', k8s.PatchStrategy.MergePatch)
     );
   }
 }

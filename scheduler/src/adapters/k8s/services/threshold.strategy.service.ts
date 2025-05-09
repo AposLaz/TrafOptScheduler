@@ -1,8 +1,8 @@
-import { MetricsType } from '../../../enums';
-import { avgDeploymentMetricByNode, classifyDeploymentsByLoad } from '../utils';
+import { MetricsType } from '../../../enums.ts';
+import { avgDeploymentMetricByNode, classifyDeploymentsByLoad } from '../utils.ts';
 
-import type { DeploymentReplicaPodsMetrics } from '../../../types';
-import type { CriticalDeploymentsNodeUsage, ThresholdType } from '../types';
+import type { DeploymentReplicaPodsMetrics } from '../../../types.ts';
+import type { CriticalDeploymentsNodeUsage, ThresholdType } from '../types.ts';
 
 interface ThresholdStrategy {
   evaluateThreshold(deployments: DeploymentReplicaPodsMetrics, threshold: ThresholdType): CriticalDeploymentsNodeUsage;

@@ -1,10 +1,10 @@
-import { logger } from '../../../config/logger';
-import { FaultMapper } from '../mappers';
+import { logger } from '../../../config/logger.ts';
+import { FaultMapper } from '../mappers.ts';
 
-import type { ClusterAzTopology, NodeMetrics, PodMetrics } from '../../../adapters/k8s/types';
-import type { MetricsType } from '../../../enums';
-import type { MetricWeights } from '../../../types';
-import type { FaultNodesReplicas, FaultNodesSumReplicas, FaultToleranceType, FaultZonesNodes } from '../types';
+import type { ClusterAzTopology, NodeMetrics, PodMetrics } from '../../../adapters/k8s/types.ts';
+import type { MetricsType } from '../../../enums.ts';
+import type { MetricWeights } from '../../../types.ts';
+import type { FaultNodesReplicas, FaultNodesSumReplicas, FaultToleranceType, FaultZonesNodes } from '../types.ts';
 
 export class FaultTolerance {
   private readonly deployRs: PodMetrics[];

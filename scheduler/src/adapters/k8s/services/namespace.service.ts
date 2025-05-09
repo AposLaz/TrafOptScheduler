@@ -1,5 +1,5 @@
-import { logger } from '../../../config/logger';
-import { k8sMapper } from '../mapper';
+import { logger } from '../../../config/logger.ts';
+import { k8sMapper } from '../mapper.ts';
 
 import type * as k8s from '@kubernetes/client-node';
 
@@ -12,18 +12,19 @@ export class NamespaceService {
   async createNamespaceIfNotExists(ns: string, labels?: { [key: string]: string }) {
     try {
       const namespace = k8sMapper.toNamespace(ns, labels);
-      const res = await this.client.createNamespace(namespace);
+      const response = await this.client.createNamespace(namespace);
 
-      logger.info(`New namespace created: ${res.body.metadata!.name}`);
+      logger.info(`New namespace created: ${response.metadata!.name}`);
     } catch (error: unknown) {
-      const err = error as k8s.HttpError;
+      const err = error as any;
+      const statusCode = err.statusCode ?? err.code ?? err.response?.statusCode ?? err.response?.status;
       // if namespace does not exists then create it
-      if (err.body.code === 409) {
+      if (Number(statusCode) === 409) {
         logger.info(`Namespace already exists: ${ns}`);
         return;
       }
 
-      logger.error(`Error creating namespace: ${ns} / ${err.message}`);
+      logger.error(`Error creating namespace: ${ns} / ${JSON.stringify(err.body.text(), null, 2)}`);
     }
   }
 }

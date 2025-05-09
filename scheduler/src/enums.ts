@@ -12,7 +12,7 @@ export enum Operators {
 }
 
 export enum SetupFolderFiles {
-  DEFAULT_PATH = '/tmp/data', // TODO add the app path
+  DEFAULT_PATH = '/opt/data', // TODO add the app path
   DEPLOYS_PATH = 'deploys',
   QUEUE_PATH = 'queue',
   DEPLOYS_FILE = 'deploys.json',

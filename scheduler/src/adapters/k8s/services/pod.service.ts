@@ -1,4 +1,4 @@
-import { logger } from '../../../config/logger';
+import { logger } from '../../../config/logger.ts';
 
 import type * as k8s from '@kubernetes/client-node';
 
@@ -9,20 +9,23 @@ export class PodService {
   }
 
   async fetchPodsByNamespace(namespace: string) {
-    const res = await this.client.listNamespacedPod(namespace);
-    return res.body.items;
+    const response = await this.client.listNamespacedPod({ namespace });
+    return response.items;
   }
 
   async fetchPodsByLabels(namespace: string, label?: string) {
-    const pods = await this.client.listNamespacedPod(namespace, undefined, undefined, undefined, undefined, label);
+    const pods = await this.client.listNamespacedPod({
+      namespace,
+      labelSelector: label,
+    });
 
-    if (pods.body.items.length === 0) return;
+    if (pods.items.length === 0) return;
 
-    return pods.body.items;
+    return pods.items;
   }
 
   async deletePod(podName: string, namespace: string) {
     logger.info(`Deleting pod ${podName} from namespace ${namespace}`);
-    await this.client.deleteNamespacedPod(podName, namespace);
+    await this.client.deleteNamespacedPod({ name: podName, namespace });
   }
 }

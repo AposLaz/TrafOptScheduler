@@ -1,5 +1,5 @@
-import type { DestinationRule, DistributedPercentTraffic } from './types';
-import type { ClusterTopology } from '../../adapters/k8s/types';
+import type { DestinationRule, DistributedPercentTraffic } from './types.ts';
+import type { ClusterTopology } from '../../adapters/k8s/types.ts';
 
 export const OptiBalancerMapper = {
   toDestinationRule: (

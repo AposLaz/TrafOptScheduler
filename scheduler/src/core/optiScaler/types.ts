@@ -1,8 +1,8 @@
-import type { FileSystemHandler } from '../../adapters/filesystem';
-import type { KubernetesAdapterImpl } from '../../adapters/k8s';
-import type { ClusterAzTopology, NodeMetrics, PodMetrics } from '../../adapters/k8s/types';
-import type { PrometheusAdapterImpl } from '../../adapters/prometheus';
-import type { NodesLatency } from '../../adapters/prometheus/types';
+import type { FileSystemHandler } from '../../adapters/filesystem/index.ts';
+import type { KubernetesAdapterImpl } from '../../adapters/k8s/index.ts';
+import type { ClusterAzTopology, NodeMetrics, PodMetrics } from '../../adapters/k8s/types.ts';
+import type { PrometheusAdapterImpl } from '../../adapters/prometheus/index.ts';
+import type { NodesLatency } from '../../adapters/prometheus/types.ts';
 
 export type FaultToleranceType = {
   deployment: string;

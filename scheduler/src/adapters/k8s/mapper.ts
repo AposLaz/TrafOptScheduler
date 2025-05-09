@@ -1,8 +1,10 @@
-import { convertResourcesStringToNumber } from '../../common/helpers';
-import { TaintEffects } from '../../enums';
+import { convertResourcesStringToNumber } from '../../common/helpers.ts';
+import { TaintEffects } from '../../enums.ts';
 
-import type { ClusterAzTopology, DeploymentReplicaPods, LatencyProviderType } from './types';
 import type {
+  ClusterAzTopology,
+  DeploymentReplicaPods,
+  LatencyProviderType,
   ClusterTopology,
   DeploymentNotReadyFilesystem,
   DeploymentPlacementModel,
@@ -10,8 +12,8 @@ import type {
   NodeMetrics,
   PodMetrics,
   ZoneLatency,
-} from './types';
-import type { DeploymentReplicaPodsMetrics, MetricWeights } from '../../types';
+} from './types.ts';
+import type { DeploymentReplicaPodsMetrics, MetricWeights } from '../../types.ts';
 import type * as k8s from '@kubernetes/client-node';
 
 const k8sMapper = {
@@ -91,11 +93,13 @@ const k8sMapper = {
     namespace: deployment.namespace,
     deletePod: deployment.deletePod,
   }),
-  toNamespace: (ns: string, labels?: { [key: string]: string }): k8s.V1Namespace => ({
-    metadata: {
-      name: ns,
-      labels: {
-        ...labels,
+  toNamespace: (ns: string, labels?: { [key: string]: string }): k8s.CoreV1ApiCreateNamespaceRequest => ({
+    body: {
+      metadata: {
+        name: ns,
+        labels: {
+          ...labels,
+        },
       },
     },
   }),

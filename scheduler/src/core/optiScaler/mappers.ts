@@ -1,7 +1,7 @@
-import type { FaultNodesReplicas, FaultZonesNodes } from './types';
-import type { ClusterAzTopology, NodeMetrics } from '../../adapters/k8s/types';
-import type { MetricsType } from '../../enums';
-import type { MetricWeights } from '../../types';
+import type { FaultNodesReplicas, FaultZonesNodes } from './types.ts';
+import type { ClusterAzTopology, NodeMetrics } from '../../adapters/k8s/types.ts';
+import type { MetricsType } from '../../enums.ts';
+import type { MetricWeights } from '../../types.ts';
 
 export const OptiScalerMapper = {
   toLFUNodes: (nodes: NodeMetrics[], type: MetricsType, weights: MetricWeights): NodeMetrics[] => {

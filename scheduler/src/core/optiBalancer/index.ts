@@ -1,5 +1,5 @@
-import { OptiBalancerMapper } from './mapper';
-import { MetricsType } from '../../enums';
+import { OptiBalancerMapper } from './mapper.ts';
+import { MetricsType } from '../../enums.ts';
 
 import type {
   DestinationRule,
@@ -8,15 +8,17 @@ import type {
   OptiScalerType,
   TrafficWeights,
 } from './types';
-import type { KubernetesAdapterImpl } from '../../adapters/k8s';
+import type { KubernetesAdapterImpl } from '../../adapters/k8s/index.ts';
 import type { PodMetrics } from '../../adapters/k8s/types';
-import type { PrometheusAdapterImpl } from '../../adapters/prometheus';
+import type { PrometheusAdapterImpl } from '../../adapters/prometheus/index.ts';
 import type { GraphDataRps, NodesLatency } from '../../adapters/prometheus/types';
+import { logger } from '../../config/logger.ts';
 
 export class OptiBalancer {
   private readonly k8s: KubernetesAdapterImpl;
   private readonly prom: PrometheusAdapterImpl;
   private readonly metricType: MetricsType;
+  private readonly loggerOperation = logger.child({ operation: 'OptiBalancer' });
 
   constructor(k8s: KubernetesAdapterImpl, prometheus: PrometheusAdapterImpl, metricType: MetricsType) {
     this.k8s = k8s;
@@ -27,6 +29,11 @@ export class OptiBalancer {
   async Execute(data: OptiScalerType) {
     const upstream = await this.prom.getUpstreamPodGraph(data.deployment, data.namespace);
     if (upstream && upstream.length > 0) {
+      this.loggerOperation.info(`Initialize traffic distribution rules`, {
+        deployment: data.deployment,
+        namespace: data.namespace,
+      });
+
       const traffic = this.calculateTraffic(data, upstream);
       const createDestinationRule = OptiBalancerMapper.toDestinationRule(
         traffic,
@@ -174,7 +181,7 @@ export class OptiBalancer {
 
     const latencyFromTo = latencyTo.filter((node) => graph.some((n) => n.node === node.from));
 
-    console.log(latencyFromTo);
+    console.log('totalLatency', latencyFromTo);
 
     return latencyFromTo.reduce((acc, n) => acc + n.latency, 0);
   }

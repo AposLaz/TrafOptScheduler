@@ -1,5 +1,5 @@
-import { loggerStartApp } from './logger';
-import { FileSystemHandler } from '../adapters/filesystem';
+import { loggerStartApp } from './logger.ts';
+import { FileSystemHandler } from '../adapters/filesystem/index.ts';
 
 const fileHandler = new FileSystemHandler();
 

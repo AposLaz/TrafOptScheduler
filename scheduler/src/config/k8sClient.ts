@@ -1,7 +1,7 @@
 import * as k8s from '@kubernetes/client-node';
 
-import { Config } from './config';
-import { K8sClientTypeApi } from '../adapters//k8s/enums';
+import { Config } from './config.ts';
+import { K8sClientTypeApi } from '../adapters/k8s/enums.ts';
 
 // use Singleton Pattern
 class K8sClientConfig {

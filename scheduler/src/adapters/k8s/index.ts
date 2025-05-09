@@ -1,20 +1,27 @@
-import { K8sClientTypeApi } from './enums';
-import { k8sMapper } from './mapper';
-import { DeploymentService } from './services/deploy.service';
-import { MetricsService } from './services/metrics.service';
-import { NamespaceService } from './services/namespace.service';
-import { NodeService } from './services/node.service';
-import { PodService } from './services/pod.service';
-import { ResourceService } from './services/resources.service';
-import { ThresholdStrategyFactory } from './services/threshold.strategy.service';
-import { isDeploymentFullyRunning } from './utils';
-import { Config } from '../../config/config';
-import { K8sClientApiFactory } from '../../config/k8sClient';
-import { logger } from '../../config/logger';
+import { K8sClientTypeApi } from './enums.ts';
+import { k8sMapper } from './mapper.ts';
+import { DeploymentService } from './services/deploy.service.ts';
+import { MetricsService } from './services/metrics.service.ts';
+import { NamespaceService } from './services/namespace.service.ts';
+import { NodeService } from './services/node.service.ts';
+import { PodService } from './services/pod.service.ts';
+import { ResourceService } from './services/resources.service.ts';
+import { ThresholdStrategyFactory } from './services/threshold.strategy.service.ts';
+import { isDeploymentFullyRunning } from './utils.ts';
+import { Config } from '../../config/config.ts';
+import { K8sClientApiFactory } from '../../config/k8sClient.ts';
+import { logger } from '../../config/logger.ts';
 
-import type { KubernetesAdapter } from '../kubernetes.interface';
-import type { ClusterTopology, DeploymentPodMapType, NodeMetrics, PodMetrics, Resources, ThresholdType } from './types';
-import type { ConfigMetrics, DeploymentReplicaPodsMetrics } from '../../types';
+import type { KubernetesAdapter } from '../kubernetes.interface.ts';
+import type {
+  ClusterTopology,
+  DeploymentPodMapType,
+  NodeMetrics,
+  PodMetrics,
+  Resources,
+  ThresholdType,
+} from './types.ts';
+import type { ConfigMetrics, DeploymentReplicaPodsMetrics } from '../../types.ts';
 import type * as k8s from '@kubernetes/client-node';
 
 export class KubernetesAdapterImpl implements KubernetesAdapter {

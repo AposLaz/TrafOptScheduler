@@ -1,11 +1,20 @@
 import * as dotenv from 'dotenv';
 
-import { MetricsType } from '../enums';
+import { MetricsType } from '../enums.ts';
 
 dotenv.config();
 
 // required environment variables
-const requiredEnvVariables: Array<string> = [];
+const requiredEnvVariables: Array<string> = [
+  'ENV',
+  'APP_PORT',
+  'CRONJOB_TIME',
+  'PROMETHEUS_URL',
+  'NAMESPACES',
+  'METRICS_TYPE',
+  'METRICS_UPPER_THRESHOLD',
+  'METRICS_LOWER_THRESHOLD',
+];
 
 requiredEnvVariables.forEach((envVarName: string) => {
   if (!process.env[envVarName]) {
@@ -18,7 +27,6 @@ export const Config = {
   APP_PORT: process.env.APP_PORT ?? '3000',
   NAMESPACES: process.env.NAMESPACES?.split(',') ?? ['default'], // default is the default namespace
   CRONJOB_TIME: process.env.CRONJOB_TIME ?? '1m',
-  RESPONSE_TIME_THRESHOLD: Number(process.env.RESPONSE_TIME_THRESHOLD) ?? 100,
   metrics: {
     upperThreshold: process.env.METRICS_UPPER_THRESHOLD ? Number(process.env.METRICS_UPPER_THRESHOLD) / 100 : 0.8,
     lowerThreshold: process.env.METRICS_LOWER_THRESHOLD ? Number(process.env.METRICS_LOWER_THRESHOLD) / 100 : 0.2,
@@ -29,11 +37,4 @@ export const Config = {
     },
   },
   prometheusUrl: process.env.PROMETHEUS_URL ?? 'http://prometheus.prometheus.svc.cluster.local:9090',
-  istio: {
-    kiali: {
-      url: process.env.KIALI_URL ?? 'http://kiali.istio-system.svc.cluster.local:20001',
-      username: process.env.KIALI_USERNAME ?? 'admin',
-      password: process.env.KIALI_PASSWORD ?? 'admin',
-    },
-  },
 };

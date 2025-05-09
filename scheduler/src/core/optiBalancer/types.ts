@@ -1,5 +1,5 @@
-import type { ClusterTopology, PodMetrics } from '../../adapters/k8s/types';
-import type { NodesLatency } from '../../adapters/prometheus/types';
+import type { ClusterTopology, PodMetrics } from '../../adapters/k8s/types.ts';
+import type { NodesLatency } from '../../adapters/prometheus/types.ts';
 
 export type OptiScalerType = {
   deployment: string;

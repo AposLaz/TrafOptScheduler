@@ -1,15 +1,16 @@
-import { ScaleAction } from './enums';
-import { OptiScalerMapper } from './mappers';
-import { FaultTolerance } from './services/faultTolerance.service';
-import { calculateWeightsDm, calculateWeightsUm } from './utils';
+import { ScaleAction } from './enums.ts';
+import { OptiScalerMapper } from './mappers.ts';
+import { FaultTolerance } from './services/faultTolerance.service.ts';
+import { calculateWeightsDm, calculateWeightsUm } from './utils.ts';
 
-import type { FaultToleranceType, OptiScalerHandlers, OptiScalerType } from './types';
-import type { FileSystemHandler } from '../../adapters/filesystem';
-import type { KubernetesAdapterImpl } from '../../adapters/k8s';
-import type { PrometheusAdapterImpl } from '../../adapters/prometheus';
-import type { GraphDataRps } from '../../adapters/prometheus/types';
-import type { MetricsType } from '../../enums';
-import type { MetricWeights } from '../../types';
+import type { FaultToleranceType, OptiScalerHandlers, OptiScalerType } from './types.ts';
+import type { FileSystemHandler } from '../../adapters/filesystem/index.ts';
+import type { KubernetesAdapterImpl } from '../../adapters/k8s/index.ts';
+import type { PrometheusAdapterImpl } from '../../adapters/prometheus/index.ts';
+import type { GraphDataRps } from '../../adapters/prometheus/types.ts';
+import type { MetricsType } from '../../enums.ts';
+import type { MetricWeights } from '../../types.ts';
+import { logger } from '../../config/logger.ts';
 
 export class OptiScaler {
   private readonly scaleAction: ScaleAction;
@@ -18,6 +19,7 @@ export class OptiScaler {
   private readonly prom: PrometheusAdapterImpl;
   private readonly k8s: KubernetesAdapterImpl;
   private readonly fileSystem: FileSystemHandler;
+  private readonly loggerOperation = logger.child({ operation: 'OptiScaler' });
 
   constructor(action: ScaleAction, data: OptiScalerType, handles: OptiScalerHandlers) {
     this.optiData = data;
@@ -49,12 +51,16 @@ export class OptiScaler {
         return nodes;
       });
 
+      this.loggerOperation.info(`Add replica pod of deployment ${this.optiData.deployment} to the node: ${cNode}`);
       await this.k8s.createReplicaPodToSpecificNode(this.optiData.deployment, this.optiData.namespace, taintNodes);
 
       const writeData = {
         deployment: this.optiData.deployment,
         namespace: this.optiData.namespace,
       };
+      this.loggerOperation.info(
+        `In the next cycle apply traffic distribution rules on deployment ${this.optiData.deployment}`
+      );
       this.fileSystem.appendData(writeData);
     }
 
@@ -62,8 +68,10 @@ export class OptiScaler {
       const cNode = ftNodes[0];
 
       const deleteNode = this.optiData.replicaPods.filter((node) => node.node === cNode);
+      console.log(deleteNode);
 
-      const deletePod = deleteNode[Math.random() * deleteNode.length].pod;
+      const removeRandomPod = Math.floor(Math.random() * deleteNode.length);
+      const deletePod = deleteNode[removeRandomPod].pod;
 
       await this.k8s.removeReplicaPodToSpecificNode(this.optiData.deployment, deletePod, this.optiData.namespace);
       const writeData = {

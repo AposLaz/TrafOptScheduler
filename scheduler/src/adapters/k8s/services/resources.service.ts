@@ -1,7 +1,7 @@
-import { readYamlK8sFilesFromPath } from '../../../common/helpers';
-import { logger } from '../../../config/logger';
+import { readYamlK8sFilesFromPath } from '../../../common/helpers.ts';
+import { logger } from '../../../config/logger.ts';
 
-import type * as k8s from '@kubernetes/client-node';
+import * as k8s from '@kubernetes/client-node';
 
 export class ResourceService {
   private readonly client: k8s.KubernetesObjectApi;
@@ -45,15 +45,19 @@ export class ResourceService {
 
         // Resource exists, patch it
         const response = await this.client.patch(resource);
-        created.push(`${response.body.metadata!.name!}:${response.body.kind}`);
+        created.push(`${response.metadata!.name!}:${response.kind}`);
       } catch (error: unknown) {
-        const err = error as k8s.HttpError;
-        if (err.body.code === 404) {
+        const err = error as any;
+        const statusCode = err.statusCode ?? err.code ?? err.response?.statusCode ?? err.response?.status;
+
+        if (Number(statusCode) === 404) {
           // If resource does not exist, create it
           const response = await this.client.create(resource);
-          created.push(`${response.body.metadata!.name!}:${response.body.kind}`);
+          created.push(`${response.metadata!.name!}:${response.kind}`);
         } else {
-          logger.error(`Error creating resource: ${JSON.stringify(resource, null, 2)} / ${err.message}`);
+          logger.error(
+            `Error creating resource: ${JSON.stringify(resource, null, 2)} / ${JSON.stringify(err.body, null, 2)}`
+          );
           notCreated.push(resource);
         }
       }
@@ -101,35 +105,37 @@ export class ResourceService {
       resource.metadata.annotations['kubectl.kubernetes.io/last-applied-configuration'] = JSON.stringify(resource);
 
       try {
-        await this.customClient.getNamespacedCustomObject(group, version, namespace, plural, name);
+        await this.customClient.getNamespacedCustomObject({ group, version, namespace, plural, name });
 
         const response = await this.customClient.patchNamespacedCustomObject(
-          group,
-          version,
-          namespace,
-          plural,
-          name,
-          resource,
-          undefined,
-          undefined,
-          undefined,
-          { headers: { 'Content-Type': 'application/merge-patch+json' } }
-        );
-        logger.info(`Custom Object updated: ${JSON.stringify(response.body, null, 2)}`);
-      } catch (error: unknown) {
-        const err = error as k8s.HttpError;
-        if (err.response && err.response.statusCode === 404) {
-          // Step 3: If not found, CREATE the resource
-          const response = await this.customClient.createNamespacedCustomObject(
+          {
             group,
             version,
             namespace,
             plural,
-            resource
-          );
-          logger.info(`Custom Object created: ${JSON.stringify(response.body, null, 2)}`);
+            name,
+            body: resource,
+          },
+          k8s.setHeaderOptions('Content-Type', k8s.PatchStrategy.MergePatch)
+        );
+        console.log(response);
+        logger.info(`Custom Object updated: ${response.metadata.name}`);
+      } catch (error: unknown) {
+        const err = error as any;
+        const statusCode = err.statusCode ?? err.code ?? err.response?.statusCode ?? err.response?.status;
+
+        if (Number(statusCode) === 404) {
+          // Step 3: If not found, CREATE the resource
+          const response = await this.customClient.createNamespacedCustomObject({
+            group,
+            version,
+            namespace,
+            plural,
+            body: resource,
+          });
+          logger.info(`Custom Object created: ${response.metadata.name}`);
         } else {
-          logger.error(`Error applying Custom Object: ${JSON.stringify(resource, null, 2)} - ${err.message}`);
+          logger.error(`Error applying Custom Object: ${resource.metadata.name} - }`);
         }
       }
     } catch (error) {
