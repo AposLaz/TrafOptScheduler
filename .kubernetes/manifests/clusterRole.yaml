@@ -4,8 +4,8 @@ metadata:
   name: traf-opt-scheduler-role
 rules:
   - apiGroups: [""]
-    resources: ["nodes", "pods"]
-    verbs: ["get", "list", "watch"]
+    resources: ["nodes", "nodes/status", "pods"]
+    verbs: ["get", "list", "watch", "update", "patch"]
   - apiGroups: ["metrics.k8s.io"]
     resources: ["pods", "nodes"]
     verbs: ["get", "list", "watch"]
@@ -27,3 +27,6 @@ rules:
   - apiGroups: ["rbac.authorization.k8s.io"]
     resources: ["*"]
     verbs: ["*"]
+  - apiGroups: ["networking.istio.io"]
+    resources: ["destinationrules"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
