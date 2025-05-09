@@ -4,8 +4,8 @@ import { DummyUpstreamPods } from './data/upstream.ts';
 import { FileSystemHandler } from '../../src/adapters/filesystem/index.ts';
 import { KubernetesAdapterImpl } from '../../src/adapters/k8s/index.ts';
 import { PrometheusAdapterImpl } from '../../src/adapters/prometheus/index.ts';
-import { OptiScaler } from '../../src/core/optiScaler/index.ts';
 import { ScaleAction } from '../../src/core/optiScaler/enums.ts';
+import { OptiScaler } from '../../src/core/optiScaler/index.ts';
 
 import type { NodeMetrics } from '../../src/adapters/k8s/types.ts';
 import type { NodesLatency } from '../../src/adapters/prometheus/types.ts';

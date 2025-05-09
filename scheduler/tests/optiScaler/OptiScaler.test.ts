@@ -1,17 +1,18 @@
-import { jest } from '@jest/globals';
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import fs from 'node:fs';
 import * as fsSync from 'node:fs/promises';
+
+import { jest } from '@jest/globals';
 
 import { DummyCluster } from './data/cluster.ts';
 import { DummyDeployments } from './data/deployment.ts';
 import { FileSystemHandler } from '../../src/adapters/filesystem/index.ts';
 import { setup } from '../../src/config/setup.ts';
-import { OptiScaler } from '../../src/core/optiScaler/index.ts';
 import { ScaleAction } from '../../src/core/optiScaler/enums.ts';
+import { OptiScaler } from '../../src/core/optiScaler/index.ts';
 import { MetricsType, SetupFolderFiles } from '../../src/enums.ts';
-import { KubernetesAdapter } from '../../src/adapters/kubernetes.interface.ts';
-import { KubernetesAdapterImpl } from '../../src/adapters/k8s/index.ts';
+
+import type { KubernetesAdapterImpl } from '../../src/adapters/k8s/index.ts';
 
 const weights = {
   CPU: 0.5,

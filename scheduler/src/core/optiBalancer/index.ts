@@ -1,4 +1,5 @@
 import { OptiBalancerMapper } from './mapper.ts';
+import { logger } from '../../config/logger.ts';
 import { MetricsType } from '../../enums.ts';
 
 import type {
@@ -12,7 +13,6 @@ import type { KubernetesAdapterImpl } from '../../adapters/k8s/index.ts';
 import type { PodMetrics } from '../../adapters/k8s/types';
 import type { PrometheusAdapterImpl } from '../../adapters/prometheus/index.ts';
 import type { GraphDataRps, NodesLatency } from '../../adapters/prometheus/types';
-import { logger } from '../../config/logger.ts';
 
 export class OptiBalancer {
   private readonly k8s: KubernetesAdapterImpl;

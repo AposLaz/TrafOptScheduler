@@ -1,18 +1,15 @@
-import { jest } from '@jest/globals';
 import fs from 'node:fs';
 import * as fsSync from 'node:fs/promises';
 
-import { FileSystemHandler } from '../../src/adapters/filesystem/index.ts';
+import { jest } from '@jest/globals';
+
 import { KubernetesAdapterImpl } from '../../src/adapters/k8s/index.ts';
 import { PrometheusAdapterImpl } from '../../src/adapters/prometheus/index.ts';
 import { setup } from '../../src/config/setup.ts';
-import { MetricsType, SetupFolderFiles } from '../../src/enums.ts';
-import { applyOptiBalancerForWrittenData } from '../../src/core/index.ts';
-import { OptiBalancer } from '../../src/core/optiBalancer/index.ts';
+import { SetupFolderFiles } from '../../src/enums.ts';
 
 let k8s: KubernetesAdapterImpl;
 let prometheus: PrometheusAdapterImpl;
-let fileSystem = new FileSystemHandler();
 
 beforeAll(async () => {
   k8s = new KubernetesAdapterImpl();

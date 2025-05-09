@@ -3,9 +3,6 @@ module.exports = {
   testEnvironment: 'node',
   extensionsToTreatAsEsm: ['.ts'],
   transform: {
-    '^.+\\.tsx?$': 'ts-jest',
-  },
-  transform: {
     '^.+\\.ts$': ['ts-jest', { useESM: true }],
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],

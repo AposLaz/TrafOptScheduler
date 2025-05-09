@@ -1,7 +1,3 @@
-import { OptiBalancer } from './optiBalancer/index.ts';
-import { OptiScaler } from './optiScaler/index.ts';
-import { ScaleAction } from './optiScaler/enums.ts';
-import { DummyDeployments } from '../../tests/data/dummy/deployments.ts';
 import { FileSystemHandler } from '../adapters/filesystem/index.ts';
 import { KubernetesAdapterImpl } from '../adapters/k8s/index.ts';
 import { k8sMapper } from '../adapters/k8s/mapper.ts';
@@ -9,12 +5,15 @@ import { PrometheusAdapterImpl } from '../adapters/prometheus/index.ts';
 import { Config } from '../config/config.ts';
 import { logger } from '../config/logger.ts';
 import { setup } from '../config/setup.ts';
+import { OptiBalancer } from '../core/optiBalancer/index.ts';
+import { ScaleAction } from '../core/optiScaler/enums.ts';
+import { OptiScaler } from '../core/optiScaler/index.ts';
 import { getPodNodeResources } from '../utils.ts';
 
+import type { WriteDataType } from '../adapters/filesystem/types.ts';
 import type { ClusterTopology } from '../adapters/k8s/types.ts';
 import type { NodesLatency } from '../adapters/prometheus/types.ts';
-import { DeploymentReplicaPodsMetrics } from '../types.ts';
-import { WriteDataType } from '../adapters/filesystem/types.ts';
+import type { DeploymentReplicaPodsMetrics } from '../types.ts';
 
 /**
  * Setup the entire application
@@ -60,149 +59,149 @@ export const TrafficScheduler = async () => {
     applyOptiBalancerForWrittenData(clusterTopology, nodesLatency);
 
     // For each namespace in the config
-    // for (const namespace of Config.NAMESPACES) {
-    //   try {
-    //     // Get the deployments in the namespace
-    //     const deployments = await k8sAdapter.getDeploymentsMetrics(namespace); // DummyDeployments;
+    for (const namespace of Config.NAMESPACES) {
+      try {
+        // Get the deployments in the namespace
+        const deployments = await k8sAdapter.getDeploymentsMetrics(namespace); // DummyDeployments;
 
-    //     // If no deployments are found
-    //     if (!deployments || Object.keys(deployments).length === 0) {
-    //       // Skip this namespace
-    //       continue;
-    //     }
+        // If no deployments are found
+        if (!deployments || Object.keys(deployments).length === 0) {
+          // Skip this namespace
+          continue;
+        }
 
-    //     // Get the critical deployments (deployments that are above the threshold)
-    //     const loadDeployment = k8sAdapter.getCriticalDeployments(deployments);
+        // Get the critical deployments (deployments that are above the threshold)
+        const loadDeployment = k8sAdapter.getCriticalDeployments(deployments);
 
-    //     console.log(loadDeployment.lowLoadedDeployments);
-    //     // If there are deployments that are below the threshold
-    //     if (Object.keys(loadDeployment.lowLoadedDeployments).length > 0) {
-    //       const loggerOperation = logger.child({
-    //         operation: 'LowLoadDeployments',
-    //       });
+        console.log(loadDeployment.lowLoadedDeployments);
+        // If there are deployments that are below the threshold
+        if (Object.keys(loadDeployment.lowLoadedDeployments).length > 0) {
+          const loggerOperation = logger.child({
+            operation: 'LowLoadDeployments',
+          });
 
-    //       for (const [deployment, node] of Object.entries(loadDeployment.lowLoadedDeployments)) {
-    //         const replicaPods = deployments[deployment];
+          for (const [deployment, node] of Object.entries(loadDeployment.lowLoadedDeployments)) {
+            const replicaPods = deployments[deployment];
 
-    //         if (replicaPods.length === 1) {
-    //           loggerOperation.info(`Deployment "${deployment}" has a single replica. Scaling down is not possible`);
-    //           continue;
-    //         }
-    //         // Get the average usage of all nodes in the deployment
-    //         const sumDeploymentClusterUsage = node.reduce((preUsage, currentUsage) => {
-    //           return preUsage + currentUsage.avgMetric;
-    //         }, 0);
+            if (replicaPods.length === 1) {
+              loggerOperation.info(`Deployment "${deployment}" has a single replica. Scaling down is not possible`);
+              continue;
+            }
+            // Get the average usage of all nodes in the deployment
+            const sumDeploymentClusterUsage = node.reduce((preUsage, currentUsage) => {
+              return preUsage + currentUsage.avgMetric;
+            }, 0);
 
-    //         // Calculate the average usage of the deployment
-    //         const avgDeploymentClusterUsage = sumDeploymentClusterUsage / node.length;
+            // Calculate the average usage of the deployment
+            const avgDeploymentClusterUsage = sumDeploymentClusterUsage / node.length;
 
-    //         // If the average usage is above the threshold
-    //         if (avgDeploymentClusterUsage < Config.metrics.lowerThreshold) {
-    //           // Get the replica pods of the deployment
+            // If the average usage is above the threshold
+            if (avgDeploymentClusterUsage < Config.metrics.lowerThreshold) {
+              // Get the replica pods of the deployment
 
-    //           loggerOperation.info(
-    //             `\n#############################################################################
-    //             \nDeployment "${deployment}" is below the threshold. Scaling down
-    //             \n##############################################################################`
-    //           );
-    //           // get all nodes metrics
-    //           const nodeMetrics = await k8sAdapter.getNodesMetrics();
+              loggerOperation.info(
+                `\n#############################################################################
+                \nDeployment "${deployment}" is below the threshold. Scaling down
+                \n##############################################################################`
+              );
+              // get all nodes metrics
+              const nodeMetrics = await k8sAdapter.getNodesMetrics();
 
-    //           // Scale down
-    //           new OptiScaler(
-    //             ScaleAction.DOWN,
-    //             {
-    //               deployment,
-    //               namespace,
-    //               replicaPods,
-    //               nodeMetrics,
-    //               zonesNodes,
-    //               nodesLatency,
-    //             },
-    //             { prom: promAdapter, k8s: k8sAdapter, fileSystem }
-    //           ).Execute(Config.metrics.type, Config.metrics.weights);
-    //         }
-    //       }
-    //     }
+              // Scale down
+              new OptiScaler(
+                ScaleAction.DOWN,
+                {
+                  deployment,
+                  namespace,
+                  replicaPods,
+                  nodeMetrics,
+                  zonesNodes,
+                  nodesLatency,
+                },
+                { prom: promAdapter, k8s: k8sAdapter, fileSystem }
+              ).Execute(Config.metrics.type, Config.metrics.weights);
+            }
+          }
+        }
 
-    //     // If there are deployments that are above the threshold
-    //     if (Object.keys(loadDeployment.highLoadedDeployments).length > 0) {
-    //       for (const [deployment, node] of Object.entries(loadDeployment.highLoadedDeployments)) {
-    //         const loggerOperation = logger.child({ operation: 'HighLoadDeployments' });
+        // If there are deployments that are above the threshold
+        if (Object.keys(loadDeployment.highLoadedDeployments).length > 0) {
+          for (const [deployment, node] of Object.entries(loadDeployment.highLoadedDeployments)) {
+            const loggerOperation = logger.child({ operation: 'HighLoadDeployments' });
 
-    //         // Get the average usage of all nodes in the deployment
-    //         const sumDeploymentClusterUsage = node.reduce((preUsage, currentUsage) => {
-    //           return preUsage + currentUsage.avgMetric;
-    //         }, 0);
+            // Get the average usage of all nodes in the deployment
+            const sumDeploymentClusterUsage = node.reduce((preUsage, currentUsage) => {
+              return preUsage + currentUsage.avgMetric;
+            }, 0);
 
-    //         // Calculate the average usage of the deployment
-    //         const avgDeploymentClusterUsage = sumDeploymentClusterUsage / node.length;
+            // Calculate the average usage of the deployment
+            const avgDeploymentClusterUsage = sumDeploymentClusterUsage / node.length;
 
-    //         // Get the replica pods of the deployment
-    //         const replicaPods = deployments[deployment];
+            // Get the replica pods of the deployment
+            const replicaPods = deployments[deployment];
 
-    //         // If the average usage is above the threshold
-    //         if (avgDeploymentClusterUsage > Config.metrics.upperThreshold) {
-    //           // get pods usage or requested resources
-    //           const podResources = getPodNodeResources(replicaPods[0]);
+            // If the average usage is above the threshold
+            if (avgDeploymentClusterUsage > Config.metrics.upperThreshold) {
+              // get pods usage or requested resources
+              const podResources = getPodNodeResources(replicaPods[0]);
 
-    //           // get all nodes with sufficient resources
-    //           const nodeMetrics = await k8sAdapter.getNodesWithSufficientResources(podResources);
+              // get all nodes with sufficient resources
+              const nodeMetrics = await k8sAdapter.getNodesWithSufficientResources(podResources);
 
-    //           if (nodeMetrics.length === 0) {
-    //             continue;
-    //           }
+              if (nodeMetrics.length === 0) {
+                continue;
+              }
 
-    //           console.log(`run optiScaler for Deployment ${deployment} in node ${node}`);
+              console.log(`run optiScaler for Deployment ${deployment} in node ${node}`);
 
-    //           loggerOperation.info(
-    //             `\n#############################################################################
-    //             \nDeployment "${deployment}" is above the threshold. Scaling up
-    //             \n##############################################################################`
-    //           );
+              loggerOperation.info(
+                `\n#############################################################################
+                \nDeployment "${deployment}" is above the threshold. Scaling up
+                \n##############################################################################`
+              );
 
-    //           // fault tolerance
-    //           new OptiScaler(
-    //             ScaleAction.UP,
-    //             {
-    //               deployment,
-    //               namespace,
-    //               replicaPods,
-    //               nodeMetrics,
-    //               zonesNodes,
-    //               nodesLatency,
-    //             },
-    //             { prom: promAdapter, k8s: k8sAdapter, fileSystem }
-    //           ).Execute(Config.metrics.type, Config.metrics.weights);
+              // fault tolerance
+              new OptiScaler(
+                ScaleAction.UP,
+                {
+                  deployment,
+                  namespace,
+                  replicaPods,
+                  nodeMetrics,
+                  zonesNodes,
+                  nodesLatency,
+                },
+                { prom: promAdapter, k8s: k8sAdapter, fileSystem }
+              ).Execute(Config.metrics.type, Config.metrics.weights);
 
-    //           continue;
-    //         }
-    //         loggerOperation.info(
-    //           `\n#############################################################################
-    //             \nDeployment "${deployment}" is above the threshold. Traffic Split
-    //             \n##############################################################################`
-    //         );
+              continue;
+            }
+            loggerOperation.info(
+              `\n#############################################################################
+                \nDeployment "${deployment}" is above the threshold. Traffic Split
+                \n##############################################################################`
+            );
 
-    //         const optiBalancerInput = {
-    //           deployment,
-    //           deployMetrics: deployments,
-    //           namespace,
-    //           replicaPods,
-    //           nodesLatency,
-    //           clusterTopology,
-    //         };
+            const optiBalancerInput = {
+              deployment,
+              deployMetrics: deployments,
+              namespace,
+              replicaPods,
+              nodesLatency,
+              clusterTopology,
+            };
 
-    //         optiBalancer.Execute(optiBalancerInput);
-    //       }
-    //     }
-    //   } catch (err: unknown) {
-    //     // Handle the error
-    //     const error = err as Error;
-    //     logger.error(`Error: ${error.message}`);
-    //     // Skip this namespace
-    //     continue;
-    //   }
-    // }
+            optiBalancer.Execute(optiBalancerInput);
+          }
+        }
+      } catch (err: unknown) {
+        // Handle the error
+        const error = err as Error;
+        logger.error(`Error: ${error.message}`);
+        // Skip this namespace
+        continue;
+      }
+    }
   } catch (error: unknown) {
     // Handle the error
     const err = error as Error;

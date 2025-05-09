@@ -54,6 +54,6 @@ export default [
         },
       ],
     },
-    ignores: ['**/node_modules/**', '**/dist/**', '.env*', 'eslint.config.js', 'jest.config.js'],
+    ignores: ['**/node_modules/**', '**/dist/**', '**/coverage/**', '.env*', 'eslint.config.js', 'jest.config.cjs'],
   },
 ];

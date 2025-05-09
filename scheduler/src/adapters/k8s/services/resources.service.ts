@@ -1,7 +1,7 @@
+import * as k8s from '@kubernetes/client-node';
+
 import { readYamlK8sFilesFromPath } from '../../../common/helpers.ts';
 import { logger } from '../../../config/logger.ts';
-
-import * as k8s from '@kubernetes/client-node';
 
 export class ResourceService {
   private readonly client: k8s.KubernetesObjectApi;
@@ -47,6 +47,7 @@ export class ResourceService {
         const response = await this.client.patch(resource);
         created.push(`${response.metadata!.name!}:${response.kind}`);
       } catch (error: unknown) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const err = error as any;
         const statusCode = err.statusCode ?? err.code ?? err.response?.statusCode ?? err.response?.status;
 
@@ -121,6 +122,7 @@ export class ResourceService {
         console.log(response);
         logger.info(`Custom Object updated: ${response.metadata.name}`);
       } catch (error: unknown) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const err = error as any;
         const statusCode = err.statusCode ?? err.code ?? err.response?.statusCode ?? err.response?.status;
 

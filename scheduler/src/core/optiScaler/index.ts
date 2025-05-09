@@ -2,6 +2,7 @@ import { ScaleAction } from './enums.ts';
 import { OptiScalerMapper } from './mappers.ts';
 import { FaultTolerance } from './services/faultTolerance.service.ts';
 import { calculateWeightsDm, calculateWeightsUm } from './utils.ts';
+import { logger } from '../../config/logger.ts';
 
 import type { FaultToleranceType, OptiScalerHandlers, OptiScalerType } from './types.ts';
 import type { FileSystemHandler } from '../../adapters/filesystem/index.ts';
@@ -10,7 +11,6 @@ import type { PrometheusAdapterImpl } from '../../adapters/prometheus/index.ts';
 import type { GraphDataRps } from '../../adapters/prometheus/types.ts';
 import type { MetricsType } from '../../enums.ts';
 import type { MetricWeights } from '../../types.ts';
-import { logger } from '../../config/logger.ts';
 
 export class OptiScaler {
   private readonly scaleAction: ScaleAction;
