@@ -1,6 +1,6 @@
-import type { CriticalDeploymentsNodeUsage, DeploymentNodeUsage, ThresholdType } from './types.ts';
-import type { MetricsType } from '../../enums.ts';
-import type { DeploymentReplicaPodsMetrics } from '../../types.ts';
+import type { CriticalDeploymentsNodeUsage, DeploymentNodeUsage, ThresholdType } from './types.js';
+import type { MetricsType } from '../../enums.js';
+import type { DeploymentReplicaPodsMetrics } from '../../types.js';
 import type { V1Deployment } from '@kubernetes/client-node';
 
 /**

@@ -1,7 +1,7 @@
-import { KubernetesAdapterImpl } from '../../src/adapters/k8s/index.ts';
-import { PrometheusAdapterImpl } from '../../src/adapters/prometheus/index.ts';
-import { OptiBalancer } from '../../src/core/optiBalancer/index.ts';
-import { MetricsType } from '../../src/enums.ts';
+import { KubernetesAdapterImpl } from '../../src/adapters/k8s/index';
+import { PrometheusAdapterImpl } from '../../src/adapters/prometheus/index';
+import { OptiBalancer } from '../../src/core/optiBalancer/index';
+import { MetricsType } from '../../src/enums';
 
 let k8s: KubernetesAdapterImpl;
 let prometheus: PrometheusAdapterImpl;

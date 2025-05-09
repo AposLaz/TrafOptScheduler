@@ -1,8 +1,8 @@
-import { app } from './app';
-import { Config } from './config/config';
-import { logger } from './config/logger';
-import './config/setup';
-import { TrafficScheduler } from './cronjobs/trafOptScheduler';
+import { app } from './app.js';
+import { Config } from './config/config.js';
+import { logger } from './config/logger.js';
+import './config/setup.js';
+import { TrafficScheduler } from './cronjobs/trafOptScheduler.js';
 
 const initRestApi = async () => {
   app.listen(Config.APP_PORT, () => {

@@ -23,9 +23,7 @@
     "esModuleInterop": true,
     "noPropertyAccessFromIndexSignature": false,
     "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "allowImportingTsExtensions": true,
-    "emitDeclarationOnly": true
+    "resolveJsonModule": true
   },
   "include": ["src/**/*.ts", "tests/**/*.ts", "eslint.config.mjs", "jest.config.cjs"],
   "exclude": ["dist", "node_modules", "coverage/**"]

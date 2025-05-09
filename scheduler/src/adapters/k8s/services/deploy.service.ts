@@ -1,8 +1,8 @@
 import * as k8s from '@kubernetes/client-node';
 
-import { logger } from '../../../config/logger.ts';
+import { logger } from '../../../config/logger.js';
 
-import type { ReplicasAction } from '../types.ts';
+import type { ReplicasAction } from '../types.js';
 
 export class DeploymentService {
   private readonly client: k8s.AppsV1Api;

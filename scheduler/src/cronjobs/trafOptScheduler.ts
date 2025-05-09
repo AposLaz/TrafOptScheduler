@@ -1,19 +1,19 @@
-import { FileSystemHandler } from '../adapters/filesystem/index.ts';
-import { KubernetesAdapterImpl } from '../adapters/k8s/index.ts';
-import { k8sMapper } from '../adapters/k8s/mapper.ts';
-import { PrometheusAdapterImpl } from '../adapters/prometheus/index.ts';
-import { Config } from '../config/config.ts';
-import { logger } from '../config/logger.ts';
-import { setup } from '../config/setup.ts';
-import { OptiBalancer } from '../core/optiBalancer/index.ts';
-import { ScaleAction } from '../core/optiScaler/enums.ts';
-import { OptiScaler } from '../core/optiScaler/index.ts';
-import { getPodNodeResources } from '../utils.ts';
+import { FileSystemHandler } from '../adapters/filesystem/index.js';
+import { KubernetesAdapterImpl } from '../adapters/k8s/index.js';
+import { k8sMapper } from '../adapters/k8s/mapper.js';
+import { PrometheusAdapterImpl } from '../adapters/prometheus/index.js';
+import { Config } from '../config/config.js';
+import { logger } from '../config/logger.js';
+import { setup } from '../config/setup.js';
+import { OptiBalancer } from '../core/optiBalancer/index.js';
+import { ScaleAction } from '../core/optiScaler/enums.js';
+import { OptiScaler } from '../core/optiScaler/index.js';
+import { getPodNodeResources } from '../utils.js';
 
-import type { WriteDataType } from '../adapters/filesystem/types.ts';
-import type { ClusterTopology } from '../adapters/k8s/types.ts';
-import type { NodesLatency } from '../adapters/prometheus/types.ts';
-import type { DeploymentReplicaPodsMetrics } from '../types.ts';
+import type { WriteDataType } from '../adapters/filesystem/types.js';
+import type { ClusterTopology } from '../adapters/k8s/types.js';
+import type { NodesLatency } from '../adapters/prometheus/types.js';
+import type { DeploymentReplicaPodsMetrics } from '../types.js';
 
 /**
  * Setup the entire application

@@ -1,5 +1,5 @@
-import { logger } from '../../../config/logger.ts';
-import { k8sMapper } from '../mapper.ts';
+import { logger } from '../../../config/logger.js';
+import { k8sMapper } from '../mapper.js';
 
 import type * as k8s from '@kubernetes/client-node';
 

@@ -1,16 +1,16 @@
-import { ScaleAction } from './enums.ts';
-import { OptiScalerMapper } from './mappers.ts';
-import { FaultTolerance } from './services/faultTolerance.service.ts';
-import { calculateWeightsDm, calculateWeightsUm } from './utils.ts';
-import { logger } from '../../config/logger.ts';
+import { ScaleAction } from './enums.js';
+import { OptiScalerMapper } from './mappers.js';
+import { FaultTolerance } from './services/faultTolerance.service.js';
+import { calculateWeightsDm, calculateWeightsUm } from './utils.js';
+import { logger } from '../../config/logger.js';
 
-import type { FaultToleranceType, OptiScalerHandlers, OptiScalerType } from './types.ts';
-import type { FileSystemHandler } from '../../adapters/filesystem/index.ts';
-import type { KubernetesAdapterImpl } from '../../adapters/k8s/index.ts';
-import type { PrometheusAdapterImpl } from '../../adapters/prometheus/index.ts';
-import type { GraphDataRps } from '../../adapters/prometheus/types.ts';
-import type { MetricsType } from '../../enums.ts';
-import type { MetricWeights } from '../../types.ts';
+import type { FaultToleranceType, OptiScalerHandlers, OptiScalerType } from './types.js';
+import type { FileSystemHandler } from '../../adapters/filesystem/index.js';
+import type { KubernetesAdapterImpl } from '../../adapters/k8s/index.js';
+import type { PrometheusAdapterImpl } from '../../adapters/prometheus/index.js';
+import type { GraphDataRps } from '../../adapters/prometheus/types.js';
+import type { MetricsType } from '../../enums.js';
+import type { MetricWeights } from '../../types.js';
 
 export class OptiScaler {
   private readonly scaleAction: ScaleAction;

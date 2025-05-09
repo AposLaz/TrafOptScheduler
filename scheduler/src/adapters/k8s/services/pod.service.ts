@@ -1,4 +1,4 @@
-import { logger } from '../../../config/logger.ts';
+import { logger } from '../../../config/logger.js';
 
 import type * as k8s from '@kubernetes/client-node';
 

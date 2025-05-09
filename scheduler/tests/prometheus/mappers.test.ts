@@ -2,8 +2,8 @@
  * Test the prometheus mappers
  */
 
-import { DummyPromMetrics } from './data/data.ts';
-import { PrometheusMapper } from '../../src/adapters/prometheus/mapper.ts';
+import { DummyPromMetrics } from './data/data';
+import { PrometheusMapper } from '../../src/adapters/prometheus/mapper';
 
 describe('prometheus mappers', () => {
   it('nodesLatency', () => {

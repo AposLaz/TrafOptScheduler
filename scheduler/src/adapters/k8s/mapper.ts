@@ -1,5 +1,5 @@
-import { convertResourcesStringToNumber } from '../../common/helpers.ts';
-import { TaintEffects } from '../../enums.ts';
+import { convertResourcesStringToNumber } from '../../common/helpers.js';
+import { TaintEffects } from '../../enums.js';
 
 import type {
   ClusterAzTopology,
@@ -12,8 +12,8 @@ import type {
   NodeMetrics,
   PodMetrics,
   ZoneLatency,
-} from './types.ts';
-import type { DeploymentReplicaPodsMetrics, MetricWeights } from '../../types.ts';
+} from './types.js';
+import type { DeploymentReplicaPodsMetrics, MetricWeights } from '../../types.js';
 import type * as k8s from '@kubernetes/client-node';
 
 const k8sMapper = {

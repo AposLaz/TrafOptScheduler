@@ -1,10 +1,10 @@
-import { logger } from '../../../config/logger.ts';
-import { FaultMapper } from '../mappers.ts';
+import { logger } from '../../../config/logger.js';
+import { FaultMapper } from '../mappers.js';
 
-import type { ClusterAzTopology, NodeMetrics, PodMetrics } from '../../../adapters/k8s/types.ts';
-import type { MetricsType } from '../../../enums.ts';
-import type { MetricWeights } from '../../../types.ts';
-import type { FaultNodesReplicas, FaultNodesSumReplicas, FaultToleranceType, FaultZonesNodes } from '../types.ts';
+import type { ClusterAzTopology, NodeMetrics, PodMetrics } from '../../../adapters/k8s/types.js';
+import type { MetricsType } from '../../../enums.js';
+import type { MetricWeights } from '../../../types.js';
+import type { FaultNodesReplicas, FaultNodesSumReplicas, FaultToleranceType, FaultZonesNodes } from '../types.js';
 
 export class FaultTolerance {
   private readonly deployRs: PodMetrics[];

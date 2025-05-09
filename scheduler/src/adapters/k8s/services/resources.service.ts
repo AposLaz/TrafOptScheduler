@@ -1,7 +1,7 @@
 import * as k8s from '@kubernetes/client-node';
 
-import { readYamlK8sFilesFromPath } from '../../../common/helpers.ts';
-import { logger } from '../../../config/logger.ts';
+import { readYamlK8sFilesFromPath } from '../../../common/helpers.js';
+import { logger } from '../../../config/logger.js';
 
 export class ResourceService {
   private readonly client: k8s.KubernetesObjectApi;

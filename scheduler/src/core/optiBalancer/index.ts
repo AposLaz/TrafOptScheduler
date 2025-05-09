@@ -1,6 +1,6 @@
-import { OptiBalancerMapper } from './mapper.ts';
-import { logger } from '../../config/logger.ts';
-import { MetricsType } from '../../enums.ts';
+import { OptiBalancerMapper } from './mapper.js';
+import { logger } from '../../config/logger.js';
+import { MetricsType } from '../../enums.js';
 
 import type {
   DestinationRule,
@@ -9,9 +9,9 @@ import type {
   OptiScalerType,
   TrafficWeights,
 } from './types';
-import type { KubernetesAdapterImpl } from '../../adapters/k8s/index.ts';
+import type { KubernetesAdapterImpl } from '../../adapters/k8s/index.js';
 import type { PodMetrics } from '../../adapters/k8s/types';
-import type { PrometheusAdapterImpl } from '../../adapters/prometheus/index.ts';
+import type { PrometheusAdapterImpl } from '../../adapters/prometheus/index.js';
 import type { GraphDataRps, NodesLatency } from '../../adapters/prometheus/types';
 
 export class OptiBalancer {

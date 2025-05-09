@@ -1,4 +1,4 @@
-import { Config } from '../../config/config.ts';
+import { Config } from '../../config/config.js';
 
 import type {
   DeploymentGraphRps,
@@ -8,7 +8,7 @@ import type {
   PodRps,
   PrometheusResults,
   NodesLatency,
-} from './types.ts';
+} from './types.js';
 
 export const PrometheusMapper = {
   toDeploymentGraphDataRpsPerNode: (results: PrometheusResults[], namespace: string): GraphDataRps[] => {

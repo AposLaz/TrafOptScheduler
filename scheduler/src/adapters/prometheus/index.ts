@@ -1,10 +1,10 @@
-import { PrometheusMapper } from './mapper.ts';
-import { Graph } from './services/app.graph.ts';
-import { ResourcesMetricsService } from './services/resources.metrics.service.ts';
-import { Config } from '../../config/config.ts';
+import { PrometheusMapper } from './mapper.js';
+import { Graph } from './services/app.graph.js';
+import { ResourcesMetricsService } from './services/resources.metrics.service.js';
+import { Config } from '../../config/config.js';
 
-import type { GraphDataRps, NodesLatency } from './types.ts';
-import type { PrometheusAdapter } from '../prometheus.interface.ts';
+import type { GraphDataRps, NodesLatency } from './types.js';
+import type { PrometheusAdapter } from '../prometheus.interface.js';
 
 export class PrometheusAdapterImpl implements PrometheusAdapter {
   private readonly time = Config.CRONJOB_TIME;

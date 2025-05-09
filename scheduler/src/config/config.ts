@@ -1,6 +1,6 @@
 import * as dotenv from 'dotenv';
 
-import { MetricsType } from '../enums.ts';
+import { MetricsType } from '../enums.js';
 
 dotenv.config();
 

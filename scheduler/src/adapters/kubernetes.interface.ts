@@ -1,5 +1,5 @@
-import type { DeploymentReplicaPodsMetrics } from '../types.ts';
-import type { ClusterTopology, NodeMetrics, Resources } from './k8s/types.ts';
+import type { DeploymentReplicaPodsMetrics } from '../types.js';
+import type { ClusterTopology, NodeMetrics, Resources } from './k8s/types.js';
 import type * as k8s from '@kubernetes/client-node';
 
 export interface KubernetesAdapter {

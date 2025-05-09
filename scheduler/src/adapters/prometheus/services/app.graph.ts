@@ -1,6 +1,6 @@
-import { logger } from '../../../config/logger.ts';
-import { PrometheusMapper } from '../mapper.ts';
-import { executePrometheusQuery } from '../utils.ts';
+import { logger } from '../../../config/logger.js';
+import { PrometheusMapper } from '../mapper.js';
+import { executePrometheusQuery } from '../utils.js';
 
 export class Graph {
   //istio_requests_total{source_workload="frontend",source_workload_namespace="online-boutique",destination_workload!="unknown"}

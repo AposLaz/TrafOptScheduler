@@ -1,18 +1,18 @@
-import { K8sClientTypeApi } from './enums.ts';
-import { k8sMapper } from './mapper.ts';
-import { DeploymentService } from './services/deploy.service.ts';
-import { MetricsService } from './services/metrics.service.ts';
-import { NamespaceService } from './services/namespace.service.ts';
-import { NodeService } from './services/node.service.ts';
-import { PodService } from './services/pod.service.ts';
-import { ResourceService } from './services/resources.service.ts';
-import { ThresholdStrategyFactory } from './services/threshold.strategy.service.ts';
-import { isDeploymentFullyRunning } from './utils.ts';
-import { Config } from '../../config/config.ts';
-import { K8sClientApiFactory } from '../../config/k8sClient.ts';
-import { logger } from '../../config/logger.ts';
+import { K8sClientTypeApi } from './enums.js';
+import { k8sMapper } from './mapper.js';
+import { DeploymentService } from './services/deploy.service.js';
+import { MetricsService } from './services/metrics.service.js';
+import { NamespaceService } from './services/namespace.service.js';
+import { NodeService } from './services/node.service.js';
+import { PodService } from './services/pod.service.js';
+import { ResourceService } from './services/resources.service.js';
+import { ThresholdStrategyFactory } from './services/threshold.strategy.service.js';
+import { isDeploymentFullyRunning } from './utils.js';
+import { Config } from '../../config/config.js';
+import { K8sClientApiFactory } from '../../config/k8sClient.js';
+import { logger } from '../../config/logger.js';
 
-import type { KubernetesAdapter } from '../kubernetes.interface.ts';
+import type { KubernetesAdapter } from '../kubernetes.interface.js';
 import type {
   ClusterTopology,
   DeploymentPodMapType,
@@ -20,8 +20,8 @@ import type {
   PodMetrics,
   Resources,
   ThresholdType,
-} from './types.ts';
-import type { ConfigMetrics, DeploymentReplicaPodsMetrics } from '../../types.ts';
+} from './types.js';
+import type { ConfigMetrics, DeploymentReplicaPodsMetrics } from '../../types.js';
 import type * as k8s from '@kubernetes/client-node';
 
 export class KubernetesAdapterImpl implements KubernetesAdapter {

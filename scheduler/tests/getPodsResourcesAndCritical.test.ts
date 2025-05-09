@@ -8,7 +8,7 @@
 // import path from 'path';
 
 // import { KubernetesAdapterImpl } from '../src/adapters/k8s';
-import { logger } from '../src/config/logger.ts';
+import { logger } from '../src/config/logger';
 
 // import type { KubernetesAdapter } from '../src/adapters/kubernetes.interface';
 // import { PrometheusManager } from '../src/prometheus/manager';

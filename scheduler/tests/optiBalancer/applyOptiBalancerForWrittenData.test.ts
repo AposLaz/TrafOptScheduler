@@ -3,10 +3,10 @@ import * as fsSync from 'node:fs/promises';
 
 import { jest } from '@jest/globals';
 
-import { KubernetesAdapterImpl } from '../../src/adapters/k8s/index.ts';
-import { PrometheusAdapterImpl } from '../../src/adapters/prometheus/index.ts';
-import { setup } from '../../src/config/setup.ts';
-import { SetupFolderFiles } from '../../src/enums.ts';
+import { KubernetesAdapterImpl } from '../../src/adapters/k8s/index';
+import { PrometheusAdapterImpl } from '../../src/adapters/prometheus/index';
+import { setup } from '../../src/config/setup';
+import { SetupFolderFiles } from '../../src/enums';
 
 let k8s: KubernetesAdapterImpl;
 let prometheus: PrometheusAdapterImpl;
