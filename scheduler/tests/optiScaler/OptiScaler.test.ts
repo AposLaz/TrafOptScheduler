@@ -1,13 +1,17 @@
+import { jest } from '@jest/globals';
+
 import fs from 'node:fs';
 import * as fsSync from 'node:fs/promises';
 
-import { DummyCluster } from './data/cluster';
-import { DummyDeployments } from './data/deployment';
-import { FileSystemHandler } from '../../src/adapters/filesystem';
-import { setup } from '../../src/config/setup';
-import { OptiScaler } from '../../src/core/optiScaler';
-import { ScaleAction } from '../../src/core/optiScaler/enums';
-import { MetricsType, SetupFolderFiles } from '../../src/enums';
+import { DummyCluster } from './data/cluster.ts';
+import { DummyDeployments } from './data/deployment.ts';
+import { FileSystemHandler } from '../../src/adapters/filesystem/index.ts';
+import { setup } from '../../src/config/setup.ts';
+import { OptiScaler } from '../../src/core/optiScaler/index.ts';
+import { ScaleAction } from '../../src/core/optiScaler/enums.ts';
+import { MetricsType, SetupFolderFiles } from '../../src/enums.ts';
+import { KubernetesAdapter } from '../../src/adapters/kubernetes.interface.ts';
+import { KubernetesAdapterImpl } from '../../src/adapters/k8s/index.ts';
 
 const weights = {
   CPU: 0.5,
@@ -51,9 +55,17 @@ describe('filesystem setup scale up', () => {
     await setup();
 
     const fakeK8s = {
-      createReplicaPodToSpecificNode: jest.fn().mockResolvedValue(undefined),
-      removeReplicaPodToSpecificNode: jest.fn().mockResolvedValue(undefined),
-    } as any;
+      createReplicaPodToSpecificNode: jest.fn() as jest.MockedFunction<
+        (deploymentName: string, ns: string, nodes: string[]) => Promise<void>
+      >,
+      removeReplicaPodToSpecificNode: jest.fn() as jest.MockedFunction<
+        (deploymentName: string, pod: string, ns: string) => Promise<void>
+      >,
+      metrics: {} as any,
+      namespaceAdapter: {} as any,
+      resource: {} as any,
+      deployment: {} as any,
+    } as Partial<KubernetesAdapterImpl> as KubernetesAdapterImpl;
 
     const fakeProm = {
       getUpstreamPodGraph: jest.fn(),

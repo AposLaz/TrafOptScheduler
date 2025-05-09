@@ -1,14 +1,14 @@
-import { DummyCluster } from './data/cluster';
-import { DummyDeployments } from './data/deployment';
-import { DummyUpstreamPods } from './data/upstream';
-import { FileSystemHandler } from '../../src/adapters/filesystem';
-import { KubernetesAdapterImpl } from '../../src/adapters/k8s';
-import { PrometheusAdapterImpl } from '../../src/adapters/prometheus';
-import { OptiScaler } from '../../src/core/optiScaler';
-import { ScaleAction } from '../../src/core/optiScaler/enums';
+import { DummyCluster } from './data/cluster.ts';
+import { DummyDeployments } from './data/deployment.ts';
+import { DummyUpstreamPods } from './data/upstream.ts';
+import { FileSystemHandler } from '../../src/adapters/filesystem/index.ts';
+import { KubernetesAdapterImpl } from '../../src/adapters/k8s/index.ts';
+import { PrometheusAdapterImpl } from '../../src/adapters/prometheus/index.ts';
+import { OptiScaler } from '../../src/core/optiScaler/index.ts';
+import { ScaleAction } from '../../src/core/optiScaler/enums.ts';
 
-import type { NodeMetrics } from '../../src/adapters/k8s/types';
-import type { NodesLatency } from '../../src/adapters/prometheus/types';
+import type { NodeMetrics } from '../../src/adapters/k8s/types.ts';
+import type { NodesLatency } from '../../src/adapters/prometheus/types.ts';
 
 let k8s: KubernetesAdapterImpl;
 let prometheus: PrometheusAdapterImpl;

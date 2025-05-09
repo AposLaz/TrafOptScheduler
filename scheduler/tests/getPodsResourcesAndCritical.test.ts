@@ -8,12 +8,12 @@
 // import path from 'path';
 
 // import { KubernetesAdapterImpl } from '../src/adapters/k8s';
-import { logger } from '../src/config/logger';
+import { logger } from '../src/config/logger.ts';
 
 // import type { KubernetesAdapter } from '../src/adapters/kubernetes.interface';
 // import { PrometheusManager } from '../src/prometheus/manager';
 
-jest.setTimeout(120000);
+// jest.setTimeout(120000);
 
 // let k8sManager: KubernetesAdapter; // Declare k8sManager in the outer scope
 // let promManager: PrometheusManager;

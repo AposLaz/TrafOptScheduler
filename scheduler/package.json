@@ -9,7 +9,7 @@
     "build": "tsc",
     "ts-check": "tsc --noEmit",
     "build:clean": "rm -rf tsconfig.build.tsbuildinfo && rm -rf ./dist",
-    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --detectOpenHandles --testTimeout=30000",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage --silent",
     "test:ci": "yarn test --colors --coverage --ci",
     "test:stress": "k6 run --compatibility-mode=experimental_enhanced tests/k6/script.ts",
     "test:coverage": "yarn test --coverage",

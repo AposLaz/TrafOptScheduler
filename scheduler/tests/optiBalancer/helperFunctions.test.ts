@@ -1,8 +1,8 @@
-import { FileSystemHandler } from '../../src/adapters/filesystem';
-import { KubernetesAdapterImpl } from '../../src/adapters/k8s';
-import { PrometheusAdapterImpl } from '../../src/adapters/prometheus';
-import { OptiBalancer } from '../../src/core/optiBalancer';
-import { MetricsType } from '../../src/enums';
+import { FileSystemHandler } from '../../src/adapters/filesystem/index.ts';
+import { KubernetesAdapterImpl } from '../../src/adapters/k8s/index.ts';
+import { PrometheusAdapterImpl } from '../../src/adapters/prometheus/index.ts';
+import { OptiBalancer } from '../../src/core/optiBalancer/index.ts';
+import { MetricsType } from '../../src/enums.ts';
 
 let k8s: KubernetesAdapterImpl;
 let prometheus: PrometheusAdapterImpl;
