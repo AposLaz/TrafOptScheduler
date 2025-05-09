@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import fs from 'fs';
 import path from 'path';
+import { CronExpressionParser } from 'cron-parser';
 
 import yaml from 'js-yaml';
 
@@ -56,4 +57,37 @@ export const readYamlK8sFilesFromPath = (specPath: string): { [key: string]: k8s
 
   // Return the map of filenames to their corresponding Kubernetes objects.
   return yamlData;
+};
+
+/**
+ * Converts a cron expression to a human-readable interval (e.g., "5m", "1h 30m").
+ */
+export const cronParseToInterval = (cronExpr: string): string => {
+  try {
+    const interval = CronExpressionParser.parse(cronExpr);
+    const next = interval.next();
+    const nextNext = interval.next();
+    const diffMs = nextNext.getTime() - next.getTime();
+    return msToReadableTime(diffMs);
+  } catch (err: any) {
+    return `Invalid cron expression: ${err.message}`;
+  }
+};
+
+/**
+ * Converts milliseconds to "Xd Xh Xm Xs" format.
+ */
+export const msToReadableTime = (ms: number): string => {
+  const sec = Math.floor((ms / 1000) % 60);
+  const min = Math.floor((ms / (1000 * 60)) % 60);
+  const hr = Math.floor((ms / (1000 * 60 * 60)) % 24);
+  const day = Math.floor(ms / (1000 * 60 * 60 * 24));
+
+  const parts = [];
+  if (day) parts.push(`${day}d`);
+  if (hr) parts.push(`${hr}h`);
+  if (min) parts.push(`${min}m`);
+  if (sec) parts.push(`${sec}s`);
+
+  return parts.length ? parts.join(' ') : '0s';
 };

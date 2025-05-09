@@ -8,7 +8,7 @@ dotenv.config();
 const requiredEnvVariables: Array<string> = [
   'ENV',
   'APP_PORT',
-  'CRONJOB_TIME',
+  'CRONJOB_EXPRESSION',
   'PROMETHEUS_URL',
   'NAMESPACES',
   'METRICS_TYPE',
@@ -26,7 +26,7 @@ export const Config = {
   ENV: process.env.ENV ?? 'production',
   APP_PORT: process.env.APP_PORT ?? '3000',
   NAMESPACES: process.env.NAMESPACES?.split(',') ?? ['default'], // default is the default namespace
-  CRONJOB_TIME: process.env.CRONJOB_TIME ?? '1m',
+  CRONJOB_EXPRESSION: process.env.CRONJOB_EXPRESSION ?? '* * * * *',
   metrics: {
     upperThreshold: process.env.METRICS_UPPER_THRESHOLD ? Number(process.env.METRICS_UPPER_THRESHOLD) / 100 : 0.8,
     lowerThreshold: process.env.METRICS_LOWER_THRESHOLD ? Number(process.env.METRICS_LOWER_THRESHOLD) / 100 : 0.2,

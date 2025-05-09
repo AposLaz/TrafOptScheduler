@@ -1,8 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: pod-controller
-  # namespace: kube-system
+  name: traf-opt-scheduler
 spec:
   replicas: 1
   selector:

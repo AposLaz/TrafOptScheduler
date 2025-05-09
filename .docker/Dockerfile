@@ -1,54 +1,32 @@
-# Base stage for dependencies and setup
-FROM node:hydrogen-alpine as base
+FROM node:slim AS base
 
 ENV TZ=UTC
-
-RUN apk update
-
 WORKDIR /app
-
-COPY package.json ./
-COPY tsconfig.json ./
-
-RUN npm install
-
+COPY package.json yarn.lock tsconfig.json ./
+RUN yarn install --frozen-lockfile
 COPY . .
 
-###############################################################################
+# ---------- Build stage ----------
+FROM base AS builder
 
-# Builder stage for building the application
-FROM base as builder
+RUN yarn build
 
-WORKDIR /app
-
-RUN npm run build
-
-###############################################################################
-
-# Production stage
-FROM node:hydrogen-alpine as production
+# ---------- Production stage ----------
+FROM node:slim AS production
 
 ENV TZ=UTC
-
-# Install kubectl and curl
-RUN apk update && apk add --no-cache curl bash
-RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" \
-    && chmod +x kubectl \
-    && mv kubectl /usr/local/bin/
-
 WORKDIR /app
 
-# Copy built files and package.json from builder stage
-COPY --from=builder /app/dist /app/dist
-COPY --from=builder /app/package.json /app/
-COPY --from=builder /app/tsconfig.json /app/
+RUN apt-get update && apt-get install -y curl bash
+RUN curl -LO "https://dl.k8s.io/release/$(curl -sL https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" \
+    && chmod +x kubectl && mv kubectl /usr/local/bin/
 
-RUN npm install --only=production
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package.json /app/yarn.lock ./
+
+# Install only production dependencies
+RUN yarn install --production --frozen-lockfile
 
 EXPOSE 3000
 
-CMD ["node", "dist/index.js"]
-
-
-# docker build -t alazidis/lpa-controller:0.0.2 --file ./.docker/Dockerfile --target production placement --no-cache
-# docker push alazidis/lpa-controller:0.0.2
+CMD ["node", "dist/src/index.js"]

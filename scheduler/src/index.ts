@@ -1,8 +1,10 @@
 import { app } from './app.js';
 import { Config } from './config/config.js';
-import { logger } from './config/logger.js';
+import { logger, loggerStartApp } from './config/logger.js';
 import './config/setup.js';
-import { TrafficScheduler } from './cronjobs/trafOptScheduler.js';
+import { TrafOptSchedulerCron } from './cronjobs/index.js';
+
+loggerStartApp();
 
 const initRestApi = async () => {
   app.listen(Config.APP_PORT, () => {
@@ -15,4 +17,4 @@ initRestApi().catch((error: unknown) => {
   logger.error(`Could not setup api ${err.message}`);
 });
 
-TrafficScheduler();
+TrafOptSchedulerCron(Config.CRONJOB_EXPRESSION);

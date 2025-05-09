@@ -5,9 +5,10 @@ import { Config } from '../../config/config.js';
 
 import type { GraphDataRps, NodesLatency } from './types.js';
 import type { PrometheusAdapter } from '../prometheus.interface.js';
+import { cronParseToInterval } from '../../common/helpers.js';
 
 export class PrometheusAdapterImpl implements PrometheusAdapter {
-  private readonly time = Config.CRONJOB_TIME;
+  private readonly time = cronParseToInterval(Config.CRONJOB_EXPRESSION);
   private readonly prometheusUrl = Config.prometheusUrl;
   private readonly appGraph: Graph;
   private readonly resourcesMetrics: ResourcesMetricsService;

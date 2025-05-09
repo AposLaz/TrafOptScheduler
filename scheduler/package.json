@@ -1,5 +1,5 @@
 {
-  "name": "trafExOpt",
+  "name": "traf-opt-scheduler",
   "version": "1.0.0",
   "description": "First of all get resource usage from Nodes, Pods and the available host machines of the cluster. After place a service, resource usage and availability of resources at the host are taken into account",
   "main": "index.ts",
@@ -7,6 +7,7 @@
   "scripts": {
     "start": "node --loader ts-node/esm src/index.ts",
     "build": "tsc",
+    "prod": "node ./dist/src/index.js",
     "ts-check": "tsc --noEmit",
     "build:clean": "rm -rf tsconfig.build.tsbuildinfo && rm -rf ./dist",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage --silent",
@@ -28,6 +29,7 @@
     "axios": "^1.9.0",
     "child_process": "^1.0.2",
     "cors": "^2.8.5",
+    "cron-parser": "^5.1.1",
     "dotenv": "^16.4.5",
     "express": "^5.1.0",
     "figlet": "^1.8.0",
@@ -46,6 +48,7 @@
     "@types/js-yaml": "^4.0.9",
     "@types/k6": "^0.54.2",
     "@types/node": "22.10.1",
+    "@types/node-cron": "^3.0.11",
     "@types/request": "^2.48.12",
     "@types/ws": "^8.5.13",
     "@typescript-eslint/eslint-plugin": "^8.16.0",

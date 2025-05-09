@@ -1,5 +1,5 @@
 node_modules/
-
+dist/
 coverage/
 docs/
 istio-1.22.0/

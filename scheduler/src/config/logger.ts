@@ -58,7 +58,7 @@ export const loggerStartApp = () => {
 
   console.log(`
 ============================================
- Environment: ${process.env.NODE_ENV ?? 'development'}
+ Environment: ${process.env.ENV ?? 'development'}
  Start Time  : ${new Date().toLocaleString()}
 ============================================
   `);
