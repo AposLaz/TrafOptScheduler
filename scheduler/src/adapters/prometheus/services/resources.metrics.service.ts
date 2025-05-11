@@ -1,8 +1,5 @@
 import { logger } from '../../../config/logger.js';
-import { PrometheusMapper } from '../mapper.js';
 import { executePrometheusQuery } from '../utils.js';
-
-import type { PodResourceUsageType } from '../types.js';
 
 export class ResourcesMetricsService {
   constructor(private readonly prometheusUrl: string) {
@@ -12,7 +9,6 @@ export class ResourcesMetricsService {
   async fetchNodesLatency(time: string) {
     try {
       const query = `avg_over_time(node_avg_latency_ms[${time}])`;
-      console.log(query);
       const result = await executePrometheusQuery(this.prometheusUrl, query);
 
       if (!result || result.data.result.length === 0) {
@@ -28,18 +24,16 @@ export class ResourcesMetricsService {
     }
   }
 
-  async fetchPodCpuUsageRelativeToLimit(namespace: string, time: string): Promise<PodResourceUsageType[] | undefined> {
+  async fetchAvgPodCpuUsage(pod: string, namespace: string, time: string): Promise<number | undefined> {
     try {
-      const query = `sum(rate(container_cpu_usage_seconds_total{container!="", pod !="" ,namespace="${namespace}"}[${time}m])) by (pod,namespace) / sum(kube_pod_container_resource_limits{resource="cpu",namespace="${namespace}", container !="", pod !=""}) by (pod,namespace)`;
-
+      const query = `sum(rate(container_cpu_usage_seconds_total{container!="", pod="${pod}", namespace="${namespace}"}[${time}]))`;
       const result = await executePrometheusQuery(this.prometheusUrl, query);
-
       if (!result || result.data.result.length === 0) {
         logger.warn(`No data returned for query: ${query}`);
         return;
       }
 
-      return PrometheusMapper.toPodResourceUsage(result.data.result);
+      return Number(result.data.result[0].value[1]) * 1000;
     } catch (e: unknown) {
       const error = e as Error;
       logger.error(error);
@@ -47,11 +41,9 @@ export class ResourcesMetricsService {
     }
   }
 
-  async fetchPodMemoryUsageRelativeToLimit(namespace: string): Promise<PodResourceUsageType[] | undefined> {
+  async fetchAvgPodMemoryUsage(pod: string, namespace: string, time: string): Promise<number | undefined> {
     try {
-      // memory usage 100%
-      const query = `sum(container_memory_working_set_bytes{namespace="${namespace}", pod!="", container != ""}) by (pod,namespace) / sum(kube_pod_container_resource_limits{resource="memory",namespace="${namespace}", container != "", pod !=""}) by (pod,namespace)`;
-
+      const query = `sum(avg_over_time(container_memory_usage_bytes{container!="", pod="${pod}", namespace="${namespace}"}[${time}]))`;
       const result = await executePrometheusQuery(this.prometheusUrl, query);
 
       if (!result || result.data.result.length === 0) {
@@ -59,7 +51,7 @@ export class ResourcesMetricsService {
         return;
       }
 
-      return PrometheusMapper.toPodResourceUsage(result.data.result);
+      return Number(result.data.result[0].value[1]) / (1024 * 1024);
     } catch (e: unknown) {
       const error = e as Error;
       logger.error(error);
@@ -67,41 +59,39 @@ export class ResourcesMetricsService {
     }
   }
 
-  async fetchPodCpuMemoryUsageRelativeToLimit(
-    namespace: string,
-    time: string
-  ): Promise<PodResourceUsageType[] | undefined> {
-    const weightCpu = 0.5;
-    const weightMemory = 0.5;
+  async fetchCurrentPodCpuUsage(pod: string, namespace: string): Promise<number | undefined> {
+    try {
+      const query = `sum(container_cpu_usage_seconds_total{container!="", pod="${pod}", namespace="${namespace}"})`;
+      const result = await executePrometheusQuery(this.prometheusUrl, query);
 
-    const [cpuUsage, memoryUsage] = await Promise.all([
-      this.fetchPodCpuUsageRelativeToLimit(namespace, time),
-      this.fetchPodMemoryUsageRelativeToLimit(namespace),
-    ]);
+      if (!result || result.data.result.length === 0) {
+        logger.warn(`No data returned for query: ${query}`);
+        return;
+      }
 
-    if (!cpuUsage || !memoryUsage) {
-      logger.error('Error fetching CPU and memory usage data for find the Multicriteria score');
+      return Number(result.data.result[0].value[1]) * 1000;
+    } catch (e: unknown) {
+      const error = e as Error;
+      logger.error(error);
       return;
     }
+  }
 
-    // calculate multicriteria function
-    const podCpuMemoryUsage = cpuUsage
-      .map((podCpu) => {
-        const podMemory = memoryUsage.find((podMem) => podMem.podName === podCpu.podName);
+  async fetchCurrentPodMemoryUsage(pod: string, namespace: string): Promise<number | undefined> {
+    try {
+      const query = `sum(container_memory_working_set_bytes{container!="", pod="${pod}", namespace="${namespace}"})`;
+      const result = await executePrometheusQuery(this.prometheusUrl, query);
 
-        if (!podMemory) {
-          logger.error(`No memory data for pod: "${podCpu.podName}"`);
-          return;
-        }
+      if (!result || result.data.result.length === 0) {
+        logger.warn(`No data returned for query: ${query}`);
+        return;
+      }
 
-        return {
-          podName: podCpu.podName,
-          namespace: podCpu.namespace,
-          metric: podCpu.metric * weightCpu + podMemory.metric * weightMemory,
-        };
-      })
-      .filter((pod) => pod !== undefined);
-
-    return podCpuMemoryUsage;
+      return Number(result.data.result[0].value[1]) / (1024 * 1024);
+    } catch (e: unknown) {
+      const error = e as Error;
+      logger.error(error);
+      return;
+    }
   }
 }

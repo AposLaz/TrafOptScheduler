@@ -26,5 +26,5 @@
     "resolveJsonModule": true
   },
   "include": ["src/**/*.ts", "tests/**/*.ts", "eslint.config.mjs", "jest.config.cjs"],
-  "exclude": ["dist", "node_modules", "coverage/**"]
+  "exclude": ["dist", "node_modules", "coverage", "k6"]
 }

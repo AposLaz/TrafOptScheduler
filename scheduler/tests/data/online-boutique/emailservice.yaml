@@ -49,9 +49,9 @@ spec:
             - containerPort: 8080
           env:
             - name: PORT
-              value: '8080'
+              value: "8080"
             - name: DISABLE_PROFILER
-              value: '1'
+              value: "1"
           readinessProbe:
             periodSeconds: 5
             grpc:
@@ -62,10 +62,10 @@ spec:
               port: 8080
           resources:
             requests:
-              cpu: 100m
+              cpu: 40m
               memory: 64Mi
             limits:
-              cpu: 200m
+              cpu: 80m
               memory: 128Mi
 ---
 apiVersion: v1

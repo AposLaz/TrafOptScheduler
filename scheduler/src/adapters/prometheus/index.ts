@@ -35,4 +35,20 @@ export class PrometheusAdapterImpl implements PrometheusAdapter {
 
     return PrometheusMapper.toNodesLatency(data);
   }
+
+  async getAvgPodCpuUsage(pod: string, namespace: string, time: string): Promise<number | undefined> {
+    return this.resourcesMetrics.fetchAvgPodCpuUsage(pod, namespace, time);
+  }
+
+  async getAvgPodMemoryUsage(pod: string, namespace: string, time: string): Promise<number | undefined> {
+    return this.resourcesMetrics.fetchAvgPodMemoryUsage(pod, namespace, time);
+  }
+
+  async getCurrentPodCpuUsage(pod: string, namespace: string): Promise<number | undefined> {
+    return this.resourcesMetrics.fetchCurrentPodCpuUsage(pod, namespace);
+  }
+
+  async getCurrentPodMemoryUsage(pod: string, namespace: string): Promise<number | undefined> {
+    return this.resourcesMetrics.fetchCurrentPodMemoryUsage(pod, namespace);
+  }
 }

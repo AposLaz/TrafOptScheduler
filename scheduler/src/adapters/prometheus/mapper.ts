@@ -43,15 +43,13 @@ export const PrometheusMapper = {
   },
   toNodesLatency(results: PrometheusResults[]): NodesLatency[] {
     const nodesLatency = results.map((data) => {
-      {
-        const nodeMetrics = data.metric as PromNodesLatency;
+      const nodeMetrics = data.metric as PromNodesLatency;
 
-        return {
-          from: nodeMetrics.from_node,
-          to: nodeMetrics.to_node,
-          latency: Number(data.value[1]) / 1000, // convert microseconds to milliseconds
-        };
-      }
+      return {
+        from: nodeMetrics.from_node,
+        to: nodeMetrics.to_node,
+        latency: Number(data.value[1]) / 1000, // convert microseconds to milliseconds
+      };
     });
     // Get unique nodes from results
     const uniqueNodes = new Set<string>();
@@ -71,40 +69,6 @@ export const PrometheusMapper = {
     // Combine latency results with self-traffic rules
     return [...nodesLatency, ...selfTrafficRules];
   },
-  // toUpstreamDeploymentGraphDataRps: (
-  //   results: PrometheusResults[],
-  //   namespace: string
-  // ): GraphDataRps[] => {
-  //   // Initialize an empty array to store the transformed data.
-  //   const mapGraph = new Map<string, DeploymentGraphRps[]>();
-  //   results.forEach((data) => {
-  //     const addData: DeploymentGraphRps = {
-  //       rps: Number(data.value[1]),
-  //       node: data.metric.node ?? 'unknown',
-  //       pod: data.metric.pod ?? 'unknown',
-  //       source_workload: data.metric.source_workload ?? 'unknown',
-  //       source_version: data.metric.source_version ?? 'unknown', // the version is the node of the source
-  //       source_workload_namespace: namespace,
-  //       destination_service_name:
-  //         data.metric.destination_service_name ?? 'unknown',
-  //       destination_service_namespace:
-  //         data.metric.destination_service_namespace ?? 'unknown',
-  //       destination_version: data.metric.destination_version ?? 'unknown',
-  //       destination_workload: data.metric.destination_workload ?? 'unknown',
-  //     };
-
-  //     if (mapGraph.has(data.metric.source_workload as string)) {
-  //       mapGraph.get(data.metric.source_workload as string)?.push(addData);
-  //     } else {
-  //       mapGraph.set(data.metric.source_workload as string, [addData]);
-  //     }
-  //   });
-  //   // Convert the Map to an array of objects for easier consumption
-  //   return Array.from(mapGraph.entries()).map(([source, destinations]) => ({
-  //     source,
-  //     destinations,
-  //   }));
-  // },
   toPodResourceUsage: (results: PrometheusResults[]): PodResourceUsageType[] => {
     // Initialize an empty array to store the transformed data.
     const returnResults: PodResourceUsageType[] = [];

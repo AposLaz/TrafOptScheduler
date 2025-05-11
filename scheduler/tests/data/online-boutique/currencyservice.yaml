@@ -50,9 +50,9 @@ spec:
               containerPort: 7000
           env:
             - name: PORT
-              value: '7000'
+              value: "7000"
             - name: DISABLE_PROFILER
-              value: '1'
+              value: "1"
           readinessProbe:
             grpc:
               port: 7000
@@ -61,10 +61,10 @@ spec:
               port: 7000
           resources:
             requests:
-              cpu: 100m
+              cpu: 40m
               memory: 64Mi
             limits:
-              cpu: 200m
+              cpu: 120m
               memory: 128Mi
 ---
 apiVersion: v1

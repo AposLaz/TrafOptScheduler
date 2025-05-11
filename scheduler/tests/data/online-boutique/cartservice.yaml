@@ -49,13 +49,13 @@ spec:
             - containerPort: 7070
           env:
             - name: REDIS_ADDR
-              value: 'redis-cart:6379'
+              value: "redis-cart:6379"
           resources:
             requests:
-              cpu: 200m
+              cpu: 20m
               memory: 64Mi
             limits:
-              cpu: 300m
+              cpu: 100m
               memory: 128Mi
           readinessProbe:
             initialDelaySeconds: 15

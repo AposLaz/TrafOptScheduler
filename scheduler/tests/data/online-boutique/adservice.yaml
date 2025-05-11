@@ -49,14 +49,14 @@ spec:
             - containerPort: 9555
           env:
             - name: PORT
-              value: '9555'
+              value: "9555"
           resources:
             requests:
-              cpu: 200m
-              memory: 180Mi
+              cpu: 50m
+              memory: 80Mi
             limits:
-              cpu: 300m
-              memory: 300Mi
+              cpu: 80m
+              memory: 160Mi
           readinessProbe:
             initialDelaySeconds: 20
             periodSeconds: 15

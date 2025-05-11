@@ -50,9 +50,9 @@ spec:
             - containerPort: 3550
           env:
             - name: PORT
-              value: '3550'
+              value: "3550"
             - name: DISABLE_PROFILER
-              value: '1'
+              value: "1"
           readinessProbe:
             grpc:
               port: 3550
@@ -61,10 +61,10 @@ spec:
               port: 3550
           resources:
             requests:
-              cpu: 100m
+              cpu: 40m
               memory: 64Mi
             limits:
-              cpu: 200m
+              cpu: 80m
               memory: 128Mi
 ---
 apiVersion: v1

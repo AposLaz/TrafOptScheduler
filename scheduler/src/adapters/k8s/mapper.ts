@@ -15,6 +15,7 @@ import type {
 } from './types.js';
 import type { DeploymentReplicaPodsMetrics, MetricWeights } from '../../types.js';
 import type * as k8s from '@kubernetes/client-node';
+import { logger } from '../../config/logger.js';
 
 const k8sMapper = {
   toClusterTopology: (nodes: k8s.V1Node[]): ClusterTopology[] => {
@@ -38,7 +39,21 @@ const k8sMapper = {
 
     return assignNodesToZones;
   },
+  toDeploymentLabels: (deployment: k8s.V1Deployment): string | undefined => {
+    // Extract label selector from the Deployment's spec
+    const matchLabels = deployment.spec?.selector?.matchLabels;
+    if (!matchLabels) {
+      logger.error(`Deployment ${deployment.metadata?.name} does not have matchLabels defined.`);
+      return;
+    }
 
+    // Convert matchLabels into a label selector string
+    const labelSelector = Object.entries(matchLabels)
+      .map(([key, value]) => `${key}=${value}`)
+      .join(',');
+
+    return labelSelector;
+  },
   /**
    * Map Deployments to its replica pod's metrics
    *

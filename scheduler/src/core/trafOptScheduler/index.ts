@@ -1,19 +1,20 @@
-import { FileSystemHandler } from '../adapters/filesystem/index.js';
-import { KubernetesAdapterImpl } from '../adapters/k8s/index.js';
-import { k8sMapper } from '../adapters/k8s/mapper.js';
-import { PrometheusAdapterImpl } from '../adapters/prometheus/index.js';
-import { Config } from '../config/config.js';
-import { logger } from '../config/logger.js';
-import { setup } from '../config/setup.js';
-import { OptiBalancer } from '../core/optiBalancer/index.js';
-import { ScaleAction } from '../core/optiScaler/enums.js';
-import { OptiScaler } from '../core/optiScaler/index.js';
-import { getPodNodeResources } from '../utils.js';
+import { FileSystemHandler } from '../../adapters/filesystem/index.js';
+import { KubernetesAdapterImpl } from '../../adapters/k8s/index.js';
+import { k8sMapper } from '../../adapters/k8s/mapper.js';
+import { PrometheusAdapterImpl } from '../../adapters/prometheus/index.js';
+import { Config } from '../../config/config.js';
+import { logger } from '../../config/logger.js';
+import { setup } from '../../config/setup.js';
+import { OptiBalancer } from '../optiBalancer/index.js';
+import { ScaleAction } from '../optiScaler/enums.js';
+import { OptiScaler } from '../optiScaler/index.js';
+import { getPodNodeResources } from '../../utils.js';
 
-import type { WriteDataType } from '../adapters/filesystem/types.js';
-import type { ClusterTopology } from '../adapters/k8s/types.js';
-import type { NodesLatency } from '../adapters/prometheus/types.js';
-import type { DeploymentReplicaPodsMetrics } from '../types.js';
+import type { WriteDataType } from '../../adapters/filesystem/types.js';
+import type { ClusterTopology } from '../../adapters/k8s/types.js';
+import type { NodesLatency } from '../../adapters/prometheus/types.js';
+import type { DeploymentReplicaPodsMetrics } from '../../types.js';
+import { addMissingResources } from './services.js';
 
 /**
  * Setup the entire application
@@ -56,24 +57,31 @@ export const TrafficScheduler = async () => {
       return;
     }
 
-    applyOptiBalancerForWrittenData(clusterTopology, nodesLatency);
+    const promiseBalancer = applyOptiBalancerForWrittenData(clusterTopology, nodesLatency);
 
     // For each namespace in the config
-    for (const namespace of Config.NAMESPACES) {
+    const promiseNamespace = Config.NAMESPACES.map(async (namespace) => {
       try {
         // Get the deployments in the namespace
-        const deployments = await k8sAdapter.getDeploymentsMetrics(namespace); // DummyDeployments;
+        const deployments = await k8sAdapter.getDeploymentsMetrics(namespace);
 
         // If no deployments are found
         if (!deployments || Object.keys(deployments).length === 0) {
           // Skip this namespace
-          continue;
+          return;
         }
 
-        // Get the critical deployments (deployments that are above the threshold)
-        const loadDeployment = k8sAdapter.getCriticalDeployments(deployments);
+        // for each pod of the deployment that not existpod request or limit add them by prometheus
+        const deploymentsWithResources = await addMissingResources(
+          deployments,
+          namespace,
+          Config.metrics.weights,
+          promAdapter
+        );
 
-        console.log(loadDeployment.lowLoadedDeployments);
+        // Get the critical deployments (deployments that are above the threshold)
+        const loadDeployment = k8sAdapter.getCriticalDeployments(deploymentsWithResources);
+
         // If there are deployments that are below the threshold
         if (Object.keys(loadDeployment.lowLoadedDeployments).length > 0) {
           const loggerOperation = logger.child({
@@ -81,7 +89,7 @@ export const TrafficScheduler = async () => {
           });
 
           for (const [deployment, node] of Object.entries(loadDeployment.lowLoadedDeployments)) {
-            const replicaPods = deployments[deployment];
+            const replicaPods = deploymentsWithResources[deployment];
 
             if (replicaPods.length === 1) {
               loggerOperation.info(`Deployment "${deployment}" has a single replica. Scaling down is not possible`);
@@ -108,7 +116,7 @@ export const TrafficScheduler = async () => {
               const nodeMetrics = await k8sAdapter.getNodesMetrics();
 
               // Scale down
-              new OptiScaler(
+              const downScaler = new OptiScaler(
                 ScaleAction.DOWN,
                 {
                   deployment,
@@ -119,7 +127,9 @@ export const TrafficScheduler = async () => {
                   nodesLatency,
                 },
                 { prom: promAdapter, k8s: k8sAdapter, fileSystem }
-              ).Execute(Config.metrics.type, Config.metrics.weights);
+              );
+
+              await downScaler.Execute(Config.metrics.type, Config.metrics.weights);
             }
           }
         }
@@ -138,7 +148,7 @@ export const TrafficScheduler = async () => {
             const avgDeploymentClusterUsage = sumDeploymentClusterUsage / node.length;
 
             // Get the replica pods of the deployment
-            const replicaPods = deployments[deployment];
+            const replicaPods = deploymentsWithResources[deployment];
 
             // If the average usage is above the threshold
             if (avgDeploymentClusterUsage > Config.metrics.upperThreshold) {
@@ -152,8 +162,6 @@ export const TrafficScheduler = async () => {
                 continue;
               }
 
-              console.log(`run optiScaler for Deployment ${deployment} in node ${node}`);
-
               loggerOperation.info(
                 `\n#############################################################################
                 \nDeployment "${deployment}" is above the threshold. Scaling up
@@ -161,7 +169,7 @@ export const TrafficScheduler = async () => {
               );
 
               // fault tolerance
-              new OptiScaler(
+              const upScaler = new OptiScaler(
                 ScaleAction.UP,
                 {
                   deployment,
@@ -172,7 +180,9 @@ export const TrafficScheduler = async () => {
                   nodesLatency,
                 },
                 { prom: promAdapter, k8s: k8sAdapter, fileSystem }
-              ).Execute(Config.metrics.type, Config.metrics.weights);
+              );
+
+              await upScaler.Execute(Config.metrics.type, Config.metrics.weights);
 
               continue;
             }
@@ -184,14 +194,14 @@ export const TrafficScheduler = async () => {
 
             const optiBalancerInput = {
               deployment,
-              deployMetrics: deployments,
+              deployMetrics: deploymentsWithResources,
               namespace,
               replicaPods,
               nodesLatency,
               clusterTopology,
             };
 
-            optiBalancer.Execute(optiBalancerInput);
+            await optiBalancer.Execute(optiBalancerInput);
           }
         }
       } catch (err: unknown) {
@@ -199,9 +209,11 @@ export const TrafficScheduler = async () => {
         const error = err as Error;
         logger.error(`Error: ${error.message}`);
         // Skip this namespace
-        continue;
+        return;
       }
-    }
+    });
+
+    await Promise.all([...promiseNamespace, promiseBalancer]);
   } catch (error: unknown) {
     // Handle the error
     const err = error as Error;
@@ -258,7 +270,7 @@ export const applyOptiBalancerForWrittenData = async (
     // get downstream pods
     try {
       const downstream = await promAdapter.getDownstreamPodGraph(d.deployment, d.namespace);
-
+      console.log(JSON.stringify(downstream, null, 2));
       // If no downstream pods are found, delete the deployment from the filesystem
       if (!downstream) {
         return [];
@@ -301,15 +313,16 @@ export const applyOptiBalancerForWrittenData = async (
   // get deployment metrics
   try {
     const promise = uniqueNamespace.map(async (ns) => {
-      const deployments = await k8sAdapter.getDeploymentsMetrics(ns); // DummyDeployments;
-      console.log(JSON.stringify(deployments, null, 2));
+      const deployments = await k8sAdapter.getDeploymentsMetrics(ns);
       // // If no deployments are found
       if (!deployments || Object.keys(deployments).length === 0) {
         // Skip this namespace
         return [];
       }
 
-      return deployments;
+      const deploymentsWithResources = await addMissingResources(deployments, ns, Config.metrics.weights, promAdapter);
+
+      return deploymentsWithResources;
     });
 
     const deploysMetrics = (await Promise.all(promise)).flat();

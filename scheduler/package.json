@@ -12,7 +12,7 @@
     "build:clean": "rm -rf tsconfig.build.tsbuildinfo && rm -rf ./dist",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage --silent",
     "test:ci": "yarn test --colors --coverage --ci",
-    "test:stress": "k6 run --compatibility-mode=experimental_enhanced tests/k6/script.ts",
+    "stress:ob": "k6 run k6/online-boutique.ts",
     "test:coverage": "yarn test --coverage",
     "prettier": "prettier --check --ignore-path .gitignore .",
     "prettier:fix": "prettier --write --ignore-path .gitignore .",

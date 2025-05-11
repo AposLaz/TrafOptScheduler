@@ -28,7 +28,7 @@ spec:
       labels:
         app: loadgenerator
       annotations:
-        sidecar.istio.io/rewriteAppHTTPProbers: 'true'
+        sidecar.istio.io/rewriteAppHTTPProbers: "true"
     spec:
       serviceAccountName: loadgenerator
       terminationGracePeriodSeconds: 5
@@ -68,7 +68,7 @@ spec:
           image: busybox:latest
           env:
             - name: FRONTEND_ADDR
-              value: 'frontend:80'
+              value: "frontend:80"
       containers:
         - name: main
           securityContext:
@@ -81,9 +81,9 @@ spec:
           image: gcr.io/google-samples/microservices-demo/loadgenerator:v0.10.0
           env:
             - name: FRONTEND_ADDR
-              value: 'frontend:80'
+              value: "frontend:80"
             - name: USERS
-              value: '10'
+              value: "100"
 ---
 apiVersion: v1
 kind: ServiceAccount

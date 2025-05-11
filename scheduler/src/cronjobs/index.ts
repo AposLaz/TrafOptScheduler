@@ -1,6 +1,6 @@
 import cron from 'node-cron';
 
-import { TrafficScheduler } from './trafOptScheduler.js';
+import { TrafficScheduler } from '../core/trafOptScheduler/index.js';
 import { logger } from '../config/logger.js';
 
 let isRunning = false;
@@ -18,7 +18,8 @@ export const TrafOptSchedulerCron = (timer: string) => {
       await TrafficScheduler();
     } catch (error: unknown) {
       const err = error as Error;
-      logger.error('Error running TrafficScheduler:', err.message);
+      logger.error('Error running TrafficScheduler');
+      logger.error(err);
     } finally {
       isRunning = false;
     }

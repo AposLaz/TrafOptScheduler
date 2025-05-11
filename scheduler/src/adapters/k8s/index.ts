@@ -23,6 +23,7 @@ import type {
 } from './types.js';
 import type { ConfigMetrics, DeploymentReplicaPodsMetrics } from '../../types.js';
 import type * as k8s from '@kubernetes/client-node';
+import { taintMutex } from '../../common/raceConditions.js';
 
 export class KubernetesAdapterImpl implements KubernetesAdapter {
   private readonly metrics: MetricsService;
@@ -141,16 +142,20 @@ export class KubernetesAdapterImpl implements KubernetesAdapter {
    * @param nodes - The nodes to schedule the pod on.
    */
   async createReplicaPodToSpecificNode(deploymentName: string, ns: string, nodes: string[]) {
-    // Taint the nodes so that the deployment will not schedule a pod on it.
-    const taint = k8sMapper.toNodeTaints(deploymentName);
-    await this.node.addTaint(nodes, taint);
+    try {
+      // Taint the nodes so that the deployment will not schedule a pod on it.
+      const taint = k8sMapper.toNodeTaints(deploymentName);
+      await this.node.addTaint(nodes, taint);
 
-    // Increase the number of replicas of the deployment.
-    await this.deployment.handleDeployReplicas(deploymentName, ns, 'add');
+      // Increase the number of replicas of the deployment
+      await this.deployment.handleDeployReplicas(deploymentName, ns, 'add');
 
-    // Remove the taint from the nodes so that the deployment can schedule a pod on it.
-    const taintKey = taint.key;
-    await this.node.removeTaint(nodes, taintKey);
+      // Remove the taint from the nodes so that the deployment can schedule a pod on it.
+      await this.node.removeTaint(nodes, taint.key);
+    } finally {
+      // Always release the mutex lock
+      taintMutex.unlock();
+    }
   }
 
   async removeReplicaPodToSpecificNode(deploymentName: string, pod: string, ns: string) {
