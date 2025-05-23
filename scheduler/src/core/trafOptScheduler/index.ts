@@ -61,6 +61,9 @@ export const TrafficScheduler = async () => {
 
     // For each namespace in the config
     const promiseNamespace = Config.NAMESPACES.map(async (namespace) => {
+      logger.info(
+        `************************************ Processing namespace "${namespace}" ************************************`
+      );
       try {
         // Get the deployments in the namespace
         const deployments = await k8sAdapter.getDeploymentsMetrics(namespace);
