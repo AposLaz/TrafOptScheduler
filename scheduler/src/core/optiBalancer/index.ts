@@ -35,10 +35,12 @@ export class OptiBalancer {
       });
 
       const traffic = this.calculateTraffic(data, upstream);
+      // get the desployment service name
+      const serviceName = upstream[0].destinations[0].destination_service_name;
       const createDestinationRule = OptiBalancerMapper.toDestinationRule(
         traffic,
         data.namespace,
-        data.deployment,
+        serviceName,
         data.clusterTopology
       );
 

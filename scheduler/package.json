@@ -13,6 +13,7 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage --silent",
     "test:ci": "yarn test --colors --coverage --ci",
     "stress:ob": "k6 run k6/online-boutique.ts",
+    "stress:2app": "k6 run k6/2-app.ts",
     "test:coverage": "yarn test --coverage",
     "prettier": "prettier --check --ignore-path .gitignore .",
     "prettier:fix": "prettier --write --ignore-path .gitignore .",
