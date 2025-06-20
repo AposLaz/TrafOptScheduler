@@ -43,9 +43,6 @@ export const TrafficScheduler = async () => {
   try {
     await setup();
 
-    // do not block
-    k8sAdapter.addLocalityLabels();
-
     const clusterTopology = await k8sAdapter.getClusterTopology();
     const zonesNodes = k8sMapper.toClusterAzTopology(clusterTopology);
 

@@ -2,7 +2,7 @@ import { app } from './app.js';
 import { Config } from './config/config.js';
 import { logger, loggerStartApp } from './config/logger.js';
 import './config/setup.js';
-import { TrafOptSchedulerCron } from './cronjobs/index.js';
+import { AddLocalityLabelsToNodes, TrafOptSchedulerCron } from './cronjobs/index.js';
 
 loggerStartApp();
 
@@ -18,3 +18,4 @@ initRestApi().catch((error: unknown) => {
 });
 
 TrafOptSchedulerCron(Config.CRONJOB_EXPRESSION);
+AddLocalityLabelsToNodes();
