@@ -45,11 +45,11 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: aplaz-proxy
+  name: aplaz-proxy-1
 spec:
   selector:
     matchLabels:
-      app: hello-proxy
+      app: hello-proxy-1
   replicas: 1
   template:
     metadata:
@@ -57,7 +57,7 @@ spec:
         sidecar.istio.io/proxyCPU: "100m"
         sidecar.istio.io/proxyCPULimit: "200m"
       labels:
-        app: hello-proxy
+        app: hello-proxy-1
     spec:
       containers:
         - name: hello-proxy
@@ -74,14 +74,77 @@ spec:
             limits:
               cpu: 400m
               memory: 200Mi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: proxy-svc
+  name: proxy-svc-1
 spec:
   selector:
-    app: hello-proxy
+    app: hello-proxy-1
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aplaz-proxy-2
+spec:
+  selector:
+    matchLabels:
+      app: hello-proxy-2
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/proxyCPU: "100m"
+        sidecar.istio.io/proxyCPULimit: "200m"
+      labels:
+        app: hello-proxy-2
+    spec:
+      containers:
+        - name: hello-proxy
+          image: alazidis/hello-proxy
+          ports:
+            - containerPort: 3000
+          env:
+            - name: URL
+              value: "hello-svc.2-app.svc.cluster.local"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+            limits:
+              cpu: 400m
+              memory: 200Mi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: proxy-svc-2
+spec:
+  selector:
+    app: hello-proxy-2
   ports:
     - protocol: TCP
       port: 80

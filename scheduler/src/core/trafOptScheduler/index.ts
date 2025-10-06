@@ -129,7 +129,7 @@ export const TrafficScheduler = async () => {
                 { prom: promAdapter, k8s: k8sAdapter, fileSystem }
               );
 
-              await downScaler.Execute(Config.metrics.type, Config.metrics.weights);
+              // await downScaler.Execute(Config.metrics.type, Config.metrics.weights);
             }
           }
         }
@@ -213,6 +213,7 @@ export const TrafficScheduler = async () => {
       }
     });
 
+    // await Promise.all(promiseNamespace);
     await Promise.all([...promiseNamespace, promiseBalancer]);
   } catch (error: unknown) {
     // Handle the error
@@ -230,7 +231,7 @@ export const applyOptiBalancerForWrittenData = async (
   const data = await fileSystem.readData();
   const loggerOperation = logger.child({ operation: 'OptiBalancer on filesystem pods' });
 
-  console.log(data);
+  // console.log(data);
 
   if (data.length === 0) {
     loggerOperation.info(`No data found in the deployment file`);
@@ -242,7 +243,7 @@ export const applyOptiBalancerForWrittenData = async (
 
   // remove the same deployments array if they exist twice
   const uniqueData = Array.from(new Set(data.map((d) => JSON.stringify(d)))).map((str) => JSON.parse(str));
-  console.log(uniqueData);
+  // console.log(uniqueData);
 
   const promise = uniqueData.map(async (d) => {
     // check if the deployment is healthy
@@ -270,13 +271,13 @@ export const applyOptiBalancerForWrittenData = async (
     // get downstream pods
     try {
       const downstream = await promAdapter.getDownstreamPodGraph(d.deployment, d.namespace);
-      console.log(JSON.stringify(downstream, null, 2));
+      // console.log(JSON.stringify(downstream, null, 2));
       // If no downstream pods are found, delete the deployment from the filesystem
       if (!downstream) {
         return [];
       }
 
-      console.log(JSON.stringify(downstream, null, 2));
+      // console.log(JSON.stringify(downstream, null, 2));
 
       // get downstream pods namespace
       const dmNamespace = downstream
@@ -304,11 +305,11 @@ export const applyOptiBalancerForWrittenData = async (
   const uniqueDeployments = Array.from(new Set(currentAndDmDeploys.map((d) => JSON.stringify(d)))).map((str) =>
     JSON.parse(str)
   );
-  console.log(uniqueDeployments);
+  // console.log(uniqueDeployments);
 
   // for each unique namespace
   const uniqueNamespace = Array.from(new Set(uniqueDeployments.map((u) => u.namespace)));
-  console.log(uniqueNamespace);
+  // console.log(uniqueNamespace);
 
   // get deployment metrics
   try {
@@ -350,12 +351,14 @@ export const applyOptiBalancerForWrittenData = async (
       downstreamExecuted.add(key);
     });
 
+    // console.log(upstreamToDownstreams);
     // Delete upstreams if all their downstreams were executed
     const deletePromises: Promise<void>[] = [];
 
     for (const [upstreamKey, downstreams] of upstreamToDownstreams.entries()) {
+      // console.log('??????????????');
       const allProcessed = downstreams.every((d) => downstreamExecuted.has(`${d.deployment}|${d.namespace}`));
-
+      // console.log(downstreams);
       if (allProcessed) {
         const [deployment, namespace] = upstreamKey.split('|');
         deletePromises.push(
@@ -363,6 +366,11 @@ export const applyOptiBalancerForWrittenData = async (
         );
       }
     }
+    uniqueDeployments.forEach((d) => {
+      deletePromises.push(
+        fileSystem.deleteData((item) => item.deployment === d.deployment && item.namespace === d.namespace)
+      );
+    });
 
     await Promise.all(deletePromises);
   } catch (error: unknown) {

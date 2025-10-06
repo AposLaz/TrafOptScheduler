@@ -1,6 +1,6 @@
 /************************************************* PROMETHEUS TYPES */
 export type PrometheusResults = {
-  metric: PodRps | PromNodesLatency;
+  metric: PodRps | PromNodesLatency | PromDeploymentResponseTime;
   value: [number, string];
 };
 
@@ -57,4 +57,19 @@ export type DeploymentGraphRps = {
 export type GraphDataRps = {
   node: string;
   destinations: DeploymentGraphRps[];
+};
+
+/******************************************** PROMETHEUS RESPONSE TIME */
+
+export type PromDeploymentResponseTime = {
+  destination_workload: string;
+  namespace: string;
+  node: string;
+};
+
+export type DeploymentResponseTime = {
+  node: string;
+  deployment: string;
+  namespace: string;
+  responseTime: number;
 };

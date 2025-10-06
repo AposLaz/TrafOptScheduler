@@ -8,4 +8,4 @@ spec:
     configMap:
       name: loadgenerator-2-app
       file: 2-app.ts
-  arguments: "--env HELLO_PROXY_ADDR=proxy-svc.2-app.svc.cluster.local"
+  arguments: "--env HELLO_PROXY_ADDR=proxy-svc-1.2-app.svc.cluster.local"

@@ -8,6 +8,8 @@ import type {
   PodRps,
   PrometheusResults,
   NodesLatency,
+  PromDeploymentResponseTime,
+  DeploymentResponseTime,
 } from './types.js';
 
 export const PrometheusMapper = {
@@ -41,6 +43,21 @@ export const PrometheusMapper = {
       destinations,
     }));
   },
+  toNodesResponseTime(results: PrometheusResults[]): DeploymentResponseTime[] {
+    const nodesResponseTime = results.map((data) => {
+      const nodeMetrics = data.metric as PromDeploymentResponseTime;
+
+      return {
+        node: nodeMetrics.node,
+        deployment: nodeMetrics.destination_workload,
+        namespace: nodeMetrics.namespace,
+        responseTime: isNaN(Number(data.value[1])) || data.value[1] == null ? 0 : Number(data.value[1]),
+      };
+    });
+
+    return nodesResponseTime;
+  },
+
   toNodesLatency(results: PrometheusResults[]): NodesLatency[] {
     const nodesLatency = results.map((data) => {
       const nodeMetrics = data.metric as PromNodesLatency;

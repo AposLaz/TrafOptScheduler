@@ -44,12 +44,18 @@ export type DestinationRule = {
           }[];
         };
       };
-      outlierDetection: {
-        consecutive5xxErrors: number;
-        interval: string;
-        baseEjectionTime: string;
-        maxEjectionPercent: number;
-      };
+      // outlierDetection: {
+      //   consecutive5xxErrors: number;
+      //   interval: string;
+      //   baseEjectionTime: string;
+      //   maxEjectionPercent: number;
+      // };
+      // connectionPool: {
+      //   http: {
+      //     http1MaxPendingRequests: number;
+      //     maxRequestsPerConnection: number;
+      //   };
+      // };
     };
   };
 };

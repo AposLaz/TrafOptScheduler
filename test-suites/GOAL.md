@@ -2,3 +2,5 @@ focus on improving the replica pods scale up & scale down respecting to the high
 Goal:
 1. To reduce the network-latency & response time of the replica sets.
 2. Distribute the traffic base on the network latency cpu / ram utilization & number of upstream pods.
+
+hpa see the requests and not the limits. Issue because request guarantee that these resources should be available in the cluster.

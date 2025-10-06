@@ -6,6 +6,24 @@ export class ResourcesMetricsService {
     this.prometheusUrl = prometheusUrl;
   }
 
+  async fetchResponseTimeByNodeDeployment(deployment: string, namespace: string, time: string) {
+    try {
+      const query = `histogram_quantile(0.95, sum by(le, destination_workload, node, namespace) (rate(istio_request_duration_milliseconds_bucket{node!="unknown", destination_workload="${deployment}",namespace="${namespace}"}[${time}] offset ${time})))`;
+      const result = await executePrometheusQuery(this.prometheusUrl, query);
+
+      if (!result || result.data.result.length === 0) {
+        logger.warn(`No data returned for query: ${query}`);
+        return;
+      }
+      console.log(result.data.result);
+      return result.data.result;
+    } catch (e: unknown) {
+      const error = e as Error;
+      logger.error(error);
+      return;
+    }
+  }
+
   async fetchNodesLatency(time: string) {
     try {
       const query = `avg_over_time(node_avg_latency_ms[${time}])`;

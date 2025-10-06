@@ -5,8 +5,16 @@ import { logger } from '../config/logger.js';
 import { KubernetesAdapterImpl } from '../adapters/k8s/index.js';
 
 let isRunning = false;
+let jobInitialized = false;
 
 export const TrafOptSchedulerCron = (timer: string) => {
+  if (jobInitialized) {
+    logger.warn('TrafficScheduler cron is already initialized. Skipping re-init.');
+    return;
+  }
+
+  jobInitialized = true;
+
   cron.schedule(timer, async () => {
     if (isRunning) {
       logger.warn('Previous cron job is still running. Skipping this cycle.');
@@ -16,15 +24,23 @@ export const TrafOptSchedulerCron = (timer: string) => {
     isRunning = true;
     try {
       logger.info('Starting TrafficScheduler cron job');
+      const startDate = new Date();
+
       await TrafficScheduler();
+      const endDate = new Date();
+
+      logger.info(
+        `************************* TIME DATE ****************************** ==========Finished TrafficScheduler cron job in ${endDate.getTime() - startDate.getTime()}ms`
+      );
     } catch (error: unknown) {
-      const err = error as Error;
       logger.error('Error running TrafficScheduler');
-      logger.error(err);
+      logger.error(error as Error);
     } finally {
       isRunning = false;
     }
   });
+
+  logger.info('TrafficScheduler cron initialized.');
 };
 
 export const AddLocalityLabelsToNodes = () => {

@@ -18,4 +18,4 @@ initRestApi().catch((error: unknown) => {
 });
 
 TrafOptSchedulerCron(Config.CRONJOB_EXPRESSION);
-AddLocalityLabelsToNodes();
+//AddLocalityLabelsToNodes();

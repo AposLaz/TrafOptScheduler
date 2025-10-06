@@ -119,7 +119,7 @@ export class ResourceService {
           },
           k8s.setHeaderOptions('Content-Type', k8s.PatchStrategy.MergePatch)
         );
-        console.log(response);
+        // console.log(JSON.stringify(response, null, 2));
         logger.info(`Custom Object updated: ${response.metadata.name}`);
       } catch (error: unknown) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

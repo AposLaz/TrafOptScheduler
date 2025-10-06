@@ -3,7 +3,7 @@ import { Graph } from './services/app.graph.js';
 import { ResourcesMetricsService } from './services/resources.metrics.service.js';
 import { Config } from '../../config/config.js';
 
-import type { GraphDataRps, NodesLatency } from './types.js';
+import type { DeploymentResponseTime, GraphDataRps, NodesLatency } from './types.js';
 import type { PrometheusAdapter } from '../prometheus.interface.js';
 import { cronParseToInterval } from '../../common/helpers.js';
 
@@ -34,6 +34,19 @@ export class PrometheusAdapterImpl implements PrometheusAdapter {
     }
 
     return PrometheusMapper.toNodesLatency(data);
+  }
+
+  async getResponseTimeByNodeDeployment(
+    deployment: string,
+    namespace: string
+  ): Promise<DeploymentResponseTime[] | undefined> {
+    const data = await this.resourcesMetrics.fetchResponseTimeByNodeDeployment(deployment, namespace, this.time);
+
+    if (!data) {
+      return;
+    }
+
+    return PrometheusMapper.toNodesResponseTime(data);
   }
 
   async getAvgPodCpuUsage(pod: string, namespace: string, time: string): Promise<number | undefined> {

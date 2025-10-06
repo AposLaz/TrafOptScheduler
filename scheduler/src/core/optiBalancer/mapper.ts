@@ -58,12 +58,18 @@ export const OptiBalancerMapper = {
               distribute: distributeRules,
             },
           },
-          outlierDetection: {
-            consecutive5xxErrors: 5,
-            interval: '10s',
-            baseEjectionTime: '2m',
-            maxEjectionPercent: 50,
-          },
+          // outlierDetection: {
+          //   consecutive5xxErrors: 7,
+          //   interval: '5s',
+          //   baseEjectionTime: '30s',
+          //   maxEjectionPercent: 25,
+          // },
+          // connectionPool: {
+          //   http: {
+          //     http1MaxPendingRequests: 10000,
+          //     maxRequestsPerConnection: 1000,
+          //   },
+          // },
         },
       },
     };
